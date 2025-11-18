@@ -119,13 +119,19 @@ async function loadInvestments(token) {
         tableBody.innerHTML = ''; 
 
         if (investments.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 dark:text-slate-400">Aún no tienes inversiones. <a href="portfolios.html" class="text-primary hover:underline font-bold">Ve a explorar</a></td></tr>`;
+            // colspan="7" porque agregamos una columna
+            tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 dark:text-slate-400">Aún no tienes inversiones. <a href="portfolios.html" class="text-primary hover:underline font-bold">Ve a explorar</a></td></tr>`;
             return;
         }
 
         investments.forEach(inv => {
             const profitColor = inv.profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500';
             const profitSign = inv.profit >= 0 ? '+' : '';
+            
+            // --- FORMATO DE FECHA ---
+            const dateObj = new Date(inv.date);
+            const dateStr = dateObj.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            const timeStr = dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 
             const row = `
                 <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
@@ -135,6 +141,14 @@ async function loadInvestments(token) {
                             <span class="text-xs text-slate-500 dark:text-slate-400">Riesgo ${inv.risk}</span>
                         </div>
                     </td>
+                    
+                    <td class="p-5 text-slate-500 dark:text-slate-400 text-sm whitespace-nowrap">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-700 dark:text-slate-300">${dateStr}</span>
+                            <span class="text-xs opacity-70">${timeStr}</span>
+                        </div>
+                    </td>
+
                     <td class="p-5 text-right font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         ${currencyFormatter.format(inv.investedAmount)}
                     </td>
@@ -161,6 +175,6 @@ async function loadInvestments(token) {
 
     } catch (error) {
         console.error(error);
-        if(tableBody) tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Error cargando datos.</td></tr>`;
+        if(tableBody) tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Error cargando datos.</td></tr>`;
     }
 }
