@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert(`¡Éxito! Has invertido $${amount} MXN.`);
+                    //alert(`¡Éxito! Has invertido $${amount} MXN.`);
                     closeModal();
                     updateUserData(token);
                 } else {

@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert(`¡Éxito! Has invertido $${amount} MXN.`);
+                    //alert(`¡Éxito! Has invertido $${amount} MXN.`);
                     closeInvestModal();
                     updateBalanceUI(data.newBalance);
                 } else {
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert(`¡Depósito Recibido! +$${amount} MXN.`);
+                   //alert(`¡Depósito Recibido! +$${amount} MXN.`);
                     closeDepositModal();
                     updateBalanceUI(data.newBalance);
                     document.getElementById('deposit-amount').value = '';

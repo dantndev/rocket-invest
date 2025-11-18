@@ -86,11 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isLoginPage) {
                         // LOGIN EXITOSO
                         localStorage.setItem('token', data.token);
-                        alert('¡Bienvenido! Entrando a la App...');
+                        //alert('¡Bienvenido! Entrando a la App...');
                         window.location.href = '/dashboard.html'; 
                     } else {
                         // REGISTRO EXITOSO
-                        alert('Registro exitoso. Ya tienes tus $50,000 iniciales. Por favor inicia sesión.');
+                        //alert('Registro exitoso. Ya tienes tus $50,000 iniciales. Por favor inicia sesión.');
                         window.location.href = '/login.html';
                     }
                 } else {

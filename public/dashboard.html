@@ -31,6 +31,11 @@
         /* Ocultar scrollbar en sidebar móvil para limpieza */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        button:active, a:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+            transition: transform 0.1s ease;
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased">
