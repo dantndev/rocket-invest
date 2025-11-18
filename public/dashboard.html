@@ -82,7 +82,7 @@
             </div>
         </aside>
 
-        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 transition-all duration-300 flex flex-col">
+        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 flex flex-col relative z-0 overflow-y-auto">
             <div class="mx-auto max-w-7xl">
                 
                 <header class="flex items-center justify-between whitespace-nowrap mb-8">
@@ -138,13 +138,16 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between px-1 mb-6">
+                <div class="flex items-center justify-between px-1 mb-6 mt-8">
                     <h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Portafolios Disponibles</h2>
                     <a href="portfolios.html" class="text-primary text-sm font-bold hover:text-blue-400 transition-colors">Ver Todos</a>
                 </div>
-
-                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24">
+                
+                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 w-full">
+                    <div class="text-center col-span-1 sm:col-span-3 py-10 text-slate-500">
+                        Cargando datos... (Si ves esto mucho tiempo, revisa que el servidor esté prendido)
                     </div>
+                </div>
             </div>
         </main>
     </div>
