@@ -66,6 +66,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 3. RENDERIZAR GRÁFICA (Chart.js)
     renderMarketChart();
 
+    // --- 6. BOTÓN VER TODOS (NUEVO) ---
+    const btnVerTodos = document.getElementById('btn-ver-todos');
+    if(btnVerTodos) {
+        btnVerTodos.addEventListener('click', () => {
+            // Simplemente recargamos o podríamos llevar a una vista expandida
+            // Por ahora, haremos scroll suave a la lista
+            document.getElementById('portfolio-grid').scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
     // --- LISTENERS DE FORMULARIOS ---
 
     // A) Formulario de INVERSIÓN

@@ -28,23 +28,28 @@
     </script>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-        .dark ::-webkit-scrollbar-track { background: #0f172a; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        /* Ocultar scrollbar en sidebar móvil para limpieza */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300">
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
     
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen relative">
         
-        <aside class="fixed left-0 top-0 h-full w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between z-20 transition-colors duration-300">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity opacity-0 md:hidden" onclick="toggleSidebar()"></div>
+
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full overflow-y-auto no-scrollbar">
             <div class="flex flex-col gap-8">
-                <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2">
-                    <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
-                    <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-normal tracking-tight">RocketInvest</h1>
-                </a>
+                <div class="flex items-center justify-between px-2">
+                    <a href="dashboard.html" class="flex items-center gap-3 px-1 py-2">
+                        <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
+                        <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-normal tracking-tight">RocketInvest</h1>
+                    </a>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
                 
                 <nav class="flex flex-col gap-2">
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="index.html">
@@ -74,67 +79,74 @@
             </div>
         </aside>
 
-        <main class="ml-64 flex-1 p-6 md:p-10 transition-colors duration-300">
+        <main class="w-full md:ml-64 flex-1 p-4 md:p-10 transition-colors duration-300 min-h-screen">
             <div class="mx-auto max-w-7xl">
                 
-                <header class="flex items-center justify-between whitespace-nowrap mb-10">
-                    <div class="flex flex-col gap-1">
-                        <h2 class="text-slate-900 dark:text-white text-2xl font-bold leading-tight">Hola, Inversor</h2>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm">Aquí tienes el resumen del mercado hoy.</p>
+                <header class="flex items-center justify-between whitespace-nowrap mb-8">
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
+                            <span class="material-symbols-outlined">menu</span>
+                        </button>
+
+                        <div class="flex flex-col gap-0 md:gap-1">
+                            <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight">Hola, Inversor</h2>
+                            <p class="text-slate-500 dark:text-slate-400 text-xs md:text-sm hidden sm:block">Resumen del mercado hoy.</p>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-4">
+
+                    <div class="flex items-center gap-2 md:gap-4">
                         <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all">
                             <span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span>
                         </button>
-                        <button class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:shadow-md transition-all">
+                        <button class="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:shadow-md transition-all">
                             <span class="material-symbols-outlined" style="font-size: 20px;">notifications</span>
                         </button>
                         <div class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold">I</div>
                     </div>
                 </header>
 
-                <div class="p-8 bg-white dark:bg-gradient-to-br dark:from-card-dark dark:to-background-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-10 shadow-lg dark:shadow-xl relative overflow-hidden transition-all duration-300">
+                <div class="p-6 md:p-8 bg-white dark:bg-gradient-to-br dark:from-card-dark dark:to-background-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-8 shadow-lg dark:shadow-xl relative overflow-hidden transition-all duration-300">
                     <div class="hidden dark:block absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="flex flex-col items-stretch justify-start @container sm:flex-row sm:items-center relative z-10">
                         <div class="flex w-full grow flex-col items-stretch justify-center gap-2 py-2">
-                            <p class="text-slate-500 dark:text-slate-400 text-sm font-bold tracking-wide uppercase">Valor Total de la Cuenta</p>
-                            <p class="text-slate-900 dark:text-white text-5xl font-bold tracking-tight">$0.00 <span class="text-2xl text-slate-400 font-normal">MXN</span></p>
+                            <p class="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-bold tracking-wide uppercase">Valor Total de la Cuenta</p>
+                            <p class="text-slate-900 dark:text-white text-4xl md:text-5xl font-bold tracking-tight">$0.00 <span class="text-xl md:text-2xl text-slate-400 font-normal">MXN</span></p>
                         </div>
                         <div class="flex-shrink-0 mt-4 sm:mt-0">
                             <button onclick="openDepositModal()" class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full h-12 px-8 bg-primary text-white text-base font-bold hover:bg-blue-600 hover:scale-105 transition-all shadow-lg shadow-primary/25">
                                 <span class="material-symbols-outlined">add_circle</span>
-                                <span>Depositar Fondos</span>
+                                <span>Depositar</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-6 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-10 shadow-sm">
+                <div class="p-4 md:p-6 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-8 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Tendencia del Mercado</h3>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Mercado</h3>
                         <div class="flex gap-2">
                             <span class="text-xs font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 cursor-pointer">1D</span>
-                            <span class="text-xs font-bold px-2 py-1 rounded bg-primary text-white cursor-pointer">1M</span>
+                            <span class="text-xs font-bold px-2 py-1 rounded bg-primary text-white cursor-pointer hidden sm:inline-block">1M</span>
                             <span class="text-xs font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 cursor-pointer">1Y</span>
                         </div>
                     </div>
-                    <div class="relative h-64 w-full">
+                    <div class="relative h-56 md:h-64 w-full">
                         <canvas id="marketChart"></canvas>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between px-1 mb-6">
-                    <h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Portafolios Disponibles</h2>
-                    <button class="text-primary text-sm font-bold hover:text-blue-400 transition-colors">Ver Todos</button>
+                    <h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Portafolios</h2>
+                    <button id="btn-ver-todos" class="text-primary text-sm font-bold hover:text-blue-400 transition-colors">Ver Todos</button>
                 </div>
 
-                <div id="portfolio-grid" class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-6">
+                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
                     </div>
             </div>
         </main>
     </div>
 
-    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
+    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white">Realizar Inversión</h3>
@@ -167,7 +179,7 @@
         </div>
     </div>
 
-    <div id="deposit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
+    <div id="deposit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white">Depositar Fondos</h3>
@@ -200,7 +212,7 @@
                     <input type="text" id="card-number" maxlength="19" placeholder="0000 0000 0000 0000" class="w-full px-4 py-3 mb-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm outline-none focus:border-primary font-mono">
                     <div class="flex gap-3">
                         <input type="text" id="card-expiry" maxlength="5" placeholder="MM/YY" class="w-1/2 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm outline-none focus:border-primary text-center">
-                        <input type="text" placeholder="CVC" class="w-1/2 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm outline-none focus:border-primary">
+                        <input type="text" placeholder="CVC" maxlength="3" class="w-1/2 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm outline-none focus:border-primary text-center">
                     </div>
                 </div>
                 <button type="submit" id="btn-confirm-deposit" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2">
@@ -211,10 +223,28 @@
     </div>
 
     <script>
-        // Lógica de UI (Tema y Logout del Sidebar)
+        // Lógica básica de UI (Sidebar y Tema)
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = themeToggleBtn.querySelector('span');
         const html = document.documentElement;
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        // Función para abrir/cerrar sidebar en móvil
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            
+            // Mostrar/Ocultar fondo oscuro
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebarOverlay.classList.add('hidden');
+                sidebarOverlay.classList.remove('block');
+                setTimeout(() => sidebarOverlay.classList.remove('opacity-100'), 10);
+            } else {
+                sidebarOverlay.classList.remove('hidden');
+                sidebarOverlay.classList.add('block');
+                setTimeout(() => sidebarOverlay.classList.add('opacity-100'), 10);
+            }
+        }
 
         function updateIcon() {
             if (html.classList.contains('dark')) {
