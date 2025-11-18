@@ -2,12 +2,14 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // --- Lógica de Tema (Copiada para consistencia) ---
+    // --- Lógica de Tema (Oscuro/Claro) ---
     const html = document.documentElement;
     const themeToggleBtn = document.getElementById('theme-toggle');
+    
     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         html.classList.add('dark');
     }
+    
     if(themeToggleBtn) {
         themeToggleBtn.addEventListener('click', () => {
             html.classList.toggle('dark');
@@ -15,49 +17,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- Cargar Inversiones ---
+    // --- SEGURIDAD ---
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = '/login.html';
         return;
     }
 
+    // --- CARGAR INVERSIONES ---
     const tableBody = document.getElementById('investments-table-body');
     const currencyFormatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
     try {
-        const response = await fetch('http://localhost:3000/api/my-investments', {
+        // ⚠️ CORRECCIÓN AQUÍ: Usamos ruta relativa '/api/...' en lugar de 'http://localhost...'
+        const response = await fetch('/api/my-investments', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!response.ok) throw new Error('Error de red');
+
         const investments = await response.json();
 
-        tableBody.innerHTML = ''; // Limpiar carga
+        tableBody.innerHTML = ''; // Limpiar mensaje de carga
 
         if (investments.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">Aún no tienes inversiones. <a href="dashboard.html" class="text-primary hover:underline">Ve a explorar</a></td></tr>`;
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-8 text-center text-slate-500 dark:text-slate-400">
+                        Aún no tienes inversiones. 
+                        <a href="portfolios.html" class="text-primary hover:underline font-bold">Ve a explorar</a>
+                    </td>
+                </tr>`;
             return;
         }
 
         investments.forEach(inv => {
-            // Color de ganancia (Verde si es positivo)
-            const profitColor = inv.profit >= 0 ? 'text-emerald-500' : 'text-red-500';
+            // Lógica visual (Colores de ganancia)
+            const profitColor = inv.profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500';
             const profitSign = inv.profit >= 0 ? '+' : '';
 
+            // Fila de la tabla
             const row = `
                 <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                     <td class="p-5">
                         <div class="flex flex-col">
-                            <span class="font-bold text-slate-900 dark:text-white">${inv.portfolioName}</span>
+                            <span class="font-bold text-slate-900 dark:text-white text-sm md:text-base">${inv.portfolioName}</span>
                             <span class="text-xs text-slate-500 dark:text-slate-400">Riesgo ${inv.risk}</span>
                         </div>
                     </td>
-                    <td class="p-5 text-right font-medium text-slate-700 dark:text-slate-300">
+                    <td class="p-5 text-right font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         ${currencyFormatter.format(inv.investedAmount)}
                     </td>
-                    <td class="p-5 text-right font-bold text-slate-900 dark:text-white">
+                    <td class="p-5 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
                         ${currencyFormatter.format(inv.currentValue)}
                     </td>
-                    <td class="p-5 text-right font-bold ${profitColor}">
+                    <td class="p-5 text-right font-bold ${profitColor} whitespace-nowrap">
                         ${profitSign}${currencyFormatter.format(inv.profit)}
                     </td>
                     <td class="p-5 text-center">
@@ -72,12 +86,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (error) {
         console.error(error);
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Error cargando datos.</td></tr>`;
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-8 text-center text-red-500">
+                    No se pudieron cargar tus datos. <br>
+                    <span class="text-xs text-slate-400">Intenta recargar la página.</span>
+                </td>
+            </tr>`;
     }
 
-    // Logout
-    document.getElementById('logout-sidebar-btn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-    });
+    // Logout Logic Sidebar
+    const logoutBtn = document.getElementById('logout-sidebar-btn');
+    if(logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+    }
 });
