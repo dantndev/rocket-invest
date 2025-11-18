@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>RocketInvest - Landing Page</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#307de8",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111821",
+                        "text-light": "#475569",
+                        "text-dark": "#0f172a"
+                    },
+                    fontFamily: {
+                        display: "Manrope"
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        lg: "2rem",
+                        xl: "3rem",
+                        full: "9999px"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display">
+    <div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <div class="px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 flex flex-1 justify-center py-5">
+                <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+                    
+                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-white/10 px-4 sm:px-6 lg:px-10 py-3">
+                        <a href="index.html" class="flex items-center gap-4 text-text-dark dark:text-background-light">
+                            <span class="material-symbols-outlined text-primary" style="font-size: 24px;">rocket_launch</span>
+                            <h2 class="text-text-dark dark:text-background-light text-lg font-bold leading-tight tracking-[-0.015em]">RocketInvest</h2>
+                        </a>
+                        
+                        <div class="hidden md:flex flex-1 justify-end gap-8 items-center">
+                            <div class="flex items-center gap-9">
+                                <a class="text-text-dark dark:text-background-light text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Portfolios</a>
+                                <a class="text-text-dark dark:text-background-light text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">How It Works</a>
+                            </div>
+
+                            <div id="auth-buttons" class="flex gap-2">
+                                <a href="login.html" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-transparent border border-slate-300 dark:border-white/20 hover:bg-slate-100 dark:hover:bg-white/10 text-text-dark dark:text-background-light text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+                                    <span class="truncate">Log In</span>
+                                </a>
+                                <a href="signup.html" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+                                    <span class="truncate">Sign Up</span>
+                                </a>
+                            </div>
+
+                            <div id="user-profile" class="hidden flex items-center gap-4 pl-4 border-l border-slate-200 dark:border-white/10">
+                                <a href="dashboard.html" class="flex items-center gap-3 group hover:opacity-80 transition-opacity cursor-pointer">
+                                    <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold group-hover:bg-primary group-hover:text-white transition-colors">
+                                        I
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-text-dark dark:text-background-light font-bold text-sm leading-tight">Inversor</span>
+                                        <span class="text-primary text-xs font-bold">Ir al Dashboard &rarr;</span>
+                                    </div>
+                                </a>
+                                <button id="logout-btn" title="Cerrar Sesión" class="flex items-center justify-center h-10 w-10 rounded-full text-text-light hover:text-red-500 hover:bg-red-50 dark:text-text-light/70 dark:hover:bg-white/5 dark:hover:text-red-400 transition-all">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">logout</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="md:hidden">
+                            <button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-slate-200 dark:bg-white/10 text-text-dark dark:text-background-light gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+                                <span class="material-symbols-outlined text-text-dark dark:text-background-light" style="font-size: 20px;">menu</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <main class="flex flex-col gap-10 md:gap-16 lg:gap-20 py-10">
+                        <div class="px-4">
+                            <div class="flex flex-col items-center text-center gap-6">
+                                <h1 class="text-text-dark dark:text-background-light text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-3xl"> Invest in Volume, Win with Performance. </h1>
+                                <h2 class="text-text-light dark:text-background-light/70 text-base font-normal leading-normal @[480px]:text-lg @[480px]:font-normal @[480px]:leading-normal max-w-2xl"> Access multi-million dollar investment fund portfolios, reducing your risk and maximizing your returns. </h2>
+                                <div class="flex w-full justify-center mt-4">
+                                    <a href="login.html" class="flex w-full max-w-2xl cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary p-4 text-white transition-colors hover:bg-primary/90 sm:p-5">
+                                        <span class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-lg font-bold sm:text-xl md:text-2xl">
+                                            <span class="whitespace-nowrap">Unlock Your Investment Potential.</span>
+                                            <span class="hidden text-slate-400 sm:inline">|</span>
+                                            <span class="w-full text-base font-medium sm:w-auto sm:text-lg md:text-xl">Explore Portfolios</span>
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-10 px-4 py-10 @container">
+                            <div class="flex flex-col gap-4 text-center items-center">
+                                <h1 class="text-text-dark dark:text-background-light tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-[720px]"> Why Choose Us? </h1>
+                                <p class="text-text-light dark:text-background-light/70 text-base font-normal leading-normal max-w-[720px]">We are committed to providing a platform that is accessible, powerful, and easy to use.</p>
+                            </div>
+                            <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 p-0">
+                                <div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-background-dark/80 p-6 flex-col">
+                                    <span class="material-symbols-outlined text-primary" style="font-size: 28px;">groups</span>
+                                    <div class="flex flex-col gap-1">
+                                        <h2 class="text-text-dark dark:text-background-light text-base font-bold leading-tight">Financial Inclusion</h2>
+                                        <p class="text-text-light dark:text-background-light/70 text-sm font-normal leading-normal">Our platform is designed to be accessible for all types of investors, big or small.</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-background-dark/80 p-6 flex-col">
+                                    <span class="material-symbols-outlined text-primary" style="font-size: 28px;">workspaces</span>
+                                    <div class="flex flex-col gap-1">
+                                        <h2 class="text-text-dark dark:text-background-light text-base font-bold leading-tight">Collective Investment</h2>
+                                        <p class="text-text-light dark:text-background-light/70 text-sm font-normal leading-normal"> Leverage the power of pooled funds to access opportunities previously available only to large institutions. </p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-background-dark/80 p-6 flex-col">
+                                    <span class="material-symbols-outlined text-primary" style="font-size: 28px;">auto_awesome</span>
+                                    <div class="flex flex-col gap-1">
+                                        <h2 class="text-text-dark dark:text-background-light text-base font-bold leading-tight">Simplicity</h2>
+                                        <p class="text-text-light dark:text-background-light/70 text-sm font-normal leading-normal">A straightforward, intuitive interface makes managing your investments easier than ever.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                    <footer class="flex flex-col gap-8 px-5 py-10 text-center @container border-t border-slate-200 dark:border-white/10">
+                        <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+                            <a class="text-text-light dark:text-background-light/70 hover:text-text-dark dark:hover:text-background-light text-base font-normal leading-normal" href="#">About</a>
+                            <a class="text-text-light dark:text-background-light/70 hover:text-text-dark dark:hover:text-background-light text-base font-normal leading-normal" href="#">Careers</a>
+                            <a class="text-text-light dark:text-background-light/70 hover:text-text-dark dark:hover:text-background-light text-base font-normal leading-normal" href="#">Privacy Policy</a>
+                            <a class="text-text-light dark:text-background-light/70 hover:text-text-dark dark:hover:text-background-light text-base font-normal leading-normal" href="#">Terms of Service</a>
+                        </div>
+                        <div class="flex flex-wrap justify-center gap-6">
+                            <a class="text-text-light dark:text-background-light/70 hover:text-text-dark dark:hover:text-background-light transition-colors" href="#">
+                                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                                </svg>
+                            </a>
+                            <a class="text-text-light dark:text-background-light/70 hover:text-text-dark dark:hover:text-background-light transition-colors" href="#">
+                                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path>
+                                </svg>
+                            </a>
+                            <a class="text-text-light dark:text-background-light/70 hover:text-text-dark dark:hover:text-background-light transition-colors" href="#">
+                                <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v2.385z"></path>
+                                </svg>
+                            </a>
+                        </div>
+                        <p class="text-text-light dark:text-background-light/70 text-sm font-normal leading-normal">© 2025 RocketInvest. All rights reserved.</p>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/auth.js"></script>
+</body>
+</html>
