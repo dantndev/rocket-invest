@@ -2,31 +2,21 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. VERIFICAR ESTADO DE SESIÓN EN EL UI ---
+    // --- 1. VERIFICAR ESTADO DE SESIÓN EN EL UI (Para index.html) ---
     const token = localStorage.getItem('token');
-    
-    // Referencias Desktop
-    const authButtons = document.getElementById('auth-buttons');
-    const userProfile = document.getElementById('user-profile');
-    
+    const authButtons = document.getElementById('auth-buttons'); // Div con botones Login/Signup
+    const userProfile = document.getElementById('user-profile'); // Div con "Hola Inversor"
+    const logoutBtn = document.getElementById('logout-btn');     // Botón de salir
+
     // Referencias Mobile (NUEVAS)
     const mobileAuthButtons = document.getElementById('mobile-auth-buttons');
     const mobileUserProfile = document.getElementById('mobile-user-profile');
-    
-    // Botones de Logout
-    const logoutBtn = document.getElementById('logout-btn');
     const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
 
-    // Función para manejar el Logout
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        window.location.reload(); // Recargar para limpiar estado
-    };
-
-    // Si estamos en una página que tiene estos elementos (index.html)
-    if (authButtons) {
+    // Solo ejecutamos esto si los elementos existen (es decir, si estamos en index.html)
+    if (authButtons && userProfile) {
         if (token) {
-            // --- USUARIO LOGUEADO ---
+            // CASO: USUARIO LOGUEADO
             // Desktop: Ocultar Login, Mostrar Perfil
             authButtons.classList.add('hidden');
             authButtons.classList.remove('flex');
@@ -41,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mobileUserProfile.classList.add('flex');
             }
         } else {
-            // --- VISITANTE ---
+            // CASO: VISITANTE (NO LOGUEADO)
             // Desktop: Mostrar Login, Ocultar Perfil
             authButtons.classList.remove('hidden');
             authButtons.classList.add('flex');
@@ -58,7 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 2. LISTENERS DE LOGOUT ---
+    // --- 2. LÓGICA DE LOGOUT (CERRAR SESIÓN) ---
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        window.location.reload(); // Recargar para limpiar estado
+    };
+
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
 
@@ -67,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     
-    // Detectar en qué página estamos
+    // Detectar en qué página estamos para saber a dónde enviar los datos
     const isLoginPage = window.location.pathname.includes('login.html');
     
     if (loginForm) {
@@ -107,4 +102,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- 4. LÓGICA DEL MENÚ MÓVIL (HAMBURGUESA) ---
+    // Esto asegura que el menú funcione siempre
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+            // Alternar visibilidad
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('flex');
+        });
+    }
+
 });
