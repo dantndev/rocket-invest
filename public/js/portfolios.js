@@ -1,13 +1,24 @@
 // public/js/portfolios.js
 
+// --- VARIABLES GLOBALES ---
 let modal, modalTitle, modalIdInput;
+// Variables para el Modal de 2 Pasos
+let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConfirm;
 
 document.addEventListener('DOMContentLoaded', async () => {
     
+    // 1. REFERENCIAS
     modal = document.getElementById('invest-modal');
     modalTitle = document.getElementById('modal-portfolio-name');
     modalIdInput = document.getElementById('modal-portfolio-id');
     
+    // Referencias de pasos
+    step1Div = document.getElementById('invest-step-1');
+    step2Div = document.getElementById('invest-step-2');
+    confirmPortfolioName = document.getElementById('confirm-portfolio-name');
+    confirmAmountDisplay = document.getElementById('confirm-amount-display');
+    btnFinalConfirm = document.getElementById('btn-final-confirm');
+
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = '/login.html';
@@ -18,16 +29,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     await updateUserData(token);
     loadAllPortfolios();
 
-    // Listener Formulario Inversión
-    const investmentForm = document.getElementById('investment-form');
-    if (investmentForm) {
-        investmentForm.addEventListener('submit', async (e) => {
+    // --- LÓGICA DEL MODAL DE 2 PASOS ---
+
+    // A) Paso 1: Click en "Continuar"
+    const formStep1 = document.getElementById('investment-form-step1');
+    if (formStep1) {
+        formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            const amount = document.getElementById('invest-amount').value;
+            const portfolioName = modalTitle.innerText;
+
+            if(amount <= 0) {
+                alert("Ingresa un monto válido");
+                return;
+            }
+
+            // Llenar datos del resumen
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+            confirmAmountDisplay.innerText = formatter.format(amount);
+            confirmPortfolioName.innerText = portfolioName;
+
+            // Cambiar pantalla
+            step1Div.classList.add('hidden');
+            step2Div.classList.remove('hidden');
+            step2Div.classList.add('flex');
+        });
+    }
+
+    // B) Paso 2: Click en "Sí, Invertir"
+    if (btnFinalConfirm) {
+        btnFinalConfirm.addEventListener('click', async () => {
             const amount = document.getElementById('invest-amount').value;
             const portfolioId = modalIdInput.value;
+            
+            btnFinalConfirm.disabled = true;
+            btnFinalConfirm.innerText = "Procesando...";
 
             try {
-                // RUTA RELATIVA CORREGIDA
                 const response = await fetch('/api/invest', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -36,20 +75,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    //alert(`¡Éxito! Has invertido $${amount} MXN.`);
                     closeModal();
                     updateUserData(token);
                 } else {
                     alert('Error: ' + data.message);
+                    backToStep1();
                 }
-            } catch (error) { console.error(error); alert('Error de conexión'); }
+            } catch (error) { 
+                console.error(error); 
+                alert('Error de conexión');
+                backToStep1();
+            } finally {
+                btnFinalConfirm.disabled = false;
+                btnFinalConfirm.innerText = "Sí, Invertir";
+            }
         });
     }
 });
 
+// --- FUNCIONES GLOBALES ---
+
+window.backToStep1 = function() {
+    step2Div.classList.add('hidden');
+    step2Div.classList.remove('flex');
+    step1Div.classList.remove('hidden');
+};
+
 async function updateUserData(token) {
     try {
-        // RUTA RELATIVA CORREGIDA
         const response = await fetch('/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -57,14 +110,13 @@ async function updateUserData(token) {
             const user = await response.json();
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
             const balanceSpan = document.getElementById('modal-balance-display');
-            if(balanceSpan) balanceSpan.innerText = formatter.format(user.balance);
+            if(balanceSpan) balanceSpan.innerText = formatter.format(user.availableBalance); // Usamos availableBalance del nuevo endpoint
         }
     } catch (error) { console.error("Error cargando usuario", error); }
 }
 
 async function loadAllPortfolios() {
     try {
-        // RUTA RELATIVA CORREGIDA
         const response = await fetch('/api/portfolios');
         const portfolios = await response.json();
         const gridContainer = document.getElementById('portfolio-grid');
@@ -72,14 +124,10 @@ async function loadAllPortfolios() {
         if(!gridContainer) return;
         gridContainer.innerHTML = ''; 
 
-        // Renderizar TODOS los portafolios (Sin slice)
         portfolios.forEach(portfolio => {
-            // Lógica de Colores
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
             let riskBorder = portfolio.risk === 'Alto' ? 'border-red-200 dark:border-red-500/20' : (portfolio.risk === 'Medio' ? 'border-orange-200 dark:border-orange-500/20' : 'border-green-200 dark:border-green-500/20');
-            
-            // Iconos variados para que no se vea repetitivo
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
@@ -108,16 +156,21 @@ async function loadAllPortfolios() {
             `;
             gridContainer.innerHTML += cardHTML;
         });
-    } catch (error) { 
-        console.error(error);
-        const grid = document.getElementById('portfolio-grid');
-        if(grid) grid.innerHTML = '<p class="col-span-3 text-center text-red-500 p-10">Error cargando portafolios.</p>';
-    }
+    } catch (error) { console.error(error); }
 }
 
 // Funciones Globales
 window.selectPortfolio = function(id, name) {
     if (!modal) return;
+    
+    // Resetear al paso 1
+    if(step1Div && step2Div) {
+        step1Div.classList.remove('hidden');
+        step2Div.classList.add('hidden');
+        step2Div.classList.remove('flex');
+        document.getElementById('invest-amount').value = '';
+    }
+
     modalTitle.innerText = name;
     modalIdInput.value = id;
     modal.classList.remove('hidden');

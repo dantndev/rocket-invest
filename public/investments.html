@@ -29,11 +29,9 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        button:active, a:active {
-            transform: scale(0.95);
-            opacity: 0.8;
-            transition: transform 0.1s ease;
-        }
+        
+        /* Efecto clic */
+        button:active, a:active { transform: scale(0.95); opacity: 0.8; transition: transform 0.05s ease; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
@@ -59,22 +57,18 @@
                         <span class="material-symbols-outlined">home</span>
                         <p class="text-sm font-semibold leading-normal">Inicio</p>
                     </a>
-                
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html">
                         <span class="material-symbols-outlined">dashboard</span>
                         <p class="text-sm font-semibold leading-normal">Dashboard</p>
                     </a>
-                
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="portfolios.html">
                         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
-                        <p class="text-sm font-semibold leading-normal">Explorar Portafolios</p>
+                        <p class="text-sm font-bold leading-normal">Explorar Portafolios</p>
                     </a>
-                
-                    <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="investments.html">
+                    <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="#">
                         <span class="material-symbols-outlined">account_balance_wallet</span>
                         <p class="text-sm font-bold leading-normal">Mis Inversiones</p>
                     </a>
-                
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="#">
                         <span class="material-symbols-outlined">settings</span>
                         <p class="text-sm font-semibold leading-normal">Configuración</p>
@@ -89,15 +83,14 @@
             </div>
         </aside>
 
-        <main class="w-full md:ml-64 flex-1 p-4 md:p-10 transition-colors duration-300 min-h-screen">
-            <div class="mx-auto max-w-7xl">
+        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 transition-all duration-300 flex flex-col relative z-0">
+            <div class="mx-auto max-w-7xl w-full">
                 
                 <header class="flex items-center justify-between whitespace-nowrap mb-8">
                     <div class="flex items-center gap-3">
                         <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
                             <span class="material-symbols-outlined">menu</span>
                         </button>
-
                         <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight">Tu Portafolio</h2>
                     </div>
 
@@ -119,11 +112,12 @@
                                     <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Valor Actual</th>
                                     <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Ganancia</th>
                                     <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-center">Estado</th>
+                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="investments-table-body">
                                 <tr class="border-b border-slate-100 dark:border-slate-700">
-                                    <td colspan="5" class="p-8 text-center text-slate-400">Cargando tus inversiones...</td>
+                                    <td colspan="6" class="p-8 text-center text-slate-400">Cargando tus inversiones...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -134,8 +128,32 @@
         </main>
     </div>
 
+    <div id="sell-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700 text-center">
+            
+            <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-primary">
+                <span class="material-symbols-outlined text-3xl">currency_exchange</span>
+            </div>
+            
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">¿Vender Posición?</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">
+                Al vender, recuperarás <span id="sell-amount-display" class="font-bold text-slate-800 dark:text-white">$0.00</span> en tu Saldo Disponible.
+            </p>
+
+            <div class="flex gap-3 w-full">
+                <button onclick="closeSellModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all">
+                    Cancelar
+                </button>
+                <button id="btn-confirm-sell" class="flex-1 py-3 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-xl shadow-lg transition-all">
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
     <script>
-        // Lógica Sidebar y Tema (Misma que Dashboard)
+        // Sidebar & Theme
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = themeToggleBtn.querySelector('span');
         const html = document.documentElement;

@@ -1,35 +1,112 @@
 // public/js/investments.js
 
+let sellModal, sellAmountDisplay, btnConfirmSell;
+let investmentIdToSell = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // --- Lógica de Tema (Oscuro/Claro) ---
-    const html = document.documentElement;
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    
-    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        html.classList.add('dark');
-    }
-    
-    if(themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-        });
+    // Referencias del Modal de Venta
+    sellModal = document.getElementById('sell-modal');
+    sellAmountDisplay = document.getElementById('sell-amount-display');
+    btnConfirmSell = document.getElementById('btn-confirm-sell');
+
+    // Listener para confirmar venta
+    if (btnConfirmSell) {
+        btnConfirmSell.addEventListener('click', executeSale);
     }
 
-    // --- SEGURIDAD ---
+    // Seguridad
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = '/login.html';
         return;
     }
 
-    // --- CARGAR INVERSIONES ---
+    // Cargar Inversiones
+    loadInvestments(token);
+
+    // Logout Logic
+    const logoutBtn = document.getElementById('logout-sidebar-btn');
+    if(logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+    }
+});
+
+// Función Global: Abrir Modal
+window.openSellModal = function(id, estimatedValue) {
+    investmentIdToSell = id; // Guardamos el ID para usarlo al confirmar
+    
+    const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+    if(sellAmountDisplay) sellAmountDisplay.innerText = formatter.format(estimatedValue);
+
+    if (sellModal) {
+        sellModal.classList.remove('hidden');
+        setTimeout(() => {
+            sellModal.classList.remove('opacity-0');
+            sellModal.querySelector('div').classList.remove('scale-95');
+            sellModal.querySelector('div').classList.add('scale-100');
+        }, 10);
+    }
+};
+
+// Función Global: Cerrar Modal
+window.closeSellModal = function() {
+    investmentIdToSell = null;
+    if (sellModal) {
+        sellModal.classList.add('opacity-0');
+        sellModal.querySelector('div').classList.remove('scale-100');
+        sellModal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => { sellModal.classList.add('hidden'); }, 300);
+    }
+};
+
+// Ejecutar la venta (Al dar clic en Confirmar)
+async function executeSale() {
+    if (!investmentIdToSell) return;
+    
+    const token = localStorage.getItem('token');
+    const btn = document.getElementById('btn-confirm-sell');
+    const originalText = btn.innerText;
+
+    btn.disabled = true;
+    btn.innerText = "Vendiendo...";
+
+    try {
+        const response = await fetch('/api/sell', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ investmentId: investmentIdToSell, token })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            closeSellModal();
+            loadInvestments(token); // Recargar tabla
+            // Opcional: Mostrar notificación de éxito
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error de conexión');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
+
+async function loadInvestments(token) {
     const tableBody = document.getElementById('investments-table-body');
     const currencyFormatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
     try {
-        // ⚠️ CORRECCIÓN AQUÍ: Usamos ruta relativa '/api/...' en lugar de 'http://localhost...'
         const response = await fetch('/api/my-investments', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -37,26 +114,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error('Error de red');
 
         const investments = await response.json();
-
-        tableBody.innerHTML = ''; // Limpiar mensaje de carga
+        if(!tableBody) return;
+        
+        tableBody.innerHTML = ''; 
 
         if (investments.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="p-8 text-center text-slate-500 dark:text-slate-400">
-                        Aún no tienes inversiones. 
-                        <a href="portfolios.html" class="text-primary hover:underline font-bold">Ve a explorar</a>
-                    </td>
-                </tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 dark:text-slate-400">Aún no tienes inversiones. <a href="portfolios.html" class="text-primary hover:underline font-bold">Ve a explorar</a></td></tr>`;
             return;
         }
 
         investments.forEach(inv => {
-            // Lógica visual (Colores de ganancia)
             const profitColor = inv.profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500';
             const profitSign = inv.profit >= 0 ? '+' : '';
 
-            // Fila de la tabla
             const row = `
                 <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                     <td class="p-5">
@@ -79,6 +149,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             Activo
                         </span>
                     </td>
+                    <td class="p-5 text-right">
+                        <button onclick="openSellModal(${inv.id}, ${inv.currentValue})" class="px-4 py-2 bg-slate-900 dark:bg-white hover:bg-slate-700 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-bold rounded-lg shadow-sm transition-all whitespace-nowrap">
+                            Retirar / Vender
+                        </button>
+                    </td>
                 </tr>
             `;
             tableBody.innerHTML += row;
@@ -86,21 +161,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (error) {
         console.error(error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="p-8 text-center text-red-500">
-                    No se pudieron cargar tus datos. <br>
-                    <span class="text-xs text-slate-400">Intenta recargar la página.</span>
-                </td>
-            </tr>`;
+        if(tableBody) tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Error cargando datos.</td></tr>`;
     }
-
-    // Logout Logic Sidebar
-    const logoutBtn = document.getElementById('logout-sidebar-btn');
-    if(logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = '/login.html';
-        });
-    }
-});
+}

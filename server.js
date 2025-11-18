@@ -160,6 +160,29 @@ app.post('/api/deposit', async (req, res) => {
     }
 });
 
+// [NUEVO] 8. Retirar Fondos
+app.post('/api/withdraw', async (req, res) => {
+    const { amount, token } = req.body;
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const user = await db.get('SELECT * FROM users WHERE id = ?', [decoded.id]);
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+        
+        const withdrawAmount = parseFloat(amount);
+        if (withdrawAmount <= 0) return res.status(400).json({ message: 'Monto inválido' });
+        if (user.balance < withdrawAmount) return res.status(400).json({ message: 'Fondos insuficientes' });
+
+        // Restar saldo
+        await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [withdrawAmount, user.id]);
+        const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [user.id]);
+
+        res.status(201).json({ message: 'Retiro exitoso', newBalance: updatedUser.balance });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error procesando el retiro' });
+    }
+});
+
 app.post('/api/auth/register', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -186,6 +209,43 @@ app.post('/api/auth/login', async (req, res) => {
         res.json({ token, message: 'Login exitoso' });
     } catch (error) {
         res.status(500).json({ message: 'Error en el servidor' });
+    }
+});
+
+// [NUEVO] 9. Vender Inversión (Liquidar a Saldo Disponible)
+app.post('/api/sell', async (req, res) => {
+    const { investmentId, token } = req.body;
+
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        
+        // 1. Buscar la inversión y verificar que sea del usuario
+        const investment = await db.get('SELECT * FROM investments WHERE id = ? AND userId = ?', [investmentId, decoded.id]);
+        
+        if (!investment) return res.status(404).json({ message: 'Inversión no encontrada' });
+
+        // 2. Calcular Valor Final (Capital + Ganancia simulada del 1.5%)
+        // En un caso real, aquí buscaríamos el precio actual de la acción
+        const finalAmount = investment.amount * 1.015;
+
+        // 3. TRANSACCIÓN: Sumar al saldo y Borrar inversión
+        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [finalAmount, decoded.id]);
+        await db.run('DELETE FROM investments WHERE id = ?', [investmentId]);
+
+        // 4. Obtener nuevo saldo
+        const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [decoded.id]);
+
+        console.log(`📉 Inversión liquidada. Se devolvieron $${finalAmount} al saldo.`);
+
+        res.status(200).json({ 
+            message: 'Venta exitosa', 
+            profit: finalAmount - investment.amount,
+            newBalance: updatedUser.balance 
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al vender' });
     }
 });
 

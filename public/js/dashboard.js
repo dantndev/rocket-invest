@@ -1,9 +1,10 @@
-// public/js/dashboard.js - VERSIÓN COMPLETA FINAL
+// public/js/dashboard.js
 
 // --- VARIABLES GLOBALES ---
 let investModal, investModalTitle, investModalIdInput;
-let depositModal; 
-// Variables para el Modal de 2 Pasos
+let depositModal;
+let withdrawModal; // Nuevo
+// Variables para el Modal de Inversión de 2 Pasos
 let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConfirm;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     investModalTitle = document.getElementById('modal-portfolio-name');
     investModalIdInput = document.getElementById('modal-portfolio-id');
     depositModal = document.getElementById('deposit-modal');
+    withdrawModal = document.getElementById('withdraw-modal'); // Nuevo
 
     // Referencias de pasos de inversión
     step1Div = document.getElementById('invest-step-1');
@@ -52,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // 2. CARGAR DATOS INICIALES (AQUÍ ES DONDE FALLABA ANTES SI FALTABA ESTO)
+    // 2. CARGAR DATOS INICIALES
     await updateUserData(token);
     loadPortfolios();
     renderMarketChart();
@@ -68,27 +70,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- LISTENERS DE FORMULARIOS ---
 
     // A) Lógica Modal Inversión (2 PASOS)
-    
-    // Paso 1: Botón "Continuar"
     const formStep1 = document.getElementById('investment-form-step1');
     if (formStep1) {
         formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
-            
             const amount = document.getElementById('invest-amount').value;
             const portfolioName = investModalTitle.innerText;
 
-            if(amount <= 0) {
-                alert("Ingresa un monto válido");
-                return;
-            }
+            if(amount <= 0) { alert("Ingresa un monto válido"); return; }
 
-            // Llenar datos del resumen
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
             if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
             if(confirmPortfolioName) confirmPortfolioName.innerText = portfolioName;
 
-            // Cambiar pantalla
             if(step1Div && step2Div) {
                 step1Div.classList.add('hidden');
                 step2Div.classList.remove('hidden');
@@ -97,7 +91,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Paso 2: Botón "Sí, Invertir" (Confirmación Final)
     if (btnFinalConfirm) {
         btnFinalConfirm.addEventListener('click', async () => {
             const amount = document.getElementById('invest-amount').value;
@@ -116,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (response.ok) {
                     closeInvestModal();
-                    updateUserData(token); // Recargar saldo
+                    updateUserData(token); 
                 } else {
                     alert('Error: ' + data.message);
                     backToStep1();
@@ -137,7 +130,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (depositForm) {
         depositForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const amount = document.getElementById('deposit-amount').value;
             const btn = document.getElementById('btn-confirm-deposit');
             const originalText = btn.innerText;
@@ -170,11 +162,46 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // C) Formulario de RETIRO (NUEVO)
+    const withdrawForm = document.getElementById('withdraw-form');
+    if (withdrawForm) {
+        withdrawForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('withdraw-amount').value;
+            const btn = document.getElementById('btn-confirm-withdraw');
+            const originalText = btn.innerText;
+            
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+            await new Promise(r => setTimeout(r, 1000)); 
+
+            try {
+                const response = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ amount, token })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    closeWithdrawModal();
+                    updateUserData(token);
+                    document.getElementById('withdraw-amount').value = '';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) { console.error(error); alert('Error de conexión'); } 
+            finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        });
+    }
 });
 
 // --- FUNCIONES GLOBALES ---
 
-// Regresar al paso 1
 window.backToStep1 = function() {
     if(step1Div && step2Div) {
         step2Div.classList.add('hidden');
@@ -183,18 +210,14 @@ window.backToStep1 = function() {
     }
 };
 
-// Abrir Modal Inversión
 window.selectPortfolio = function(id, name) {
     if (!investModal) return;
-    
-    // Resetear al paso 1
     if(step1Div && step2Div) {
         step1Div.classList.remove('hidden');
         step2Div.classList.add('hidden');
         step2Div.classList.remove('flex');
         document.getElementById('invest-amount').value = '';
     }
-
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
     investModal.classList.remove('hidden');
@@ -205,11 +228,7 @@ window.selectPortfolio = function(id, name) {
     }, 10);
 };
 
-// Cerrar Modal Inversión
-window.closeModal = function() { 
-    closeInvestModal();
-};
-
+window.closeModal = function() { closeInvestModal(); };
 function closeInvestModal() {
     if (!investModal) return;
     investModal.classList.add('opacity-0');
@@ -218,11 +237,9 @@ function closeInvestModal() {
     setTimeout(() => { investModal.classList.add('hidden'); }, 300);
 }
 
-// Abrir Modal Depósito
 window.openDepositModal = function() {
     if (!depositModal) depositModal = document.getElementById('deposit-modal');
     if (!depositModal) return;
-
     depositModal.classList.remove('hidden');
     setTimeout(() => {
         depositModal.classList.remove('opacity-0');
@@ -231,7 +248,6 @@ window.openDepositModal = function() {
     }, 10);
 };
 
-// Cerrar Modal Depósito
 window.closeDepositModal = function() {
     if (!depositModal) return;
     depositModal.classList.add('opacity-0');
@@ -240,8 +256,34 @@ window.closeDepositModal = function() {
     setTimeout(() => { depositModal.classList.add('hidden'); }, 300);
 };
 
+// Funciones para Modal de Retiro (NUEVO)
+window.openWithdrawModal = function() {
+    if (!withdrawModal) withdrawModal = document.getElementById('withdraw-modal');
+    if (!withdrawModal) return;
 
-// --- FUNCIONES DE CARGA DE DATOS (INDISPENSABLES) ---
+    // Actualizar saldo disponible en el modal de retiro
+    const balanceText = document.getElementById('display-available')?.innerText || "$0.00";
+    const modalBalance = document.getElementById('withdraw-max-balance');
+    if(modalBalance) modalBalance.innerText = balanceText;
+
+    withdrawModal.classList.remove('hidden');
+    setTimeout(() => {
+        withdrawModal.classList.remove('opacity-0');
+        withdrawModal.querySelector('div').classList.remove('scale-95');
+        withdrawModal.querySelector('div').classList.add('scale-100');
+    }, 10);
+};
+
+window.closeWithdrawModal = function() {
+    if (!withdrawModal) return;
+    withdrawModal.classList.add('opacity-0');
+    withdrawModal.querySelector('div').classList.remove('scale-100');
+    withdrawModal.querySelector('div').classList.add('scale-95');
+    setTimeout(() => { withdrawModal.classList.add('hidden'); }, 300);
+};
+
+
+// --- FUNCIONES DE CARGA DE DATOS ---
 
 async function updateUserData(token) {
     try {
@@ -287,7 +329,6 @@ async function loadPortfolios() {
         
         gridContainer.innerHTML = ''; 
 
-        // SLICE 0,3 para Dashboard
         portfolios.slice(0, 3).forEach(portfolio => {
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
