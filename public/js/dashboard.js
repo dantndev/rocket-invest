@@ -79,9 +79,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    //alert(`¡Éxito! Has invertido $${amount} MXN.`);
+                    // ÉXITO SIN ALERTA INTRUSIVA
                     closeInvestModal();
-                    updateBalanceUI(data.newBalance);
+                    // RECARGAR TODOS LOS DATOS (Para evitar NaN)
+                    updateUserData(token); 
                 } else {
                     alert('Error: ' + data.message);
                 }
@@ -113,9 +114,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                   //alert(`¡Depósito Recibido! +$${amount} MXN.`);
+                    // ÉXITO SIN ALERTA INTRUSIVA
                     closeDepositModal();
-                    updateBalanceUI(data.newBalance);
+                    // RECARGAR TODOS LOS DATOS
+                    updateUserData(token);
+                    
+                    // Limpiar formulario
                     document.getElementById('deposit-amount').value = '';
                     if(cardInput) cardInput.value = '';
                     if(expiryInput) expiryInput.value = '';
@@ -191,21 +195,46 @@ async function updateUserData(token) {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
-            const user = await response.json();
-            updateBalanceUI(user.balance);
+            const userData = await response.json();
+            updateBalanceUI(userData); // Pasamos el objeto completo
         }
     } catch (error) { console.error("Error cargando usuario", error); }
 }
 
-function updateBalanceUI(amount) {
-    const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
-    const formattedBalance = formatter.format(amount);
-    const mainBalance = document.querySelector('p.text-5xl'); // Selector del Dashboard
-    if(mainBalance) mainBalance.innerHTML = `${formattedBalance} <span class="text-2xl text-slate-400 font-normal">MXN</span>`;
+function updateBalanceUI(data) {
+    // data contiene: { availableBalance, investedAmount, profit, netWorth }
     
-    // Selector del Modal (si existe)
+    const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+
+    // 1. Patrimonio Total (Grande)
+    const elNetWorth = document.getElementById('display-net-worth');
+    if (elNetWorth) {
+        elNetWorth.innerHTML = `${formatter.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`;
+    }
+
+    // 2. Disponible (Efectivo)
+    const elAvailable = document.getElementById('display-available');
+    if (elAvailable) elAvailable.innerText = formatter.format(data.availableBalance);
+
+    // 3. Invertido
+    const elInvested = document.getElementById('display-invested');
+    if (elInvested) elInvested.innerText = formatter.format(data.investedAmount);
+
+    // 4. Ganancia (Con color dinámico)
+    const elProfit = document.getElementById('display-profit');
+    if (elProfit) {
+        const sign = data.profit >= 0 ? '+' : '';
+        elProfit.innerText = `${sign}${formatter.format(data.profit)}`;
+        if (data.profit < 0) {
+            elProfit.className = "text-red-500 font-bold text-lg";
+        } else {
+            elProfit.className = "text-emerald-600 dark:text-emerald-400 font-bold text-lg";
+        }
+    }
+
+    // 5. Actualizar texto pequeño del Modal
     const modalBalance = document.querySelector('#investment-form p.text-xs.text-right');
-    if(modalBalance) modalBalance.innerText = `Saldo disponible: ${formattedBalance}`;
+    if(modalBalance) modalBalance.innerText = `Disponible para invertir: ${formatter.format(data.availableBalance)}`;
 }
 
 async function loadPortfolios() {

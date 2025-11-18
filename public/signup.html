@@ -71,6 +71,11 @@
                             <label class="text-text-dark dark:text-background-light text-sm font-medium" for="password">Password</label>
                             <input class="h-12 w-full rounded-full border border-slate-300 dark:border-white/20 bg-transparent px-4 text-sm text-text-dark dark:text-background-light placeholder:text-text-light dark:placeholder:text-text-light/50 focus:border-primary focus:ring-primary" id="password" placeholder="••••••••" type="password"/>
                         </div>
+
+                        <div id="auth-error" class="hidden mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-red-500 text-lg">error</span>
+                            <p class="text-red-600 text-sm font-bold" id="auth-error-text">Error aquí</p>
+                        </div>
                         
                         <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary hover:bg-primary/90 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors w-full mb-3" type="submit">
                             <span class="truncate">Sign Up</span>
@@ -105,6 +110,24 @@
         
     </div>
 </div>
+
+<div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
+        
+        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
+            <span class="material-symbols-outlined text-6xl text-green-500">check_circle</span>
+        </div>
+        
+        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">¡Registro Exitoso!</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">Tu cuenta ha sido creada correctamente.</p>
+        <p class="text-primary text-xs mt-4 font-bold animate-pulse">Redirigiendo al inicio de sesión...</p>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+
+</body>
+</html>
 <script src="js/auth.js"></script>
 </body>
 </html>

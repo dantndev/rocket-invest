@@ -39,16 +39,47 @@ app.get('/api/portfolios', (req, res) => {
     res.json(portfolios);
 });
 
+// 2. Obtener Datos Completos del Usuario (Perfil, Saldo, Inversiones calculadas)
 app.get('/api/auth/me', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token provided' });
 
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
+        
+        // 1. Obtener Usuario (Saldo Disponible)
         const user = await db.get('SELECT id, email, balance FROM users WHERE id = ?', [decoded.id]);
         if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
-        res.json(user);
+
+        // 2. Obtener Inversiones Activas
+        const investmentsList = await db.all('SELECT amount FROM investments WHERE userId = ?', [user.id]);
+
+        // 3. Calcular Totales
+        let totalInvested = 0;
+        let totalCurrentValue = 0;
+
+        investmentsList.forEach(inv => {
+            totalInvested += inv.amount;
+            // Simulamos la misma ganancia del 1.5% que usamos en la otra pantalla
+            // En un app real, aquí consultaríamos el precio actual de la acción
+            totalCurrentValue += inv.amount * 1.015; 
+        });
+
+        const totalProfit = totalCurrentValue - totalInvested;
+        const netWorth = user.balance + totalCurrentValue; // Efectivo + Inversiones
+
+        // 4. Enviar todo desglosado
+        res.json({ 
+            email: user.email, 
+            availableBalance: user.balance, // Efectivo
+            investedAmount: totalInvested,  // Costo inicial
+            currentValue: totalCurrentValue, // Valor hoy
+            profit: totalProfit,            // Ganancia neta
+            netWorth: netWorth              // Patrimonio Total
+        });
+
     } catch (error) {
+        console.error(error);
         res.status(401).json({ message: 'Token inválido' });
     }
 });

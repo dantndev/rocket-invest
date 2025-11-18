@@ -71,6 +71,11 @@
                             <label class="text-text-dark dark:text-background-light text-sm font-medium" for="password">Password</label>
                             <input class="h-12 w-full rounded-full border border-slate-300 dark:border-white/20 bg-transparent px-4 text-sm text-text-dark dark:text-background-light placeholder:text-text-light dark:placeholder:text-text-light/50 focus:border-primary focus:ring-primary" id="password" placeholder="••••••••" type="password"/>
                         </div>
+
+                        <div id="auth-error" class="hidden mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-red-500 text-lg">error</span>
+                            <p class="text-red-600 text-sm font-bold" id="auth-error-text">Error aquí</p>
+                        </div>
                         
                         <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary hover:bg-primary/90 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors w-full mb-3" type="submit">
                             <span class="truncate">Log In</span>
