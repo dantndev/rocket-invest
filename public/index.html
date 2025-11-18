@@ -46,7 +46,7 @@
             <div class="px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 flex flex-1 justify-center py-5">
                 <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
                     
-                    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-white/10 px-4 sm:px-6 lg:px-10 py-3">
+                    <header class="relative flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-white/10 px-4 sm:px-6 lg:px-10 py-3 z-50 bg-background-light dark:bg-background-dark">
                         <a href="index.html" class="flex items-center gap-4 text-text-dark dark:text-background-light">
                             <span class="material-symbols-outlined text-primary" style="font-size: 24px;">rocket_launch</span>
                             <h2 class="text-text-dark dark:text-background-light text-lg font-bold leading-tight tracking-[-0.015em]">RocketInvest</h2>
@@ -84,9 +84,32 @@
                         </div>
 
                         <div class="md:hidden">
-                            <button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-slate-200 dark:bg-white/10 text-text-dark dark:text-background-light gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+                            <button id="mobile-menu-btn" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 bg-slate-200 dark:bg-white/10 text-text-dark dark:text-background-light gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
                                 <span class="material-symbols-outlined text-text-dark dark:text-background-light" style="font-size: 20px;">menu</span>
                             </button>
+                        </div>
+
+                        <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-700 shadow-xl flex-col p-4 gap-4 md:hidden z-50">
+                            <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="#">Portfolios</a>
+                            <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="#">How It Works</a>
+                            
+                            <div id="mobile-auth-buttons" class="flex flex-col gap-3 mt-2">
+                                <a href="login.html" class="w-full flex items-center justify-center rounded-full h-12 bg-slate-200 dark:bg-white/10 text-text-dark dark:text-background-light font-bold">Log In</a>
+                                <a href="signup.html" class="w-full flex items-center justify-center rounded-full h-12 bg-primary text-white font-bold">Sign Up</a>
+                            </div>
+
+                            <div id="mobile-user-profile" class="hidden flex-col gap-3 mt-2 border-t border-slate-200 dark:border-white/5 pt-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">I</div>
+                                    <span class="text-text-dark dark:text-background-light font-bold">Hola, Inversor</span>
+                                </div>
+                                <a href="dashboard.html" class="w-full flex items-center justify-center rounded-full h-12 bg-primary text-white font-bold">
+                                    Ir al Dashboard
+                                </a>
+                                <button id="mobile-logout-btn" class="w-full flex items-center justify-center rounded-full h-12 border border-red-200 text-red-500 font-bold hover:bg-red-50">
+                                    Cerrar Sesión
+                                </button>
+                            </div>
                         </div>
                     </header>
 
@@ -166,6 +189,19 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                mobileMenu.classList.toggle('flex');
+            });
+        }
+    </script>
+
     <script src="js/auth.js"></script>
 </body>
 </html>

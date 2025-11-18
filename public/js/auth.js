@@ -2,51 +2,72 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. VERIFICAR ESTADO DE SESIÓN EN EL UI (Para index.html) ---
+    // --- 1. VERIFICAR ESTADO DE SESIÓN EN EL UI ---
     const token = localStorage.getItem('token');
-    const authButtons = document.getElementById('auth-buttons'); // Div con botones Login/Signup
-    const userProfile = document.getElementById('user-profile'); // Div con "Hola Inversor"
-    const logoutBtn = document.getElementById('logout-btn');     // Botón de salir
+    
+    // Referencias Desktop
+    const authButtons = document.getElementById('auth-buttons');
+    const userProfile = document.getElementById('user-profile');
+    
+    // Referencias Mobile (NUEVAS)
+    const mobileAuthButtons = document.getElementById('mobile-auth-buttons');
+    const mobileUserProfile = document.getElementById('mobile-user-profile');
+    
+    // Botones de Logout
+    const logoutBtn = document.getElementById('logout-btn');
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
 
-    // Solo ejecutamos esto si los elementos existen (es decir, si estamos en index.html)
-    if (authButtons && userProfile) {
+    // Función para manejar el Logout
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        window.location.reload(); // Recargar para limpiar estado
+    };
+
+    // Si estamos en una página que tiene estos elementos (index.html)
+    if (authButtons) {
         if (token) {
-            // CASO: USUARIO LOGUEADO
-            // Ocultamos botones de registro
+            // --- USUARIO LOGUEADO ---
+            // Desktop: Ocultar Login, Mostrar Perfil
             authButtons.classList.add('hidden');
             authButtons.classList.remove('flex');
-            
-            // Mostramos perfil y acceso al dashboard
             userProfile.classList.remove('hidden');
             userProfile.classList.add('flex');
+            
+            // Mobile: Ocultar Login, Mostrar Perfil
+            if(mobileAuthButtons) {
+                mobileAuthButtons.classList.add('hidden');
+                mobileAuthButtons.classList.remove('flex');
+                mobileUserProfile.classList.remove('hidden');
+                mobileUserProfile.classList.add('flex');
+            }
         } else {
-            // CASO: VISITANTE (NO LOGUEADO)
-            // Mostramos botones de registro
+            // --- VISITANTE ---
+            // Desktop: Mostrar Login, Ocultar Perfil
             authButtons.classList.remove('hidden');
             authButtons.classList.add('flex');
-            
-            // Ocultamos perfil
             userProfile.classList.add('hidden');
             userProfile.classList.remove('flex');
+            
+            // Mobile: Mostrar Login, Ocultar Perfil
+            if(mobileAuthButtons) {
+                mobileAuthButtons.classList.remove('hidden');
+                mobileAuthButtons.classList.add('flex');
+                mobileUserProfile.classList.add('hidden');
+                mobileUserProfile.classList.remove('flex');
+            }
         }
     }
 
-    // --- 2. LÓGICA DE LOGOUT (CERRAR SESIÓN) ---
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            // 1. Borrar la "llave"
-            localStorage.removeItem('token');
-            // 2. Recargar la página para que vuelva a verse como visitante
-            window.location.reload(); 
-        });
-    }
+    // --- 2. LISTENERS DE LOGOUT ---
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
 
     // --- 3. LÓGICA DE FORMULARIOS (LOGIN Y REGISTRO) ---
     const loginForm = document.querySelector('form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     
-    // Detectar en qué página estamos para saber a dónde enviar los datos
+    // Detectar en qué página estamos
     const isLoginPage = window.location.pathname.includes('login.html');
     
     if (loginForm) {
@@ -55,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const email = emailInput.value;
             const password = passwordInput.value;
-            // Define la ruta correcta
             const endpoint = isLoginPage ? '/api/auth/login' : '/api/auth/register';
 
             try {
@@ -69,14 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     if (isLoginPage) {
-                        // LOGIN EXITOSO:
-                        // 1. Guardar token
+                        // LOGIN EXITOSO
                         localStorage.setItem('token', data.token);
                         alert('¡Bienvenido! Entrando a la App...');
-                        // 2. REDIRECCIÓN A LA APP (DASHBOARD)
                         window.location.href = '/dashboard.html'; 
                     } else {
-                        // REGISTRO EXITOSO:
+                        // REGISTRO EXITOSO
                         alert('Registro exitoso. Ya tienes tus $50,000 iniciales. Por favor inicia sesión.');
                         window.location.href = '/login.html';
                     }

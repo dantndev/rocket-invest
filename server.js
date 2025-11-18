@@ -7,7 +7,7 @@ const path = require('path');
 const { initDb, openDb } = require('./db'); // Importamos nuestro gestor de BD
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const SECRET_KEY = 'mi_secreto_super_seguro'; 
 
 app.use(cors());
