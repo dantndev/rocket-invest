@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>RocketInvest - Mis Inversiones</title>
+    <title>RocketInvest - Explorar</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
@@ -34,7 +34,6 @@
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
     
     <div class="flex min-h-screen relative">
-        
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity opacity-0 md:hidden" onclick="toggleSidebar()"></div>
 
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full overflow-y-auto no-scrollbar">
@@ -44,23 +43,20 @@
                         <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
                         <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-normal tracking-tight">RocketInvest</h1>
                     </a>
-                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary"><span class="material-symbols-outlined">close</span></button>
                 </div>
-                
                 <nav class="flex flex-col gap-2">
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="index.html">
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html">
                         <span class="material-symbols-outlined">home</span>
                         <p class="text-sm font-semibold leading-normal">Inicio</p>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html">
-                        <span class="material-symbols-outlined">explore</span>
-                        <p class="text-sm font-semibold leading-normal">Explorar Portafolios</p>
-                    </a>
                     <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="#">
-                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
-                        <p class="text-sm font-bold leading-normal">Mis Inversiones</p>
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+                        <p class="text-sm font-bold leading-normal">Explorar Portafolios</p>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="investments.html">
+                        <span class="material-symbols-outlined">account_balance_wallet</span>
+                        <p class="text-sm font-semibold leading-normal">Mis Inversiones</p>
                     </a>
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="#">
                         <span class="material-symbols-outlined">settings</span>
@@ -78,16 +74,13 @@
 
         <main class="w-full md:ml-64 flex-1 p-4 md:p-10 transition-colors duration-300 min-h-screen">
             <div class="mx-auto max-w-7xl">
-                
                 <header class="flex items-center justify-between whitespace-nowrap mb-8">
                     <div class="flex items-center gap-3">
                         <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
                             <span class="material-symbols-outlined">menu</span>
                         </button>
-
-                        <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight">Tu Portafolio</h2>
+                        <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight">Mercado Completo</h2>
                     </div>
-
                     <div class="flex items-center gap-2 md:gap-4">
                         <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all">
                             <span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span>
@@ -96,29 +89,52 @@
                     </div>
                 </header>
 
-                <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[600px]">
-                            <thead>
-                                <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fondo de Inversión</th>
-                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Monto Invertido</th>
-                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Valor Actual</th>
-                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Ganancia</th>
-                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-center">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="investments-table-body">
-                                <tr class="border-b border-slate-100 dark:border-slate-700">
-                                    <td colspan="5" class="p-8 text-center text-slate-400">Cargando tus inversiones...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="mb-8">
+                    <div class="relative max-w-md">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                            <span class="material-symbols-outlined">search</span>
+                        </span>
+                        <input type="text" class="w-full py-3 pl-10 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary placeholder:text-slate-400" placeholder="Buscar fondo de inversión...">
                     </div>
                 </div>
 
+                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+                    </div>
             </div>
         </main>
+    </div>
+
+    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Realizar Inversión</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="bg-primary/10 p-4 rounded-xl mb-6 flex items-center gap-4 border border-primary/20">
+                <div class="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">🚀</div>
+                <div>
+                    <p class="text-xs text-primary font-bold uppercase tracking-wide">Estás invirtiendo en</p>
+                    <p id="modal-portfolio-name" class="text-slate-900 dark:text-white font-bold text-lg">Nombre del Fondo</p>
+                </div>
+            </div>
+            <form id="investment-form" class="flex flex-col gap-4">
+                <input type="hidden" id="modal-portfolio-id">
+                <div>
+                    <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Monto a Invertir (MXN)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                        <input type="number" id="invest-amount" placeholder="5000.00" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold" required min="100">
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 text-right">Saldo disponible: <span id="modal-balance-display">Cargando...</span></p>
+                </div>
+                <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2 flex justify-center items-center gap-2">
+                    <span>Confirmar Inversión</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -164,8 +180,12 @@
             html.classList.remove('dark');
         }
         updateIcon();
-    </script>
 
-    <script src="js/investments.js"></script>
+        document.getElementById('logout-sidebar-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+    </script>
+    <script src="js/portfolios.js"></script>
 </body>
 </html>

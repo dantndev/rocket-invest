@@ -227,7 +227,7 @@ async function loadPortfolios() {
         const gridContainer = document.getElementById('portfolio-grid');
         gridContainer.innerHTML = ''; 
 
-        portfolios.forEach(portfolio => {
+        portfolios.slice(0, 3).forEach(portfolio => {
             // Lógica de colores
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
