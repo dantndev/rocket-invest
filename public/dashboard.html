@@ -199,35 +199,70 @@
     </div>
 
     <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700 overflow-hidden relative">
+            
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white">Realizar Inversión</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white z-10">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <div class="bg-primary/10 p-4 rounded-xl mb-6 flex items-center gap-4 border border-primary/20">
-                <div class="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">🚀</div>
-                <div>
-                    <p class="text-xs text-primary font-bold uppercase tracking-wide">Estás invirtiendo en</p>
-                    <p id="modal-portfolio-name" class="text-slate-900 dark:text-white font-bold text-lg">Nombre del Fondo</p>
+    
+            <div id="invest-step-1" class="transition-all duration-300">
+                <div class="bg-primary/10 p-4 rounded-xl mb-6 flex items-center gap-4 border border-primary/20">
+                    <div class="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">🚀</div>
+                    <div>
+                        <p class="text-xs text-primary font-bold uppercase tracking-wide">Estás invirtiendo en</p>
+                        <p id="modal-portfolio-name" class="text-slate-900 dark:text-white font-bold text-lg">Nombre del Fondo</p>
+                    </div>
+                </div>
+                
+                <form id="investment-form-step1" class="flex flex-col gap-4">
+                    <input type="hidden" id="modal-portfolio-id">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Monto a Invertir (MXN)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                            <input type="number" id="invest-amount" placeholder="5000.00" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold" required min="100">
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2 text-right">Saldo disponible: <span id="modal-balance-display">Cargando...</span></p>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2 flex justify-center items-center gap-2">
+                        <span>Continuar</span>
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </form>
+            </div>
+    
+            <div id="invest-step-2" class="hidden flex-col items-center text-center animate-in fade-in slide-in-from-right-8 duration-300">
+                <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mb-4 text-yellow-600 dark:text-yellow-400">
+                    <span class="material-symbols-outlined text-3xl">priority_high</span>
+                </div>
+                
+                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">¿Confirmar Inversión?</h4>
+                <p class="text-slate-500 text-sm mb-6">Estás a punto de transferir fondos.</p>
+    
+                <div class="bg-slate-50 dark:bg-slate-900 w-full rounded-lg p-4 mb-6 border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-xs text-slate-500 uppercase font-bold">Fondo</span>
+                        <span id="confirm-portfolio-name" class="text-sm font-bold text-slate-900 dark:text-white text-right">Alpha</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-500 uppercase font-bold">Monto</span>
+                        <span id="confirm-amount-display" class="text-2xl font-bold text-primary">$0.00</span>
+                    </div>
+                </div>
+    
+                <div class="flex gap-3 w-full">
+                    <button type="button" onclick="backToStep1()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all">
+                        Cancelar
+                    </button>
+                    <button type="button" id="btn-final-confirm" class="flex-1 py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all">
+                        Sí, Invertir
+                    </button>
                 </div>
             </div>
-            <form id="investment-form" class="flex flex-col gap-4">
-                <input type="hidden" id="modal-portfolio-id">
-                <div>
-                    <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Monto a Invertir (MXN)</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                        <input type="number" id="invest-amount" placeholder="5000.00" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold" required min="100">
-                    </div>
-                    <p class="text-xs text-slate-400 mt-2 text-right">Saldo disponible: $0.00 MXN</p>
-                </div>
-                <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2 flex justify-center items-center gap-2">
-                    <span>Confirmar Inversión</span>
-                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                </button>
-            </form>
+    
         </div>
     </div>
 

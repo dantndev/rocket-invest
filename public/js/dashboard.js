@@ -1,8 +1,10 @@
-// public/js/dashboard.js
+// public/js/dashboard.js - VERSIÓN COMPLETA FINAL
 
 // --- VARIABLES GLOBALES ---
 let investModal, investModalTitle, investModalIdInput;
 let depositModal; 
+// Variables para el Modal de 2 Pasos
+let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConfirm;
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -12,18 +14,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     investModalIdInput = document.getElementById('modal-portfolio-id');
     depositModal = document.getElementById('deposit-modal');
 
-    // --- LOGICA DE FORMATO DE TARJETA ---
+    // Referencias de pasos de inversión
+    step1Div = document.getElementById('invest-step-1');
+    step2Div = document.getElementById('invest-step-2');
+    confirmPortfolioName = document.getElementById('confirm-portfolio-name');
+    confirmAmountDisplay = document.getElementById('confirm-amount-display');
+    btnFinalConfirm = document.getElementById('btn-final-confirm');
+
+    // --- LÓGICA DE FORMATO DE TARJETA ---
     const cardInput = document.getElementById('card-number');
     if (cardInput) {
         cardInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, ''); // Solo números
-            value = value.substring(0, 16); // Max 16
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value; // Grupos de 4
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.substring(0, 16);
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
             e.target.value = formattedValue;
         });
     }
 
-    // --- LOGICA DE FORMATO DE FECHA ---
+    // --- LÓGICA DE FORMATO DE FECHA ---
     const expiryInput = document.getElementById('card-expiry');
     if (expiryInput) {
         expiryInput.addEventListener('input', function (e) {
@@ -43,34 +52,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // 2. CARGAR DATOS INICIALES
+    // 2. CARGAR DATOS INICIALES (AQUÍ ES DONDE FALLABA ANTES SI FALTABA ESTO)
     await updateUserData(token);
     loadPortfolios();
-
-    // 3. RENDERIZAR GRÁFICA (Chart.js)
     renderMarketChart();
 
-    // --- 6. BOTÓN VER TODOS ---
+    // --- BOTÓN VER TODOS ---
     const btnVerTodos = document.getElementById('btn-ver-todos');
     if(btnVerTodos) {
         btnVerTodos.addEventListener('click', () => {
-            // Navegar a la página de portafolios
             window.location.href = 'portfolios.html';
         });
     }
 
     // --- LISTENERS DE FORMULARIOS ---
 
-    // A) Formulario de INVERSIÓN
-    const investmentForm = document.getElementById('investment-form');
-    if (investmentForm) {
-        investmentForm.addEventListener('submit', async (e) => {
+    // A) Lógica Modal Inversión (2 PASOS)
+    
+    // Paso 1: Botón "Continuar"
+    const formStep1 = document.getElementById('investment-form-step1');
+    if (formStep1) {
+        formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            const amount = document.getElementById('invest-amount').value;
+            const portfolioName = investModalTitle.innerText;
+
+            if(amount <= 0) {
+                alert("Ingresa un monto válido");
+                return;
+            }
+
+            // Llenar datos del resumen
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+            if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
+            if(confirmPortfolioName) confirmPortfolioName.innerText = portfolioName;
+
+            // Cambiar pantalla
+            if(step1Div && step2Div) {
+                step1Div.classList.add('hidden');
+                step2Div.classList.remove('hidden');
+                step2Div.classList.add('flex');
+            }
+        });
+    }
+
+    // Paso 2: Botón "Sí, Invertir" (Confirmación Final)
+    if (btnFinalConfirm) {
+        btnFinalConfirm.addEventListener('click', async () => {
             const amount = document.getElementById('invest-amount').value;
             const portfolioId = investModalIdInput.value;
+            
+            btnFinalConfirm.disabled = true;
+            btnFinalConfirm.innerText = "Procesando...";
 
             try {
-                // RUTA RELATIVA
                 const response = await fetch('/api/invest', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -79,14 +115,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // ÉXITO SIN ALERTA INTRUSIVA
                     closeInvestModal();
-                    // RECARGAR TODOS LOS DATOS (Para evitar NaN)
-                    updateUserData(token); 
+                    updateUserData(token); // Recargar saldo
                 } else {
                     alert('Error: ' + data.message);
+                    backToStep1();
                 }
-            } catch (error) { console.error(error); alert('Error de conexión'); }
+            } catch (error) { 
+                console.error(error); 
+                alert('Error de conexión');
+                backToStep1();
+            } finally {
+                btnFinalConfirm.disabled = false;
+                btnFinalConfirm.innerText = "Sí, Invertir";
+            }
         });
     }
 
@@ -105,7 +147,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await new Promise(r => setTimeout(r, 1000)); 
 
             try {
-                // RUTA RELATIVA
                 const response = await fetch('/api/deposit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -114,12 +155,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // ÉXITO SIN ALERTA INTRUSIVA
                     closeDepositModal();
-                    // RECARGAR TODOS LOS DATOS
                     updateUserData(token);
-                    
-                    // Limpiar formulario
                     document.getElementById('deposit-amount').value = '';
                     if(cardInput) cardInput.value = '';
                     if(expiryInput) expiryInput.value = '';
@@ -137,9 +174,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // --- FUNCIONES GLOBALES ---
 
-// 1. Abrir Modal Inversión
+// Regresar al paso 1
+window.backToStep1 = function() {
+    if(step1Div && step2Div) {
+        step2Div.classList.add('hidden');
+        step2Div.classList.remove('flex');
+        step1Div.classList.remove('hidden');
+    }
+};
+
+// Abrir Modal Inversión
 window.selectPortfolio = function(id, name) {
     if (!investModal) return;
+    
+    // Resetear al paso 1
+    if(step1Div && step2Div) {
+        step1Div.classList.remove('hidden');
+        step2Div.classList.add('hidden');
+        step2Div.classList.remove('flex');
+        document.getElementById('invest-amount').value = '';
+    }
+
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
     investModal.classList.remove('hidden');
@@ -150,7 +205,7 @@ window.selectPortfolio = function(id, name) {
     }, 10);
 };
 
-// 2. Cerrar Modal Inversión
+// Cerrar Modal Inversión
 window.closeModal = function() { 
     closeInvestModal();
 };
@@ -163,7 +218,7 @@ function closeInvestModal() {
     setTimeout(() => { investModal.classList.add('hidden'); }, 300);
 }
 
-// 3. Abrir Modal Depósito
+// Abrir Modal Depósito
 window.openDepositModal = function() {
     if (!depositModal) depositModal = document.getElementById('deposit-modal');
     if (!depositModal) return;
@@ -176,7 +231,7 @@ window.openDepositModal = function() {
     }, 10);
 };
 
-// 4. Cerrar Modal Depósito
+// Cerrar Modal Depósito
 window.closeDepositModal = function() {
     if (!depositModal) return;
     depositModal.classList.add('opacity-0');
@@ -186,60 +241,45 @@ window.closeDepositModal = function() {
 };
 
 
-// --- FUNCIONES DE SOPORTE ---
+// --- FUNCIONES DE CARGA DE DATOS (INDISPENSABLES) ---
 
 async function updateUserData(token) {
     try {
-        // RUTA RELATIVA
         const response = await fetch('/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
             const userData = await response.json();
-            updateBalanceUI(userData); // Pasamos el objeto completo
+            updateBalanceUI(userData);
         }
     } catch (error) { console.error("Error cargando usuario", error); }
 }
 
 function updateBalanceUI(data) {
-    // data contiene: { availableBalance, investedAmount, profit, netWorth }
-    
     const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
-    // 1. Patrimonio Total (Grande)
     const elNetWorth = document.getElementById('display-net-worth');
-    if (elNetWorth) {
-        elNetWorth.innerHTML = `${formatter.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`;
-    }
+    if (elNetWorth) elNetWorth.innerHTML = `${formatter.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`;
 
-    // 2. Disponible (Efectivo)
     const elAvailable = document.getElementById('display-available');
     if (elAvailable) elAvailable.innerText = formatter.format(data.availableBalance);
 
-    // 3. Invertido
     const elInvested = document.getElementById('display-invested');
     if (elInvested) elInvested.innerText = formatter.format(data.investedAmount);
 
-    // 4. Ganancia (Con color dinámico)
     const elProfit = document.getElementById('display-profit');
     if (elProfit) {
         const sign = data.profit >= 0 ? '+' : '';
         elProfit.innerText = `${sign}${formatter.format(data.profit)}`;
-        if (data.profit < 0) {
-            elProfit.className = "text-red-500 font-bold text-lg";
-        } else {
-            elProfit.className = "text-emerald-600 dark:text-emerald-400 font-bold text-lg";
-        }
+        elProfit.className = data.profit < 0 ? "text-red-500 font-bold text-lg" : "text-emerald-600 dark:text-emerald-400 font-bold text-lg";
     }
 
-    // 5. Actualizar texto pequeño del Modal
-    const modalBalance = document.querySelector('#investment-form p.text-xs.text-right');
+    const modalBalance = document.querySelector('#investment-form-step1 p.text-xs.text-right');
     if(modalBalance) modalBalance.innerText = `Disponible para invertir: ${formatter.format(data.availableBalance)}`;
 }
 
 async function loadPortfolios() {
     try {
-        // RUTA RELATIVA
         const response = await fetch('/api/portfolios');
         const portfolios = await response.json();
         const gridContainer = document.getElementById('portfolio-grid');
@@ -247,7 +287,7 @@ async function loadPortfolios() {
         
         gridContainer.innerHTML = ''; 
 
-        // SLICE: Solo mostramos los primeros 3 en el dashboard
+        // SLICE 0,3 para Dashboard
         portfolios.slice(0, 3).forEach(portfolio => {
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
