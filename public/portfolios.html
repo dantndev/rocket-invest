@@ -31,9 +31,10 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300">
     
     <div class="flex min-h-screen relative">
+        
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity opacity-0 md:hidden" onclick="toggleSidebar()"></div>
 
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full overflow-y-auto no-scrollbar">
@@ -43,24 +44,28 @@
                         <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
                         <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-normal tracking-tight">RocketInvest</h1>
                     </a>
-                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary"><span class="material-symbols-outlined">close</span></button>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
                 </div>
+                
                 <nav class="flex flex-col gap-2">
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html">
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="index.html">
                         <span class="material-symbols-outlined">home</span>
                         <p class="text-sm font-semibold leading-normal">Inicio</p>
                     </a>
-                    
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="portfolios.html">
-                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
-                        <p class="text-sm font-semibold leading-normal">Explorar Portafolios</p>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html">
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                        <p class="text-sm font-semibold leading-normal">Dashboard</p>
                     </a>
-                    
+                    <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="#">
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+                        <p class="text-sm font-bold leading-normal">Explorar Portafolios</p>
+                    </a>
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="investments.html">
                         <span class="material-symbols-outlined">account_balance_wallet</span>
                         <p class="text-sm font-semibold leading-normal">Mis Inversiones</p>
                     </a>
-                    
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="#">
                         <span class="material-symbols-outlined">settings</span>
                         <p class="text-sm font-semibold leading-normal">Configuración</p>
@@ -75,8 +80,9 @@
             </div>
         </aside>
 
-        <main class="w-full md:ml-64 flex-1 p-4 md:p-10 transition-colors duration-300 min-h-screen">
-            <div class="mx-auto max-w-7xl">
+        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 transition-all duration-300 flex flex-col relative z-0">
+            <div class="mx-auto max-w-7xl w-full">
+                
                 <header class="flex items-center justify-between whitespace-nowrap mb-8">
                     <div class="flex items-center gap-3">
                         <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
@@ -101,8 +107,9 @@
                     </div>
                 </div>
 
-                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-                    </div>
+                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 w-full">
+                    <div class="col-span-1 sm:col-span-3 text-center py-10 text-slate-500">Cargando mercado...</div>
+                </div>
             </div>
         </main>
     </div>
@@ -141,7 +148,7 @@
     </div>
 
     <script>
-        // Lógica Sidebar y Tema (Misma que Dashboard)
+        // Lógica Sidebar y Tema
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = themeToggleBtn.querySelector('span');
         const html = document.documentElement;

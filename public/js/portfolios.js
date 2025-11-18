@@ -14,11 +14,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Cargar saldo (solo para el modal) y portafolios
+    // Cargar datos
     await updateUserData(token);
     loadAllPortfolios();
 
-    // Listener del Formulario de Inversión
+    // Listener Formulario Inversión
     const investmentForm = document.getElementById('investment-form');
     if (investmentForm) {
         investmentForm.addEventListener('submit', async (e) => {
@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const portfolioId = modalIdInput.value;
 
             try {
-                const response = await fetch('http://localhost:3000/api/invest', {
+                // RUTA RELATIVA CORREGIDA
+                const response = await fetch('/api/invest', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ portfolioId, amount, token })
@@ -37,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response.ok) {
                     alert(`¡Éxito! Has invertido $${amount} MXN.`);
                     closeModal();
-                    updateUserData(token); // Recargar saldo
+                    updateUserData(token);
                 } else {
                     alert('Error: ' + data.message);
                 }
@@ -48,7 +49,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function updateUserData(token) {
     try {
-        const response = await fetch('http://localhost:3000/api/auth/me', {
+        // RUTA RELATIVA CORREGIDA
+        const response = await fetch('/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -62,16 +64,22 @@ async function updateUserData(token) {
 
 async function loadAllPortfolios() {
     try {
-        const response = await fetch('http://localhost:3000/api/portfolios');
+        // RUTA RELATIVA CORREGIDA
+        const response = await fetch('/api/portfolios');
         const portfolios = await response.json();
         const gridContainer = document.getElementById('portfolio-grid');
+        
+        if(!gridContainer) return;
         gridContainer.innerHTML = ''; 
 
-        // AQUÍ ESTÁ LA DIFERENCIA: No usamos slice, mostramos TODO
+        // Renderizar TODOS los portafolios (Sin slice)
         portfolios.forEach(portfolio => {
+            // Lógica de Colores
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
             let riskBorder = portfolio.risk === 'Alto' ? 'border-red-200 dark:border-red-500/20' : (portfolio.risk === 'Medio' ? 'border-orange-200 dark:border-orange-500/20' : 'border-green-200 dark:border-green-500/20');
+            
+            // Iconos variados para que no se vea repetitivo
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
@@ -100,7 +108,11 @@ async function loadAllPortfolios() {
             `;
             gridContainer.innerHTML += cardHTML;
         });
-    } catch (error) { console.error(error); }
+    } catch (error) { 
+        console.error(error);
+        const grid = document.getElementById('portfolio-grid');
+        if(grid) grid.innerHTML = '<p class="col-span-3 text-center text-red-500 p-10">Error cargando portafolios.</p>';
+    }
 }
 
 // Funciones Globales
