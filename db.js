@@ -1,15 +1,15 @@
-// db.js - VERSIÓN POSTGRESQL
+// db.js
 const { Pool } = require('pg');
+require('dotenv').config(); // Aseguramos que cargue las variables
 
-// Usamos la variable de entorno DATABASE_URL si existe (Producción), 
-// si no, usa una cadena local vacía (o hardcodeada para pruebas rápidas)
 const connectionString = process.env.DATABASE_URL;
 
 const pool = new Pool({
     connectionString: connectionString,
     ssl: {
-        rejectUnauthorized: false // Necesario para conexiones seguras en la nube
-    }
+        rejectUnauthorized: false
+    },
+    family: 4 // <--- ESTO FUERZA A USAR IPv4
 });
 
 async function query(text, params) {
@@ -17,10 +17,14 @@ async function query(text, params) {
 }
 
 async function initDb() {
-    console.log("🔌 Conectando a PostgreSQL en la nube...");
-
+    console.log("🔌 Intentando conectar a PostgreSQL...");
+    
     try {
-        // 1. Tabla Usuarios (SERIAL es el AUTOINCREMENT de Postgres)
+        // Prueba de conexión simple
+        await pool.query('SELECT NOW()');
+        console.log("✅ Conexión EXITOSA a la nube.");
+
+        // Crear tablas...
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -30,7 +34,6 @@ async function initDb() {
             )
         `);
 
-        // 2. Tabla Inversiones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS investments (
                 id SERIAL PRIMARY KEY,
@@ -41,7 +44,6 @@ async function initDb() {
             )
         `);
 
-        // 3. Tabla Transacciones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS transactions (
                 id SERIAL PRIMARY KEY,
@@ -53,10 +55,11 @@ async function initDb() {
             )
         `);
 
-        console.log("✅ Tablas de PostgreSQL verificadas/creadas.");
+        console.log("✅ Tablas verificadas.");
         return pool;
     } catch (err) {
-        console.error("❌ Error conectando a la BD:", err);
+        console.error("❌ Error FATAL de conexión:", err.message);
+        console.log("🔍 Consejo: Revisa si tu IP está bloqueada o si el puerto 6543 funciona.");
     }
 }
 
