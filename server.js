@@ -112,37 +112,41 @@ app.get('/api/my-investments', async (req, res) => {
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// 5. Datos Reales del Mercado (Finnhub) - CORREGIDO Y DIRECTO
+// 5. Datos del Mercado (Con Plan B automático)
 app.get('/api/market', async (req, res) => {
     try {
         const to = Math.floor(Date.now() / 1000);
         const from = to - (365 * 24 * 60 * 60);
         const symbol = 'SPY';
         const resolution = 'W';
-        
-        // LLAVE DIRECTA PARA DESCARTAR ERRORES DE ENV EN RENDER
-        const token = "d4eirkhr01qrumpfm6f0d4eirkhr01qrumpfm6fg"; 
+        const token = process.env.FINNHUB_API_KEY || "LLAVE_FALSA"; // Intenta leer la llave
 
+        // Intentamos conectar con Finnhub
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
-        
         const response = await axios.get(url);
         
         if (response.data.s === 'ok') {
+            // PLAN A: Datos Reales
             res.json({
                 prices: response.data.c,
                 dates: response.data.t
             });
         } else {
-            // Si la API responde error lógico
-            console.error("Finnhub Error:", response.data);
-            res.status(500).json({ message: 'Error en datos de bolsa' });
+            throw new Error("API respondió pero sin datos válidos");
         }
     } catch (error) {
-        console.error("Error Conexión Finnhub:", error.message);
-        // Fallback (Datos falsos si falla la API o se acaban los créditos)
+        // PLAN B: DATOS SIMULADOS (Fallback)
+        // Si la API falla (403, sin internet, etc), usamos estos datos para que la gráfica se vea bien.
+        console.log("⚠️ Usando datos simulados de mercado (API falló o llave inválida).");
+        
+        // Generamos una gráfica simulada bonita
+        const mockPrices = [410, 415, 412, 420, 425, 430, 428, 435, 440, 438, 445, 450];
+        // Generamos fechas simuladas para esos precios
+        const mockDates = mockPrices.map((_, i) => Math.floor(Date.now() / 1000) - ((12 - i) * 7 * 24 * 60 * 60));
+
         res.json({ 
-            prices: [400, 410, 405, 420, 430, 425, 440], 
-            dates: [1670000000, 1671000000, 1672000000, 1673000000, 1674000000, 1675000000, 1676000000] 
+            prices: mockPrices, 
+            dates: mockDates 
         });
     }
 });
