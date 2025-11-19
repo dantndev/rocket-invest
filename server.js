@@ -122,7 +122,7 @@ app.get('/api/market', async (req, res) => {
         const resolution = 'D';
         
         // LLAVE DIRECTA
-        const token = "d4ek6j9r01qrumpfs21gd4ek6j9r01qrumpfs220"; 
+        const token = "d4ekf19r01qrumpft4ugd4ekf19r01qrumpft4v0"; 
 
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
         
