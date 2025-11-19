@@ -1,15 +1,16 @@
-// db.js
+// db.js - VERSIÓN NEON DB
 const { Pool } = require('pg');
+require('dotenv').config();
 
-// 1. URL DIRECTA con el puerto 5432 (Más estable para servidores como Render)
-const connectionString = "postgresql://postgres:RocketInvest2025@db.odeipgmtgablhnazbvrn.supabase.co:5432/postgres";
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+    console.error("❌ ERROR: No se encontró DATABASE_URL.");
+}
 
 const pool = new Pool({
     connectionString: connectionString,
-    ssl: {
-        rejectUnauthorized: false // Acepta el certificado de Supabase
-    },
-    family: 4 // <--- ¡ESTO ES LA CLAVE! Obliga a usar IPv4 y evita el error ENETUNREACH
+    ssl: true, // Neon requiere SSL simple (true)
 });
 
 async function query(text, params) {
@@ -17,14 +18,14 @@ async function query(text, params) {
 }
 
 async function initDb() {
-    console.log("🔌 Intentando conectar a PostgreSQL (IPv4)...");
+    console.log("🔌 Conectando a NeonDB...");
     
     try {
-        // Prueba de conexión rápida
-        await pool.query('SELECT NOW()');
-        console.log("✅ ¡CONEXIÓN EXITOSA!");
+        // Prueba de vida
+        await pool.query('SELECT 1'); 
+        console.log("✅ ¡CONEXIÓN EXITOSA A NEON!");
 
-        // Crear tablas si no existen
+        // 1. Crear Tabla Usuarios
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -34,6 +35,7 @@ async function initDb() {
             )
         `);
 
+        // 2. Crear Tabla Inversiones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS investments (
                 id SERIAL PRIMARY KEY,
@@ -44,6 +46,7 @@ async function initDb() {
             )
         `);
 
+        // 3. Crear Tabla Transacciones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS transactions (
                 id SERIAL PRIMARY KEY,
@@ -55,7 +58,7 @@ async function initDb() {
             )
         `);
 
-        console.log("✅ Tablas verificadas.");
+        console.log("✅ Tablas verificadas en Neon.");
         return pool;
     } catch (err) {
         console.error("❌ Error de conexión:", err);
