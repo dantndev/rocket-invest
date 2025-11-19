@@ -6,10 +6,9 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const axios = require('axios');
+const axios = require('axios'); 
 const { initDb, query } = require('./db'); 
 
-// INICIALIZACIÓN DE LA APP (Esto es lo que faltaba)
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET_KEY = process.env.SECRET_KEY || 'mi_secreto_super_seguro';
@@ -21,7 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Inicializar Base de Datos
 initDb();
 
-// --- DATOS DE PORTAFOLIOS ---
+// --- DATOS ESTÁTICOS DE PORTAFOLIOS ---
 const portfolios = [
     { id: 1, name: "Alpha Growth Fund", provider: "BlackRock Mexico", risk: "Alto", returnYTD: 99.99, users: 1240, minInvestment: 1000, description: "Enfoque agresivo en empresas tecnológicas y startups de LATAM." },
     { id: 2, name: "Estabilidad Total", provider: "BBVA Asset Mgmt", risk: "Bajo", returnYTD: 8.12, users: 5300, minInvestment: 500, description: "Bonos gubernamentales y deuda corporativa de alta calificación." },
@@ -113,48 +112,45 @@ app.get('/api/my-investments', async (req, res) => {
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// 5. DATOS DEL MERCADO (Con la llave directa para asegurar funcionamiento)
+// 5. DATOS DEL MERCADO (CON TU NUEVA LLAVE)
 app.get('/api/market', async (req, res) => {
     try {
         const to = Math.floor(Date.now() / 1000);
         const from = to - (30 * 24 * 60 * 60); // Últimos 30 días
-        const symbol = 'AAPL'; // Usamos Apple (más estable que SPY a veces)
-        const resolution = 'D';
+        const symbol = 'AAPL'; // Apple (Más estable para demos)
+        const resolution = 'D'; // Diario
         
-        // LLAVE DIRECTA
-        const token = "d4ekf19r01qrumpft4ugd4ekf19r01qrumpft4v0"; 
+        // --- AQUÍ ESTÁ TU NUEVA LLAVE ---
+        const token = "d4ekqk1r01qrumpfuk8gd4ekqk1r01qrumpfuk90"; 
 
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
         
-        console.log(`📡 Consultando Finnhub...`);
+        console.log(`📡 Consultando Finnhub con llave nueva...`);
         const response = await axios.get(url);
         
         if (response.data.s === 'ok') {
-            console.log("✅ Datos recibidos de Finnhub");
+            console.log("✅ ¡Datos de mercado recibidos!");
             res.json({
                 prices: response.data.c,
                 dates: response.data.t
             });
         } else {
-            console.error("⚠️ API Error:", response.data);
-            throw new Error("Respuesta API vacía o error");
+            throw new Error("Respuesta API vacía: " + JSON.stringify(response.data));
         }
     } catch (error) {
         console.error("❌ Error Finnhub:", error.message);
         
-        // FALLBACK: PLAN B (Simulación)
-        console.log("⚠️ Usando datos simulados (Fallback)");
+        // FALLBACK (Plan B)
+        console.log("⚠️ Usando datos simulados de respaldo");
         const points = 30; 
         const prices = [];
         const dates = [];
-        let currentPrice = 150; 
+        let currentPrice = 150;
         
         for (let i = 0; i < points; i++) {
-            const change = 1 + (Math.random() * 0.06 - 0.025);
-            currentPrice = currentPrice * change;
+            currentPrice = currentPrice * (1 + (Math.random() * 0.06 - 0.025));
             prices.push(currentPrice.toFixed(2));
-            const date = Math.floor(Date.now() / 1000) - ((points - 1 - i) * 24 * 60 * 60);
-            dates.push(date);
+            dates.push(Math.floor(Date.now() / 1000) - ((points - 1 - i) * 24 * 60 * 60));
         }
         res.json({ prices, dates });
     }
