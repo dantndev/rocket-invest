@@ -67,15 +67,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- LISTENERS FORMULARIOS ---
 
-    // A) Inversión (2 Pasos)
+    // A) Inversión (2 Pasos con SELECT)
     const formStep1 = document.getElementById('investment-form-step1');
     if (formStep1) {
         formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
-            const amount = document.getElementById('invest-amount').value;
+            const amountInput = document.getElementById('invest-amount');
+            const amount = parseFloat(amountInput.value);
             const portfolioName = investModalTitle.innerText;
 
-            if(amount <= 0) { alert("Ingresa un monto válido"); return; }
+            if(!amount || amount <= 0) { alert("Selecciona un monto válido"); return; }
 
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
             if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response.ok) {
                     closeInvestModal();
                     updateUserData(token); 
-                    loadPortfolios(); // Recargar para ver progreso de barra
+                    loadPortfolios(); 
                 } else {
                     alert('Error: ' + data.message);
                     backToStep1();
@@ -210,7 +211,9 @@ window.selectPortfolio = function(id, name) {
         step1Div.classList.remove('hidden');
         step2Div.classList.add('hidden');
         step2Div.classList.remove('flex');
-        document.getElementById('invest-amount').value = '';
+        // Reset select
+        const select = document.getElementById('invest-amount');
+        if(select) select.selectedIndex = 0;
     }
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
@@ -313,7 +316,6 @@ async function loadPortfolios() {
         
         gridContainer.innerHTML = ''; 
 
-        // ACTUALIZACIÓN: Usamos el diseño de CROWDFUNDING (Barras de progreso)
         portfolios.slice(0, 3).forEach(portfolio => {
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
@@ -321,8 +323,11 @@ async function loadPortfolios() {
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
-            // Cálculos de Comunidad
-            const progress = Math.min(100, (portfolio.currentInvestors / portfolio.targetInvestors) * 100);
+            // CÁLCULOS CROWDFUNDING
+            const missingAmount = portfolio.targetAmount - portfolio.currentAmount;
+            const spotsLeft = Math.max(0, Math.ceil(missingAmount / 1000)); // 1 cupo = $1000
+            
+            const progress = Math.min(100, (portfolio.currentAmount / portfolio.targetAmount) * 100);
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             const numFormat = new Intl.NumberFormat('es-MX'); 
 
@@ -333,42 +338,44 @@ async function loadPortfolios() {
                             <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
                             <div class="flex flex-col items-end">
                                 <span class="px-2 py-1 text-[10px] uppercase font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder} mb-1">Riesgo ${portfolio.risk}</span>
-                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod || 'N/A'}</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod}</span>
                             </div>
                         </div>
                         <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1 leading-tight">${portfolio.name}</h3>
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-4">${portfolio.provider}</p>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 h-10">${portfolio.description}</p>
+                        
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="text-xs font-bold text-green-600 dark:text-green-400">${numFormat.format(spotsLeft)} cupos disponibles</span>
+                        </div>
                     </div>
 
                     <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
                         <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-slate-700 dark:text-white">Progreso del Grupo</span>
-                            <span class="text-primary">${progress.toFixed(0)}%</span>
+                            <span class="text-slate-700 dark:text-white">Progreso de Fondeo</span>
+                            <span class="text-primary">${progress.toFixed(1)}%</span>
                         </div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
                             <div class="bg-primary h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
                         </div>
-                        <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">person</span>
-                                ${numFormat.format(portfolio.currentInvestors)} inscritos
-                            </span>
-                            <span>Meta: ${numFormat.format(portfolio.targetInvestors)}</span>
+                        <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                            <span>${formatter.format(portfolio.currentAmount)}</span>
+                            <span>Meta: ${formatter.format(portfolio.targetAmount)}</span>
                         </div>
                     </div>
 
                     <div class="p-6 pt-4 mt-auto">
                         <div class="flex items-center justify-between mb-4">
                              <div class="flex flex-col">
-                                <span class="text-xs text-slate-400">Rend. Histórico</span>
-                                <span class="text-lg font-bold text-green-500">+${portfolio.returnYTD}%</span>
+                                <span class="text-xs text-slate-400">Socios</span>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">${numFormat.format(portfolio.investors)}</span>
                              </div>
                              <div class="flex flex-col text-right">
-                                <span class="text-xs text-slate-400">Ticket Mínimo</span>
-                                <span class="text-sm font-bold text-slate-900 dark:text-white">${formatter.format(portfolio.minInvestment)}</span>
+                                <span class="text-xs text-slate-400">Ticket</span>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">$1,000.00</span>
                              </div>
                         </div>
+                        
                         <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2">
                             <span>Unirme al Grupo</span>
                             <span class="material-symbols-outlined text-sm">group_add</span>

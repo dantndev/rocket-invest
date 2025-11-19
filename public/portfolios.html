@@ -29,7 +29,7 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        button:active, a:active { transform: scale(0.95); opacity: 0.8; transition: transform 0.1s ease; }
+        button:active, a:active { transform: scale(0.95); opacity: 0.8; transition: transform 0.05s ease; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
@@ -137,10 +137,21 @@
                 <form id="investment-form-step1" class="flex flex-col gap-4">
                     <input type="hidden" id="modal-portfolio-id">
                     <div>
-                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Monto a Invertir (MXN)</label>
+                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Elige tu participación</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                            <input type="number" id="invest-amount" placeholder="5000.00" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold" required min="100">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold material-symbols-outlined text-lg">payments</span>
+                            <select id="invest-amount" class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold appearance-none cursor-pointer">
+                                <option value="" disabled selected>Selecciona monto...</option>
+                                <option value="1000">$1,000 MXN (1 Participación)</option>
+                                <option value="2000">$2,000 MXN (2 Participaciones)</option>
+                                <option value="5000">$5,000 MXN (5 Participaciones)</option>
+                                <option value="10000">$10,000 MXN (10 Participaciones)</option>
+                                <option value="20000">$20,000 MXN (20 Participaciones)</option>
+                                <option value="50000">$50,000 MXN (Socio Mayoritario)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
                         </div>
                         <p class="text-xs text-slate-400 mt-2 text-right">Saldo disponible: <span id="modal-balance-display">Cargando...</span></p>
                     </div>
@@ -231,6 +242,14 @@
             window.location.href = '/login.html';
         });
     </script>
+    
+    <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-700 shadow-xl flex-col p-4 gap-4 md:hidden z-50">
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="dashboard.html">Dashboard</a>
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="portfolios.html">Explorar Portafolios</a>
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="investments.html">Mis Inversiones</a>
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="history.html">Historial</a>
+    </div>
+
     <script src="js/portfolios.js"></script>
 </body>
 </html>
