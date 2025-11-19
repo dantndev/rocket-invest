@@ -2,7 +2,8 @@
 const { Pool } = require('pg');
 require('dotenv').config(); // Aseguramos que cargue las variables
 
-const connectionString = process.env.DATABASE_URL;
+// FORZANDO LA URL DIRECTA PARA PROBAR
+const connectionString = "postgresql://postgres:RocketInvest2025@db.odeipgmtgablhnazbvrn.supabase.co:6543/postgres";
 
 const pool = new Pool({
     connectionString: connectionString,
