@@ -1,16 +1,15 @@
 // db.js
 const { Pool } = require('pg');
-require('dotenv').config(); // Aseguramos que cargue las variables
 
-// FORZANDO LA URL DIRECTA PARA PROBAR
-const connectionString = "postgresql://postgres:RocketInvest2025@db.odeipgmtgablhnazbvrn.supabase.co:6543/postgres";
+// 1. URL DIRECTA con el puerto 5432 (Más estable para servidores como Render)
+const connectionString = "postgresql://postgres:RocketInvest2025@db.odeipgmtgablhnazbvrn.supabase.co:5432/postgres";
 
 const pool = new Pool({
     connectionString: connectionString,
     ssl: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false // Acepta el certificado de Supabase
     },
-    family: 4 // <--- ESTO FUERZA A USAR IPv4
+    family: 4 // <--- ¡ESTO ES LA CLAVE! Obliga a usar IPv4 y evita el error ENETUNREACH
 });
 
 async function query(text, params) {
@@ -18,14 +17,14 @@ async function query(text, params) {
 }
 
 async function initDb() {
-    console.log("🔌 Intentando conectar a PostgreSQL...");
+    console.log("🔌 Intentando conectar a PostgreSQL (IPv4)...");
     
     try {
-        // Prueba de conexión simple
+        // Prueba de conexión rápida
         await pool.query('SELECT NOW()');
-        console.log("✅ Conexión EXITOSA a la nube.");
+        console.log("✅ ¡CONEXIÓN EXITOSA!");
 
-        // Crear tablas...
+        // Crear tablas si no existen
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -59,8 +58,7 @@ async function initDb() {
         console.log("✅ Tablas verificadas.");
         return pool;
     } catch (err) {
-        console.error("❌ Error FATAL de conexión:", err.message);
-        console.log("🔍 Consejo: Revisa si tu IP está bloqueada o si el puerto 6543 funciona.");
+        console.error("❌ Error de conexión:", err);
     }
 }
 
