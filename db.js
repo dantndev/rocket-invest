@@ -1,22 +1,21 @@
-// db.js - VERSIÓN FINAL PROFESIONAL (SEGURA)
+// db.js
 const { Pool } = require('pg');
 require('dotenv').config(); // Carga variables si estás en local
 
-// 1. Leemos la URL segura desde el entorno
+// 1. Leemos la URL segura
 const connectionString = process.env.DATABASE_URL;
 
-// Validación de seguridad para que no arranque si falta la URL
+// Validación
 if (!connectionString) {
     console.error("❌ ERROR FATAL: No se encontró la variable DATABASE_URL.");
-    console.error("   -> Si estás en local: Revisa tu archivo .env");
-    console.error("   -> Si estás en Render: Revisa la pestaña 'Environment'");
-    process.exit(1); // Detiene el servidor para evitar errores raros
+    process.exit(1);
 }
 
-// 2. Configuración del Pool para NeonDB
+// 2. Configuración del Pool
 const pool = new Pool({
     connectionString: connectionString,
-    ssl: true, // Neon requiere SSL activado
+    ssl: true, 
+    family: 4 // <--- OBLIGATORIO PARA TU RED LOCAL (Fuerza IPv4)
 });
 
 // Función para ejecutar consultas
@@ -24,16 +23,15 @@ async function query(text, params) {
     return pool.query(text, params);
 }
 
-// Función de inicialización (Crea tablas si no existen)
+// Función de inicialización
 async function initDb() {
-    console.log("🔌 Conectando a la Base de Datos (Nube)...");
+    console.log("🔌 Conectando a la Base de Datos...");
     
     try {
-        // Prueba de conexión
         await pool.query('SELECT 1'); 
         console.log("✅ ¡CONEXIÓN EXITOSA!");
 
-        // 1. Tabla Usuarios
+        // Tablas...
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -43,7 +41,6 @@ async function initDb() {
             )
         `);
 
-        // 2. Tabla Inversiones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS investments (
                 id SERIAL PRIMARY KEY,
@@ -54,7 +51,6 @@ async function initDb() {
             )
         `);
 
-        // 3. Tabla Transacciones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS transactions (
                 id SERIAL PRIMARY KEY,
@@ -66,7 +62,7 @@ async function initDb() {
             )
         `);
 
-        console.log("✅ Tablas verificadas y listas.");
+        console.log("✅ Tablas verificadas.");
         return pool;
     } catch (err) {
         console.error("❌ Error de conexión con la Base de Datos:", err.message);

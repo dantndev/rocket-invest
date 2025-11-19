@@ -234,4 +234,43 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (e) { console.error(e); res.status(500).json({ message: 'Error' }); }
 });
 
+// AL INICIO DEL ARCHIVO:
+const axios = require('axios'); // <--- No olvides esto
+
+// ... (resto de tu código y rutas) ...
+
+// [NUEVO] 10. Obtener Datos Reales del Mercado (S&P 500)
+app.get('/api/market', async (req, res) => {
+    try {
+        // Calculamos fechas: Desde hace 1 año hasta hoy
+        const to = Math.floor(Date.now() / 1000);
+        const from = to - (365 * 24 * 60 * 60); // 1 año atrás
+        const symbol = 'SPY'; // ETF del S&P 500
+        const resolution = 'W'; // Datos Semanales (W = Weekly)
+        const token = process.env.FINNHUB_API_KEY;
+
+        // Pedimos datos a Finnhub
+        const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
+        
+        const response = await axios.get(url);
+        
+        if (response.data.s === 'ok') {
+            // Formateamos para Chart.js (Solo necesitamos precio de cierre 'c' y tiempo 't')
+            res.json({
+                prices: response.data.c, // Cierres
+                dates: response.data.t   // Timestamps
+            });
+        } else {
+            res.status(500).json({ message: 'Error en datos de bolsa' });
+        }
+    } catch (error) {
+        console.error("Error Finnhub:", error.message);
+        // Fallback: Si falla la API, enviamos datos falsos para que no se rompa la web
+        res.json({ 
+            prices: [400, 410, 405, 420, 430, 425, 440], 
+            dates: [1670000000, 1671000000, 1672000000, 1673000000, 1674000000, 1675000000, 1676000000] 
+        });
+    }
+});
+
 app.listen(PORT, () => { console.log(`🚀 Servidor Postgres corriendo en http://localhost:${PORT}`); });

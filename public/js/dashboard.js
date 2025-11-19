@@ -364,21 +364,35 @@ async function loadPortfolios() {
     } catch (error) { console.error(error); }
 }
 
-function renderMarketChart() {
+async function renderMarketChart() {
     const ctx = document.getElementById('marketChart');
-    if (ctx) {
+    if (!ctx) return;
+
+    try {
+        // 1. Pedir datos reales al servidor
+        const response = await fetch('/api/market');
+        const marketData = await response.json();
+
+        // 2. Procesar fechas (Convertir timestamps a texto legible 'Ene 24')
+        const labels = marketData.dates.map(timestamp => {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleDateString('es-MX', { month: 'short', year: '2-digit' });
+        });
+
+        // 3. Configuración de colores
         const isDark = document.documentElement.classList.contains('dark');
         const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
         const textColor = isDark ? '#94a3b8' : '#64748b';
         const lineColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
 
+        // 4. Dibujar Gráfica
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                labels: labels,
                 datasets: [{
-                    label: 'Rendimiento',
-                    data: [12, 15, 14, 22, 28, 35],
+                    label: 'S&P 500 (SPY)',
+                    data: marketData.prices,
                     borderColor: '#307de8',
                     backgroundColor: (context) => {
                         const ctx = context.chart.ctx;
@@ -387,11 +401,11 @@ function renderMarketChart() {
                         gradient.addColorStop(1, 'rgba(48, 125, 232, 0)');
                         return gradient;
                     },
-                    borderWidth: 3,
-                    tension: 0.4,
+                    borderWidth: 2,
+                    tension: 0.1, // Líneas más precisas para datos financieros
                     fill: true,
                     pointRadius: 0,
-                    pointHoverRadius: 6
+                    pointHoverRadius: 4
                 }]
             },
             plugins: [{
@@ -428,16 +442,26 @@ function renderMarketChart() {
                         borderWidth: 1,
                         padding: 10,
                         displayColors: false,
-                        callbacks: { label: function(context) { return 'Rendimiento: ' + context.parsed.y + '%'; } }
+                        callbacks: { label: function(context) { return '$' + context.parsed.y.toFixed(2); } }
                     }
                 },
                 interaction: { mode: 'index', intersect: false },
                 hover: { mode: 'index', intersect: false },
                 scales: {
-                    y: { grid: { color: gridColor, borderDash: [5, 5] }, ticks: { color: textColor, callback: (v) => v + '%' }, border: { display: false } },
-                    x: { grid: { display: false }, ticks: { color: textColor }, border: { display: false } }
+                    y: { 
+                        grid: { color: gridColor, borderDash: [5, 5] }, 
+                        ticks: { color: textColor, callback: (v) => '$' + v }, 
+                        border: { display: false } 
+                    },
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { color: textColor, maxTicksLimit: 6 }, // Limitar etiquetas para que no se amontonen
+                        border: { display: false } 
+                    }
                 }
             }
         });
+    } catch (e) {
+        console.error("Error renderizando gráfica:", e);
     }
 }
