@@ -21,3 +21,28 @@ La plataforma utiliza una arquitectura monolítica modular desplegada en la nube
                           |
                           v
                   [Twelve Data API] (Market Data)
+
+---
+
+## Estructura del Proyecto (Referencia Visual)
+
+rocket-invest/
+├── .env                  # Variables secretas (Local)
+├── .gitignore            # Archivos ignorados por Git
+├── db.js                 # Conector a PostgreSQL (Neon)
+├── package.json          # Dependencias y scripts
+├── server.js             # Servidor Express (Backend API)
+└── public/               # Frontend (Cliente)
+    ├── index.html        # Landing Page
+    ├── login.html        # Inicio de Sesión
+    ├── signup.html       # Registro
+    ├── dashboard.html    # Panel Principal
+    ├── portfolios.html   # Mercado / Explorar
+    ├── investments.html  # Mis Inversiones
+    ├── history.html      # Historial
+    └── js/
+        ├── auth.js       # Lógica de Login/Registro/Logout
+        ├── dashboard.js  # Lógica del Dashboard y Gráficas
+        ├── history.js    # Lógica de la tabla historial
+        ├── investments.js# Lógica de inversiones y venta
+        └── portfolios.js # Lógica del mercado

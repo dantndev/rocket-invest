@@ -47,13 +47,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Llenar datos del resumen
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
-            confirmAmountDisplay.innerText = formatter.format(amount);
-            confirmPortfolioName.innerText = portfolioName;
+            if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
+            if(confirmPortfolioName) confirmPortfolioName.innerText = portfolioName;
 
             // Cambiar pantalla
-            step1Div.classList.add('hidden');
-            step2Div.classList.remove('hidden');
-            step2Div.classList.add('flex');
+            if(step1Div && step2Div) {
+                step1Div.classList.add('hidden');
+                step2Div.classList.remove('hidden');
+                step2Div.classList.add('flex');
+            }
         });
     }
 
@@ -77,6 +79,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response.ok) {
                     closeModal();
                     updateUserData(token);
+                    // Opcional: Recargar portafolios para ver subir la barra de progreso
+                    loadAllPortfolios(); 
                 } else {
                     alert('Error: ' + data.message);
                     backToStep1();
@@ -96,9 +100,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 // --- FUNCIONES GLOBALES ---
 
 window.backToStep1 = function() {
-    step2Div.classList.add('hidden');
-    step2Div.classList.remove('flex');
-    step1Div.classList.remove('hidden');
+    if(step1Div && step2Div) {
+        step2Div.classList.add('hidden');
+        step2Div.classList.remove('flex');
+        step1Div.classList.remove('hidden');
+    }
 };
 
 async function updateUserData(token) {
@@ -110,7 +116,7 @@ async function updateUserData(token) {
             const user = await response.json();
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
             const balanceSpan = document.getElementById('modal-balance-display');
-            if(balanceSpan) balanceSpan.innerText = formatter.format(user.availableBalance); // Usamos availableBalance del nuevo endpoint
+            if(balanceSpan) balanceSpan.innerText = formatter.format(user.availableBalance);
         }
     } catch (error) { console.error("Error cargando usuario", error); }
 }
@@ -125,32 +131,67 @@ async function loadAllPortfolios() {
         gridContainer.innerHTML = ''; 
 
         portfolios.forEach(portfolio => {
+            // Lógica de Colores
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
             let riskBorder = portfolio.risk === 'Alto' ? 'border-red-200 dark:border-red-500/20' : (portfolio.risk === 'Medio' ? 'border-orange-200 dark:border-orange-500/20' : 'border-green-200 dark:border-green-500/20');
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
+            // Cálculos de Comunidad
+            const progress = Math.min(100, (portfolio.currentInvestors / portfolio.targetInvestors) * 100);
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+            const numFormat = new Intl.NumberFormat('es-MX'); 
+
             const cardHTML = `
-                <div class="flex flex-col p-6 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
-                        <span class="px-3 py-1 text-xs font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder}">Riesgo ${portfolio.risk}</span>
-                    </div>
-                    <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1">${portfolio.name}</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2">${portfolio.description}</p>
-                    <div class="mt-auto">
-                        <div class="flex items-end gap-2 mb-6">
-                            <p class="text-4xl font-bold text-green-600 dark:text-emerald-400">+${portfolio.returnYTD}%</p>
-                            <p class="text-slate-400 text-sm font-medium mb-1">Rendimiento (YTD)</p>
-                        </div>
-                        <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
-                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-                                <span class="material-symbols-outlined text-base">group</span>
-                                <span>${portfolio.users} inv.</span>
+                <div class="flex flex-col bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full overflow-hidden">
+                    
+                    <div class="p-6 pb-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
+                            <div class="flex flex-col items-end">
+                                <span class="px-2 py-1 text-[10px] uppercase font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder} mb-1">Riesgo ${portfolio.risk}</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod || 'N/A'}</span>
                             </div>
-                            <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="px-5 py-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold hover:bg-primary hover:text-white transition-colors">Invertir Ahora</button>
                         </div>
+                        <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1 leading-tight">${portfolio.name}</h3>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-4">${portfolio.provider}</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 h-10">${portfolio.description}</p>
+                    </div>
+
+                    <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-slate-700 dark:text-white">Progreso del Grupo</span>
+                            <span class="text-primary">${progress.toFixed(0)}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
+                            <div class="bg-primary h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">person</span>
+                                ${numFormat.format(portfolio.currentInvestors)} inscritos
+                            </span>
+                            <span>Meta: ${numFormat.format(portfolio.targetInvestors)}</span>
+                        </div>
+                    </div>
+
+                    <div class="p-6 pt-4 mt-auto">
+                        <div class="flex items-center justify-between mb-4">
+                             <div class="flex flex-col">
+                                <span class="text-xs text-slate-400">Rend. Histórico</span>
+                                <span class="text-lg font-bold text-green-500">+${portfolio.returnYTD}%</span>
+                             </div>
+                             <div class="flex flex-col text-right">
+                                <span class="text-xs text-slate-400">Ticket Mínimo</span>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">${formatter.format(portfolio.minInvestment)}</span>
+                             </div>
+                        </div>
+                        
+                        <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2">
+                            <span>Unirme al Grupo</span>
+                            <span class="material-symbols-outlined text-sm">group_add</span>
+                        </button>
                     </div>
                 </div>
             `;

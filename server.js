@@ -6,9 +6,10 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const axios = require('axios'); 
+const axios = require('axios');
 const { initDb, query } = require('./db'); 
 
+// INICIALIZACIÓN DE LA APP
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET_KEY = process.env.SECRET_KEY || 'mi_secreto_super_seguro';
@@ -20,17 +21,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Inicializar Base de Datos
 initDb();
 
-// --- DATOS ESTÁTICOS DE PORTAFOLIOS ---
+// --- DATOS DE FONDOS COLECTIVOS ---
 const portfolios = [
-    { id: 1, name: "Alpha Growth Fund", provider: "BlackRock Mexico", risk: "Alto", returnYTD: 99.99, users: 1240, minInvestment: 1000, description: "Enfoque agresivo en empresas tecnológicas y startups de LATAM." },
-    { id: 2, name: "Estabilidad Total", provider: "BBVA Asset Mgmt", risk: "Bajo", returnYTD: 8.12, users: 5300, minInvestment: 500, description: "Bonos gubernamentales y deuda corporativa de alta calificación." },
-    { id: 3, name: "Futuro Sostenible", provider: "Santander ESG", risk: "Medio", returnYTD: 14.50, users: 2100, minInvestment: 2000, description: "Inversión en empresas con certificaciones de energía limpia." },
-    { id: 4, name: "Crypto Blue Chips", provider: "Bitso Alpha", risk: "Alto", returnYTD: 145.20, users: 890, minInvestment: 5000, description: "Canasta ponderada de Bitcoin y Ethereum." },
-    { id: 5, name: "Bienes Raíces FIBRAs", provider: "Fibra Uno", risk: "Medio", returnYTD: 12.30, users: 3400, minInvestment: 100, description: "Inversión inmobiliaria comercial y rentas." },
-    { id: 6, name: "Asian Tigers", provider: "HSBC Global", risk: "Alto", returnYTD: 18.40, users: 1100, minInvestment: 3000, description: "Mercados emergentes de Asia (Vietnam, India, Indonesia)." },
-    { id: 7, name: "Deuda USA", provider: "Vanguard", risk: "Bajo", returnYTD: 4.50, users: 6000, minInvestment: 500, description: "Bonos del tesoro de Estados Unidos protegidos contra inflación." },
-    { id: 8, name: "Gaming & eSports", provider: "VanEck", risk: "Alto", returnYTD: 32.10, users: 2200, minInvestment: 1500, description: "Empresas de videojuegos, hardware y torneos." },
-    { id: 9, name: "Oro & Metales", provider: "Scotiabank", risk: "Medio", returnYTD: 9.80, users: 4100, minInvestment: 2000, description: "Resguardo de valor en metales preciosos físicos." }
+    { id: 1, name: "Alpha Tech Giants", provider: "BlackRock", ticker: "QQQ", risk: "Alto", returnYTD: 99.99, targetInvestors: 5000, currentInvestors: 3420, minInvestment: 1000, status: "open", lockUpPeriod: "12 Meses", description: "Acceso grupal a las 100 tecnológicas más grandes. Faltan socios para cerrar el grupo." },
+    { id: 2, name: "Deuda Soberana Plus", provider: "Santander", ticker: "SHV", risk: "Bajo", returnYTD: 8.12, targetInvestors: 10000, currentInvestors: 8900, minInvestment: 1000, status: "open", lockUpPeriod: "3 Meses", description: "Bonos de gobierno con tasa preferencial por volumen de usuarios." },
+    { id: 3, name: "Energía Limpia Global", provider: "iShares", ticker: "ICLN", risk: "Medio", returnYTD: 14.50, targetInvestors: 2000, currentInvestors: 450, minInvestment: 1000, status: "open", lockUpPeriod: "24 Meses", description: "Únete al grupo de inversión en infraestructura renovable." },
+    { id: 4, name: "Crypto Proxies", provider: "ProShares", ticker: "BITO", risk: "Alto", returnYTD: 145.20, targetInvestors: 1000, currentInvestors: 890, minInvestment: 5000, status: "open", lockUpPeriod: "6 Meses", description: "Exposición a futuros de Bitcoin sin custodia directa." },
+    { id: 5, name: "Bienes Raíces FIBRAs", provider: "Fibra Uno", ticker: "VNQ", risk: "Medio", returnYTD: 12.30, targetInvestors: 5000, currentInvestors: 3400, minInvestment: 1000, status: "open", lockUpPeriod: "12 Meses", description: "Portafolio de rentas comerciales diversificadas." },
+    { id: 6, name: "Asian Tigers", provider: "HSBC Global", ticker: "VWO", risk: "Alto", returnYTD: 18.40, targetInvestors: 2000, currentInvestors: 1100, minInvestment: 3000, status: "open", lockUpPeriod: "18 Meses", description: "Mercados emergentes de alto crecimiento en Asia." },
+    { id: 7, name: "Deuda Corporativa USA", provider: "Vanguard", ticker: "LQD", risk: "Bajo", returnYTD: 4.50, targetInvestors: 8000, currentInvestors: 6000, minInvestment: 1000, status: "open", lockUpPeriod: "6 Meses", description: "Bonos corporativos de grado inversión en dólares." },
+    { id: 8, name: "Gaming & eSports", provider: "VanEck", ticker: "ESPO", risk: "Alto", returnYTD: 32.10, targetInvestors: 3000, currentInvestors: 2200, minInvestment: 1500, status: "open", lockUpPeriod: "12 Meses", description: "El futuro del entretenimiento digital." },
+    { id: 9, name: "Oro Físico", provider: "SPDR", ticker: "GLD", risk: "Medio", returnYTD: 9.80, targetInvestors: 6000, currentInvestors: 4100, minInvestment: 2000, status: "open", lockUpPeriod: "Indefinido", description: "Resguardo de valor respaldado en lingotes reales." }
 ];
 
 // --- RUTAS API ---
@@ -42,27 +43,21 @@ app.get('/api/portfolios', (req, res) => res.json(portfolios));
 app.get('/api/transactions', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token' });
-
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
         const result = await query('SELECT * FROM transactions WHERE userId = $1 ORDER BY id DESC', [decoded.id]);
         res.json(result.rows);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error obteniendo historial' });
-    }
+    } catch (error) { res.status(500).json({ message: 'Error historial' }); }
 });
 
 // 3. Datos Usuario
 app.get('/api/auth/me', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token provided' });
-
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
         const userRes = await query('SELECT id, email, balance FROM users WHERE id = $1', [decoded.id]);
         const user = userRes.rows[0];
-        
         if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
         const invRes = await query('SELECT amount FROM investments WHERE userId = $1', [user.id]);
@@ -93,7 +88,6 @@ app.get('/api/my-investments', async (req, res) => {
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
         const result = await query('SELECT * FROM investments WHERE userId = $1', [decoded.id]);
-        
         const enriched = result.rows.map(inv => {
             const amount = parseFloat(inv.amount);
             const portfolio = portfolios.find(p => p.id === inv.portfolioid);
@@ -109,55 +103,42 @@ app.get('/api/my-investments', async (req, res) => {
             };
         });
         res.json(enriched);
-    } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
+    } catch (error) { res.status(500).json({ message: 'Error' }); }
 });
 
-// 5. DATOS DEL MERCADO (VERSIÓN TWELVE DATA)
+// 5. DATOS DEL MERCADO (TWELVE DATA)
 app.get('/api/market', async (req, res) => {
     try {
-        const symbol = 'AAPL'; // Apple
-        const interval = '1day'; // Datos diarios
-        const apikey = process.env.TWELVEDATA_API_KEY;
+        const symbol = 'AAPL'; 
+        const interval = '1day'; 
+        const apikey = process.env.TWELVEDATA_API_KEY; // Lee la variable TWELVEDATA_API_KEY
         
-        // Si no hay llave configurada, forzamos error para usar simulación
-        if (!apikey || apikey.includes('TU_LLAVE')) throw new Error("Falta API Key");
+        if (!apikey) throw new Error("Falta API Key de Twelve Data");
 
         const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${interval}&apikey=${apikey}&outputsize=30`;
         
-        console.log(`📡 Consultando Twelve Data (${symbol})...`);
+        console.log(`📡 Consultando Twelve Data...`);
         const response = await axios.get(url);
         
-        // Twelve Data devuelve un objeto con un array 'values'
         if (response.data.values) {
-            console.log("✅ Datos recibidos de Twelve Data");
-            
-            // ADAPTADOR: Convertir formato Twelve Data al formato que usa tu gráfica
-            // Twelve Data viene ordenado del más nuevo al más viejo, hay que invertirlo (.reverse)
+            console.log("✅ Datos recibidos");
             const rawData = response.data.values.reverse();
-            
             const prices = rawData.map(item => parseFloat(item.close));
-            const dates = rawData.map(item => {
-                // Convertir fecha "2023-10-25" a timestamp Unix para que tu gráfica lo entienda
-                return Math.floor(new Date(item.datetime).getTime() / 1000);
-            });
-
+            const dates = rawData.map(item => Math.floor(new Date(item.datetime).getTime() / 1000));
             res.json({ prices, dates });
         } else {
-            // Si la API responde con error (ej. límite excedido)
             console.error("⚠️ Error API:", response.data);
-            throw new Error("Respuesta API inválida");
+            throw new Error("Respuesta inválida");
         }
-
     } catch (error) {
-        console.error("❌ Falló la API Real:", error.message);
-        console.log("⚠️ Usando respaldo simulado...");
+        console.error("❌ Falló API Real:", error.message);
+        console.log("⚠️ Usando simulación...");
         
-        // FALLBACK (PLAN B) - Simulación
+        // Fallback
         const points = 30; 
         const prices = [];
         const dates = [];
-        let currentPrice = 180; // Precio base Apple aprox
-        
+        let currentPrice = 180; 
         for (let i = 0; i < points; i++) {
             currentPrice = currentPrice * (1 + (Math.random() * 0.06 - 0.025));
             prices.push(currentPrice.toFixed(2));
@@ -185,6 +166,10 @@ app.post('/api/invest', async (req, res) => {
         await query('INSERT INTO investments (userId, portfolioId, amount, date) VALUES ($1, $2, $3, $4)', [user.id, portfolioId, investmentAmount, new Date().toISOString()]);
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', [user.id, 'invest', `Inversión en ${portfolio.name}`, -investmentAmount, new Date().toISOString()]);
 
+        // Actualizar contador de grupo (Simulado en memoria)
+        const pIndex = portfolios.findIndex(p => p.id === parseInt(portfolioId));
+        if (pIndex !== -1) portfolios[pIndex].currentInvestors += 1;
+
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
         res.status(201).json({ message: 'Inversión exitosa', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
@@ -197,7 +182,6 @@ app.post('/api/deposit', async (req, res) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const userRes = await query('SELECT * FROM users WHERE id = $1', [decoded.id]);
         const user = userRes.rows[0];
-
         const depositAmount = parseFloat(amount);
         if (depositAmount <= 0) return res.status(400).json({ message: 'Monto inválido' });
 
@@ -217,12 +201,10 @@ app.post('/api/withdraw', async (req, res) => {
         const userRes = await query('SELECT * FROM users WHERE id = $1', [decoded.id]);
         const user = userRes.rows[0];
         const withdrawAmount = parseFloat(amount);
-
         if (withdrawAmount <= 0 || parseFloat(user.balance) < withdrawAmount) return res.status(400).json({ message: 'Fondos insuficientes' });
 
         await query('UPDATE users SET balance = balance - $1 WHERE id = $2', [withdrawAmount, user.id]);
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', [user.id, 'withdraw', 'Retiro a Cuenta Bancaria', -withdrawAmount, new Date().toISOString()]);
-
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
         res.status(201).json({ message: 'Retiro exitoso', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
@@ -244,7 +226,7 @@ app.post('/api/sell', async (req, res) => {
         await query('UPDATE users SET balance = balance + $1 WHERE id = $2', [finalAmount, decoded.id]);
         await query('DELETE FROM investments WHERE id = $1', [investmentId]);
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', [decoded.id, 'sell', `Venta ${portfolio ? portfolio.name : 'Fondo'}`, finalAmount, new Date().toISOString()]);
-
+        
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [decoded.id]);
         res.status(200).json({ message: 'Venta exitosa', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
@@ -260,9 +242,7 @@ app.post('/api/auth/register', async (req, res) => {
         const hashed = await bcrypt.hash(password, 10);
         const result = await query('INSERT INTO users (email, password, balance) VALUES ($1, $2, $3) RETURNING id', [email, hashed, 50000]);
         const newUserId = result.rows[0].id;
-
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', [newUserId, 'deposit', 'Bono de Bienvenida', 50000, new Date().toISOString()]);
-
         res.status(201).json({ message: 'Creado' });
     } catch (e) { console.error(e); res.status(500).json({ message: 'Error' }); }
 });
