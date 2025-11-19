@@ -21,7 +21,7 @@ async function query(text, params) {
 }
 
 async function initDb() {
-    console.log("⏳ Intentando conectar a NeonDB (Espere 5 seg)...");
+    console.log("⏳ Intentando conectar a NeonDB (Espere 20 seg)...");
     
     try {
         // Prueba de conexión
