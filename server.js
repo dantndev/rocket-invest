@@ -1,4 +1,4 @@
-require('dotenv').config(); // Línea 1: Variables de entorno
+require('dotenv').config(); // Línea 1: Cargar variables de entorno
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -6,7 +6,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const axios = require('axios'); // Cliente HTTP para Finnhub
+const axios = require('axios'); // Cliente HTTP para APIs externas
 const { initDb, query } = require('./db'); 
 
 const app = express();
@@ -17,10 +17,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Inicializar BD
+// Inicializar Base de Datos
 initDb();
 
-// DATOS DE PORTAFOLIOS
+// --- DATOS ESTÁTICOS DE PORTAFOLIOS ---
 const portfolios = [
     { id: 1, name: "Alpha Growth Fund", provider: "BlackRock Mexico", risk: "Alto", returnYTD: 99.99, users: 1240, minInvestment: 1000, description: "Enfoque agresivo en empresas tecnológicas y startups de LATAM." },
     { id: 2, name: "Estabilidad Total", provider: "BBVA Asset Mgmt", risk: "Bajo", returnYTD: 8.12, users: 5300, minInvestment: 500, description: "Bonos gubernamentales y deuda corporativa de alta calificación." },
@@ -35,10 +35,10 @@ const portfolios = [
 
 // --- RUTAS API ---
 
-// 1. Obtener Portafolios
+// 1. Obtener Lista de Portafolios
 app.get('/api/portfolios', (req, res) => res.json(portfolios));
 
-// 2. Obtener Historial
+// 2. Obtener Historial de Transacciones
 app.get('/api/transactions', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token' });
@@ -53,7 +53,7 @@ app.get('/api/transactions', async (req, res) => {
     }
 });
 
-// 3. Datos Usuario (Dashboard)
+// 3. Obtener Datos del Usuario (Perfil y Patrimonio)
 app.get('/api/auth/me', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token provided' });
@@ -65,6 +65,7 @@ app.get('/api/auth/me', async (req, res) => {
         
         if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
+        // Calcular valor actual de inversiones
         const invRes = await query('SELECT amount FROM investments WHERE userId = $1', [user.id]);
         let totalInvested = 0;
         let totalCurrentValue = 0;
@@ -72,6 +73,7 @@ app.get('/api/auth/me', async (req, res) => {
         invRes.rows.forEach(inv => {
             const amount = parseFloat(inv.amount);
             totalInvested += amount;
+            // Simulación: Ganancia fija del 1.5% sobre lo invertido
             totalCurrentValue += amount * 1.015; 
         });
 
@@ -86,7 +88,7 @@ app.get('/api/auth/me', async (req, res) => {
     } catch (error) { res.status(401).json({ message: 'Token inválido' }); }
 });
 
-// 4. Mis Inversiones
+// 4. Obtener Mis Inversiones (Detallado)
 app.get('/api/my-investments', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No autorizado' });
@@ -96,8 +98,9 @@ app.get('/api/my-investments', async (req, res) => {
         
         const enriched = result.rows.map(inv => {
             const amount = parseFloat(inv.amount);
-            const portfolio = portfolios.find(p => p.id === inv.portfolioid);
-            const currentVal = amount * 1.015;
+            // Buscar info del portafolio. Nota: Postgres devuelve nombres de columna en minúscula
+            const portfolio = portfolios.find(p => p.id === inv.portfolioid); 
+            const currentVal = amount * 1.015; // Simulación de ganancia
             return {
                 id: inv.id,
                 portfolioName: portfolio ? portfolio.name : 'Fondo Desconocido',
@@ -112,44 +115,57 @@ app.get('/api/my-investments', async (req, res) => {
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// 5. Datos Reales del Mercado (S&P 500)
+// 5. DATOS DEL MERCADO (Con Fallback Automático)
 app.get('/api/market', async (req, res) => {
     try {
-        // Configuración para traer velas semanales (Weekly)
+        const token = process.env.FINNHUB_API_KEY;
+        
+        // Si no hay llave configurada, saltar directo al plan B
+        if (!token || token === 'TU_API_KEY_AQUI') throw new Error("No API Key");
+
+        // Intentar conexión con Finnhub (S&P 500)
         const to = Math.floor(Date.now() / 1000);
         const from = to - (365 * 24 * 60 * 60); // Último año
         const symbol = 'SPY'; 
         const resolution = 'W'; 
-        const token = process.env.FINNHUB_API_KEY;
-
-        // Conexión Real a Finnhub
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
         
-        console.log("📡 Conectando a Finnhub...");
         const response = await axios.get(url);
         
         if (response.data.s === 'ok') {
-            console.log("✅ Datos de mercado recibidos correctamente.");
             res.json({
-                prices: response.data.c, // Precios de cierre
-                dates: response.data.t   // Fechas
+                prices: response.data.c,
+                dates: response.data.t
             });
         } else {
-            console.error("⚠️ Finnhub respondió pero sin datos:", response.data);
-            res.status(500).json({ message: 'Sin datos de bolsa' });
+            throw new Error("API Error (Posible 403 o límite excedido)");
         }
 
     } catch (error) {
-        // Si la llave falla (403) o no hay internet
-        console.error("❌ Error Finnhub:", error.response ? error.response.status : error.message);
+        console.log("⚠️ Usando datos simulados de mercado (API falló o no configurada).");
         
-        // Fallback: Enviar un error 500 para que sepas que falló la real
-        // (O puedes dejar la simulación aquí si prefieres que no se rompa)
-        res.status(500).json({ message: 'Error conectando a la Bolsa de Valores' });
+        // --- PLAN B: GENERADOR DE MERCADO SIMULADO ---
+        const points = 52; // 52 semanas (1 año)
+        const prices = [];
+        const dates = [];
+        let currentPrice = 450; // Precio base inicial
+        
+        // Generar una curva aleatoria realista
+        for (let i = 0; i < points; i++) {
+            const change = 1 + (Math.random() * 0.06 - 0.025); // Variación entre -2.5% y +3.5% (tendencia alcista suave)
+            currentPrice = currentPrice * change;
+            prices.push(currentPrice.toFixed(2));
+            
+            // Fechas hacia atrás
+            const date = Math.floor(Date.now() / 1000) - ((points - 1 - i) * 7 * 24 * 60 * 60);
+            dates.push(date);
+        }
+
+        res.json({ prices, dates });
     }
 });
 
-// 6. Invertir
+// 6. Realizar Inversión
 app.post('/api/invest', async (req, res) => {
     const { portfolioId, amount, token } = req.body;
     try {
@@ -161,19 +177,23 @@ app.post('/api/invest', async (req, res) => {
         const investmentAmount = parseFloat(amount);
         const portfolio = portfolios.find(p => p.id === parseInt(portfolioId));
 
-        if (investmentAmount <= 0 || user.balance < investmentAmount) return res.status(400).json({ message: 'Saldo inválido' });
+        if (investmentAmount <= 0 || parseFloat(user.balance) < investmentAmount) {
+            return res.status(400).json({ message: 'Saldo insuficiente o monto inválido' });
+        }
 
+        // Transacción: Restar Saldo -> Guardar Inversión -> Guardar Historial
         await query('UPDATE users SET balance = balance - $1 WHERE id = $2', [investmentAmount, user.id]);
-        await query('INSERT INTO investments (userId, portfolioId, amount, date) VALUES ($1, $2, $3, $4)', [user.id, portfolioId, investmentAmount, new Date().toISOString()]);
+        await query('INSERT INTO investments (userId, portfolioId, amount, date) VALUES ($1, $2, $3, $4)', 
+            [user.id, portfolioId, investmentAmount, new Date().toISOString()]);
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
             [user.id, 'invest', `Inversión en ${portfolio.name}`, -investmentAmount, new Date().toISOString()]);
 
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
         res.status(201).json({ message: 'Inversión exitosa', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
-    } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
+    } catch (error) { console.error(error); res.status(500).json({ message: 'Error procesando inversión' }); }
 });
 
-// 7. Depositar
+// 7. Depositar Fondos
 app.post('/api/deposit', async (req, res) => {
     const { amount, token } = req.body;
     try {
@@ -190,10 +210,10 @@ app.post('/api/deposit', async (req, res) => {
 
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
         res.status(201).json({ message: 'Depósito exitoso', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
-    } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
+    } catch (error) { console.error(error); res.status(500).json({ message: 'Error procesando depósito' }); }
 });
 
-// 8. Retirar
+// 8. Retirar Fondos
 app.post('/api/withdraw', async (req, res) => {
     const { amount, token } = req.body;
     try {
@@ -202,7 +222,9 @@ app.post('/api/withdraw', async (req, res) => {
         const user = userRes.rows[0];
         const withdrawAmount = parseFloat(amount);
 
-        if (withdrawAmount <= 0 || user.balance < withdrawAmount) return res.status(400).json({ message: 'Fondos insuficientes' });
+        if (withdrawAmount <= 0 || parseFloat(user.balance) < withdrawAmount) {
+            return res.status(400).json({ message: 'Fondos insuficientes' });
+        }
 
         await query('UPDATE users SET balance = balance - $1 WHERE id = $2', [withdrawAmount, user.id]);
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
@@ -210,22 +232,22 @@ app.post('/api/withdraw', async (req, res) => {
 
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
         res.status(201).json({ message: 'Retiro exitoso', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
-    } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
+    } catch (error) { console.error(error); res.status(500).json({ message: 'Error procesando retiro' }); }
 });
 
-// 9. Vender
+// 9. Vender Inversión
 app.post('/api/sell', async (req, res) => {
     const { investmentId, token } = req.body;
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
         const invRes = await query('SELECT * FROM investments WHERE id = $1 AND userId = $2', [investmentId, decoded.id]);
-        const investment = invRes.rows[0];
         
-        if (!investment) return res.status(404).json({ message: 'Inversión no encontrada' });
+        if (invRes.rows.length === 0) return res.status(404).json({ message: 'Inversión no encontrada' });
+        const investment = invRes.rows[0];
 
         const portfolio = portfolios.find(p => p.id === investment.portfolioid); 
         const amount = parseFloat(investment.amount);
-        const finalAmount = amount * 1.015; 
+        const finalAmount = amount * 1.015; // Retorno simulado
 
         await query('UPDATE users SET balance = balance + $1 WHERE id = $2', [finalAmount, decoded.id]);
         await query('DELETE FROM investments WHERE id = $1', [investmentId]);
@@ -234,39 +256,46 @@ app.post('/api/sell', async (req, res) => {
 
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [decoded.id]);
         res.status(200).json({ message: 'Venta exitosa', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
-    } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
+    } catch (error) { console.error(error); res.status(500).json({ message: 'Error procesando venta' }); }
 });
 
-// 10. Registro
+// 10. Registro de Usuario
 app.post('/api/auth/register', async (req, res) => {
     const { email, password } = req.body;
     try {
         const existingRes = await query('SELECT id FROM users WHERE email = $1', [email]);
-        if (existingRes.rows.length > 0) return res.status(400).json({ message: 'Usuario existe' });
+        if (existingRes.rows.length > 0) return res.status(400).json({ message: 'El usuario ya existe' });
 
         const hashed = await bcrypt.hash(password, 10);
+        // Crear usuario con saldo inicial
         const result = await query('INSERT INTO users (email, password, balance) VALUES ($1, $2, $3) RETURNING id', [email, hashed, 50000]);
         const newUserId = result.rows[0].id;
 
+        // Registrar bono en historial
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
             [newUserId, 'deposit', 'Bono de Bienvenida', 50000, new Date().toISOString()]);
 
-        res.status(201).json({ message: 'Creado' });
-    } catch (e) { console.error(e); res.status(500).json({ message: 'Error' }); }
+        res.status(201).json({ message: 'Usuario creado exitosamente' });
+    } catch (e) { console.error(e); res.status(500).json({ message: 'Error interno al registrar' }); }
 });
 
-// 11. Login
+// 11. Login de Usuario
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     try {
         const userRes = await query('SELECT * FROM users WHERE email = $1', [email]);
+        
+        if (userRes.rows.length === 0) return res.status(400).json({ message: 'Credenciales inválidas' });
         const user = userRes.rows[0];
 
-        if (!user || !(await bcrypt.compare(password, user.password))) return res.status(400).json({ message: 'Credenciales inválidas' });
+        if (!(await bcrypt.compare(password, user.password))) return res.status(400).json({ message: 'Credenciales inválidas' });
         
         const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '1h' });
         res.json({ token, message: 'Login exitoso' });
-    } catch (e) { console.error(e); res.status(500).json({ message: 'Error' }); }
+    } catch (e) { console.error(e); res.status(500).json({ message: 'Error en el servidor' }); }
 });
 
-app.listen(PORT, () => { console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`); });
+// Iniciar Servidor
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+});
