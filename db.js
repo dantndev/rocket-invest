@@ -1,4 +1,4 @@
-// db.js - VERSIÓN NEON DB
+// db.js
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -10,7 +10,7 @@ if (!connectionString) {
 
 const pool = new Pool({
     connectionString: connectionString,
-    ssl: true, // Neon requiere SSL simple (true)
+    ssl: true, // Configuración correcta para Neon
 });
 
 async function query(text, params) {
@@ -21,11 +21,10 @@ async function initDb() {
     console.log("🔌 Conectando a NeonDB...");
     
     try {
-        // Prueba de vida
         await pool.query('SELECT 1'); 
         console.log("✅ ¡CONEXIÓN EXITOSA A NEON!");
 
-        // 1. Crear Tabla Usuarios
+        // Crear tablas
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -35,7 +34,6 @@ async function initDb() {
             )
         `);
 
-        // 2. Crear Tabla Inversiones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS investments (
                 id SERIAL PRIMARY KEY,
@@ -46,7 +44,6 @@ async function initDb() {
             )
         `);
 
-        // 3. Crear Tabla Transacciones
         await pool.query(`
             CREATE TABLE IF NOT EXISTS transactions (
                 id SERIAL PRIMARY KEY,
@@ -58,7 +55,7 @@ async function initDb() {
             )
         `);
 
-        console.log("✅ Tablas verificadas en Neon.");
+        console.log("✅ Tablas verificadas.");
         return pool;
     } catch (err) {
         console.error("❌ Error de conexión:", err);
