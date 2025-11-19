@@ -1,4 +1,4 @@
-require('dotenv').config(); // Siempre en la línea 1
+require('dotenv').config(); // Línea 1: Variables de entorno
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -6,7 +6,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const axios = require('axios'); // Importación movida arriba (Correcto)
+const axios = require('axios'); // Cliente HTTP para Finnhub
 const { initDb, query } = require('./db'); 
 
 const app = express();
@@ -112,24 +112,16 @@ app.get('/api/my-investments', async (req, res) => {
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// 5. Datos Reales del Mercado (Finnhub) - NUEVO
+// 5. Datos Reales del Mercado (Finnhub) - CORREGIDO Y DIRECTO
 app.get('/api/market', async (req, res) => {
     try {
         const to = Math.floor(Date.now() / 1000);
         const from = to - (365 * 24 * 60 * 60);
         const symbol = 'SPY';
         const resolution = 'W';
-// ... dentro de app.get('/api/market', ...)
-
-const symbol = 'SPY';
-const resolution = 'W';
-
-// CAMBIA ESTA LÍNEA (Pon tu llave real aquí):
-const token = "d4eirkhr01qrumpfm6f0d4eirkhr01qrumpfm6fg"; 
-
-const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
-
-// ... resto del código
+        
+        // LLAVE DIRECTA PARA DESCARTAR ERRORES DE ENV EN RENDER
+        const token = "d4eirkhr01qrumpfm6f0d4eirkhr01qrumpfm6fg"; 
 
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
         
@@ -141,11 +133,13 @@ const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=
                 dates: response.data.t
             });
         } else {
+            // Si la API responde error lógico
+            console.error("Finnhub Error:", response.data);
             res.status(500).json({ message: 'Error en datos de bolsa' });
         }
     } catch (error) {
-        console.error("Error Finnhub:", error.message);
-        // Fallback (Datos falsos si falla la API)
+        console.error("Error Conexión Finnhub:", error.message);
+        // Fallback (Datos falsos si falla la API o se acaban los créditos)
         res.json({ 
             prices: [400, 410, 405, 420, 430, 425, 440], 
             dates: [1670000000, 1671000000, 1672000000, 1673000000, 1674000000, 1675000000, 1676000000] 
@@ -273,4 +267,4 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (e) { console.error(e); res.status(500).json({ message: 'Error' }); }
 });
 
-app.listen(PORT, () => { console.log(`🚀 Servidor Postgres corriendo en http://localhost:${PORT}`); });
+app.listen(PORT, () => { console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`); });
