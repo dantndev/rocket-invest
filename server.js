@@ -116,12 +116,20 @@ app.get('/api/my-investments', async (req, res) => {
 });
 
 // 5. DATOS DEL MERCADO (Con Fallback Automático)
+// 5. DATOS DEL MERCADO
 app.get('/api/market', async (req, res) => {
     try {
         const token = process.env.FINNHUB_API_KEY;
         
-        // Si no hay llave configurada, saltar directo al plan B
-        if (!token || token === 'TU_API_KEY_AQUI') throw new Error("No API Key");
+        // --- DEBUGGING (CHISMOSO) ---
+        console.log("1. Intentando conectar a Finnhub...");
+        console.log("2. ¿Tenemos llave?:", token ? "SÍ" : "NO (Es undefined)");
+        if (token) console.log("3. Primeros caracteres:", token.substring(0, 5) + "...");
+        // -----------------------------
+
+        if (!token) throw new Error("No API Key configurada en .env");
+
+        // ... el resto sigue igual ...
 
         // Intentar conexión con Finnhub (S&P 500)
         const to = Math.floor(Date.now() / 1000);
