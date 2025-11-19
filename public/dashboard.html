@@ -28,17 +28,12 @@
     </script>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        /* Ocultar scrollbar en sidebar móvil para limpieza */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        button:active, a:active {
-            transform: scale(0.95);
-            opacity: 0.8;
-            transition: transform 0.1s ease;
-        }
+        button:active, a:active { transform: scale(0.95); opacity: 0.8; transition: transform 0.1s ease; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased">
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
     
     <div class="flex min-h-screen relative">
         
@@ -61,25 +56,21 @@
                         <span class="material-symbols-outlined">home</span>
                         <p class="text-sm font-semibold leading-normal">Inicio</p>
                     </a>
-                
                     <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="dashboard.html">
                         <span class="material-symbols-outlined">dashboard</span>
                         <p class="text-sm font-bold leading-normal">Dashboard</p>
                     </a>
-                
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="portfolios.html">
                         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
                         <p class="text-sm font-semibold leading-normal">Explorar Portafolios</p>
                     </a>
-                
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="investments.html">
                         <span class="material-symbols-outlined">account_balance_wallet</span>
                         <p class="text-sm font-semibold leading-normal">Mis Inversiones</p>
                     </a>
-                
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="#">
-                        <span class="material-symbols-outlined">settings</span>
-                        <p class="text-sm font-semibold leading-normal">Configuración</p>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="history.html">
+                        <span class="material-symbols-outlined">history</span>
+                        <p class="text-sm font-semibold leading-normal">Historial</p>
                     </a>
                 </nav>
             </div>
@@ -111,9 +102,6 @@
                         <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all">
                             <span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span>
                         </button>
-                        <button class="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:shadow-md transition-all">
-                            <span class="material-symbols-outlined" style="font-size: 20px;">notifications</span>
-                        </button>
                         <div class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold">I</div>
                     </div>
                 </header>
@@ -122,29 +110,24 @@
                     <div class="hidden dark:block absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
                     
                     <div class="relative z-10 p-6 md:p-8">
-                        
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
                             <div>
                                 <p class="text-slate-500 dark:text-slate-400 text-xs font-bold tracking-wide uppercase mb-1">Patrimonio Total (Neto)</p>
                                 <h2 id="display-net-worth" class="text-slate-900 dark:text-white text-4xl md:text-5xl font-bold tracking-tight">$0.00</h2>
                             </div>
-                            <div class="flex-shrink-0 mt-4 sm:mt-0 flex gap-3">
-    
-                                <button onclick="openWithdrawModal()" class="flex items-center justify-center gap-2 rounded-full h-12 px-6 border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-bold transition-all">
+                            <div class="flex-shrink-0 mt-4 sm:mt-0 flex gap-3 w-full md:w-auto">
+                                <button onclick="openWithdrawModal()" class="flex-1 md:flex-none flex items-center justify-center gap-2 rounded-full h-12 px-6 border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-bold transition-all">
                                     <span class="material-symbols-outlined text-lg">arrow_upward</span>
                                     <span>Retirar</span>
                                 </button>
-                            
-                                <button onclick="openDepositModal()" class="flex items-center justify-center gap-2 rounded-full h-12 px-6 bg-primary text-white text-sm font-bold hover:bg-blue-600 hover:scale-105 transition-all shadow-lg shadow-primary/25">
+                                <button onclick="openDepositModal()" class="flex-1 md:flex-none flex items-center justify-center gap-2 rounded-full h-12 px-6 bg-primary text-white text-sm font-bold hover:bg-blue-600 hover:scale-105 transition-all shadow-lg shadow-primary/25">
                                     <span class="material-symbols-outlined text-lg">add_circle</span>
                                     <span>Depositar</span>
                                 </button>
-                            
                             </div>
                         </div>
                 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
                                     <span class="material-symbols-outlined">account_balance_wallet</span>
@@ -154,7 +137,6 @@
                                     <p id="display-available" class="text-slate-800 dark:text-slate-200 font-bold text-lg">$0.00</p>
                                 </div>
                             </div>
-                
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
                                     <span class="material-symbols-outlined">pie_chart</span>
@@ -164,7 +146,6 @@
                                     <p id="display-invested" class="text-slate-800 dark:text-slate-200 font-bold text-lg">$0.00</p>
                                 </div>
                             </div>
-                
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500">
                                     <span class="material-symbols-outlined">trending_up</span>
@@ -174,7 +155,6 @@
                                     <p id="display-profit" class="text-emerald-600 dark:text-emerald-400 font-bold text-lg">+$0.00</p>
                                 </div>
                             </div>
-                
                         </div>
                     </div>
                 </div>
@@ -195,12 +175,12 @@
 
                 <div class="flex items-center justify-between px-1 mb-6 mt-8">
                     <h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Portafolios Disponibles</h2>
-                    <a href="portfolios.html" class="text-primary text-sm font-bold hover:text-blue-400 transition-colors">Ver Todos</a>
+                    <button id="btn-ver-todos" class="text-primary text-sm font-bold hover:text-blue-400 transition-colors">Ver Todos</button>
                 </div>
                 
                 <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 w-full">
                     <div class="text-center col-span-1 sm:col-span-3 py-10 text-slate-500">
-                        Cargando datos... (Si ves esto mucho tiempo, revisa que el servidor esté prendido)
+                        Cargando datos...
                     </div>
                 </div>
             </div>
@@ -320,30 +300,24 @@
 
     <div id="withdraw-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700">
-            
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white">Retirar Fondos</h3>
                 <button onclick="closeWithdrawModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-
             <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl mb-6 flex items-center gap-4 border border-slate-200 dark:border-slate-700">
-                <div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-lg">
-                    🏦
-                </div>
+                <div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-lg">🏦</div>
                 <div>
                     <p class="text-xs text-slate-500 uppercase font-bold">Transferir a</p>
                     <p class="text-slate-900 dark:text-white font-bold text-sm">Cuenta Bancaria (CLABE)</p>
                 </div>
             </div>
-
             <form id="withdraw-form" class="flex flex-col gap-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">CLABE / Cuenta Destino</label>
                     <input type="text" placeholder="012 345 67890123456 7" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm outline-none focus:border-primary font-mono">
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Monto a retirar</label>
                     <div class="relative">
@@ -354,28 +328,22 @@
                         Saldo disponible para retirar: <span id="withdraw-max-balance" class="font-bold text-slate-600 dark:text-slate-300">Cargando...</span>
                     </p>
                 </div>
-
                 <button type="submit" id="btn-confirm-withdraw" class="w-full py-3 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-xl shadow-lg transition-all mt-2">
                     Confirmar Retiro
                 </button>
             </form>
-
         </div>
     </div>
 
     <script>
-        // Lógica básica de UI (Sidebar y Tema)
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = themeToggleBtn.querySelector('span');
         const html = document.documentElement;
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-        // Función para abrir/cerrar sidebar en móvil
         function toggleSidebar() {
             sidebar.classList.toggle('-translate-x-full');
-            
-            // Mostrar/Ocultar fondo oscuro
             if (sidebar.classList.contains('-translate-x-full')) {
                 sidebarOverlay.classList.add('hidden');
                 sidebarOverlay.classList.remove('block');

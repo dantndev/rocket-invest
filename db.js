@@ -2,22 +2,19 @@
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 
-// Función para abrir la conexión
 async function openDb() {
     return open({
-        filename: './database.sqlite', // Este será el archivo físico en tu carpeta
+        filename: './database.sqlite',
         driver: sqlite3.Database
     });
 }
 
-// Función para iniciar y crear tablas si no existen
 async function initDb() {
     const db = await openDb();
     
     console.log("🔌 Conectando a la Base de Datos...");
 
-    // 1. Crear Tabla de Usuarios
-    // Guardamos: ID, Email, Contraseña y Saldo
+    // 1. Usuarios
     await db.exec(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,13 +24,26 @@ async function initDb() {
         )
     `);
 
-    // 2. Crear Tabla de Inversiones
-    // Guardamos: Quién (userId), Dónde (portfolioId), Cuánto (amount) y Cuándo (date)
+    // 2. Inversiones Activas (Portafolio)
     await db.exec(`
         CREATE TABLE IF NOT EXISTS investments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             userId INTEGER,
             portfolioId INTEGER,
+            amount REAL,
+            date TEXT,
+            FOREIGN KEY(userId) REFERENCES users(id)
+        )
+    `);
+
+    // 3. [NUEVO] Historial de Transacciones (Logs)
+    // Tipos: 'deposit', 'withdraw', 'invest', 'sell'
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userId INTEGER,
+            type TEXT, 
+            description TEXT,
             amount REAL,
             date TEXT,
             FOREIGN KEY(userId) REFERENCES users(id)

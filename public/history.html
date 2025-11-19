@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>RocketInvest - Explorar</title>
+    <title>RocketInvest - Historial</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
@@ -29,7 +29,6 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        button:active, a:active { transform: scale(0.95); opacity: 0.8; transition: transform 0.1s ease; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
@@ -59,7 +58,7 @@
                         <span class="material-symbols-outlined">dashboard</span>
                         <p class="text-sm font-semibold leading-normal">Dashboard</p>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="portfolios.html">
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="portfolios.html">
                         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
                         <p class="text-sm font-bold leading-normal">Explorar Portafolios</p>
                     </a>
@@ -67,9 +66,9 @@
                         <span class="material-symbols-outlined">account_balance_wallet</span>
                         <p class="text-sm font-semibold leading-normal">Mis Inversiones</p>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="history.html">
+                    <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="history.html">
                         <span class="material-symbols-outlined">history</span>
-                        <p class="text-sm font-semibold leading-normal">Historial</p>
+                        <p class="text-sm font-bold leading-normal">Historial</p>
                     </a>
                 </nav>
             </div>
@@ -82,14 +81,14 @@
         </aside>
 
         <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 transition-all duration-300 flex flex-col relative z-0">
-            <div class="mx-auto max-w-7xl w-full">
+            <div class="mx-auto max-w-5xl w-full">
                 
                 <header class="flex items-center justify-between whitespace-nowrap mb-8">
                     <div class="flex items-center gap-3">
                         <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
                             <span class="material-symbols-outlined">menu</span>
                         </button>
-                        <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight">Mercado Completo</h2>
+                        <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight">Movimientos</h2>
                     </div>
                     <div class="flex items-center gap-2 md:gap-4">
                         <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all">
@@ -99,91 +98,32 @@
                     </div>
                 </header>
 
-                <div class="mb-8">
-                    <div class="relative max-w-md">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                            <span class="material-symbols-outlined">search</span>
-                        </span>
-                        <input type="text" class="w-full py-3 pl-10 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary placeholder:text-slate-400" placeholder="Buscar fondo de inversión...">
+                <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fecha</th>
+                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tipo</th>
+                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Descripción</th>
+                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr class="border-b border-slate-100 dark:border-slate-700">
+                                    <td colspan="4" class="p-8 text-center text-slate-400">Cargando movimientos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 w-full">
-                    <div class="col-span-1 sm:col-span-3 text-center py-10 text-slate-500">Cargando mercado...</div>
-                </div>
             </div>
         </main>
     </div>
 
-    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700 overflow-hidden relative">
-            
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Realizar Inversión</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white z-10">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-    
-            <div id="invest-step-1" class="transition-all duration-300">
-                <div class="bg-primary/10 p-4 rounded-xl mb-6 flex items-center gap-4 border border-primary/20">
-                    <div class="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">🚀</div>
-                    <div>
-                        <p class="text-xs text-primary font-bold uppercase tracking-wide">Estás invirtiendo en</p>
-                        <p id="modal-portfolio-name" class="text-slate-900 dark:text-white font-bold text-lg">Nombre del Fondo</p>
-                    </div>
-                </div>
-                
-                <form id="investment-form-step1" class="flex flex-col gap-4">
-                    <input type="hidden" id="modal-portfolio-id">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Monto a Invertir (MXN)</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                            <input type="number" id="invest-amount" placeholder="5000.00" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold" required min="100">
-                        </div>
-                        <p class="text-xs text-slate-400 mt-2 text-right">Saldo disponible: <span id="modal-balance-display">Cargando...</span></p>
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2 flex justify-center items-center gap-2">
-                        <span>Continuar</span>
-                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                    </button>
-                </form>
-            </div>
-    
-            <div id="invest-step-2" class="hidden flex-col items-center text-center animate-in fade-in slide-in-from-right-8 duration-300">
-                <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mb-4 text-yellow-600 dark:text-yellow-400">
-                    <span class="material-symbols-outlined text-3xl">priority_high</span>
-                </div>
-                
-                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">¿Confirmar Inversión?</h4>
-                <p class="text-slate-500 text-sm mb-6">Estás a punto de transferir fondos.</p>
-    
-                <div class="bg-slate-50 dark:bg-slate-900 w-full rounded-lg p-4 mb-6 border border-slate-200 dark:border-slate-700">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-xs text-slate-500 uppercase font-bold">Fondo</span>
-                        <span id="confirm-portfolio-name" class="text-sm font-bold text-slate-900 dark:text-white text-right">...</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-slate-500 uppercase font-bold">Monto</span>
-                        <span id="confirm-amount-display" class="text-2xl font-bold text-primary">$0.00</span>
-                    </div>
-                </div>
-    
-                <div class="flex gap-3 w-full">
-                    <button type="button" onclick="backToStep1()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all">
-                        Cancelar
-                    </button>
-                    <button type="button" id="btn-final-confirm" class="flex-1 py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all">
-                        Sí, Invertir
-                    </button>
-                </div>
-            </div>
-    
-        </div>
-    </div>
-
     <script>
+        // Lógica UI Base
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = themeToggleBtn.querySelector('span');
         const html = document.documentElement;
@@ -231,6 +171,6 @@
             window.location.href = '/login.html';
         });
     </script>
-    <script src="js/portfolios.js"></script>
+    <script src="js/history.js"></script>
 </body>
 </html>
