@@ -112,40 +112,51 @@ app.get('/api/my-investments', async (req, res) => {
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// 5. DATOS DEL MERCADO (CON TU NUEVA LLAVE)
+// 5. DATOS DEL MERCADO (VERSIÓN TWELVE DATA)
 app.get('/api/market', async (req, res) => {
     try {
-        const to = Math.floor(Date.now() / 1000);
-        const from = to - (30 * 24 * 60 * 60); // Últimos 30 días
-        const symbol = 'AAPL'; // Apple (Más estable para demos)
-        const resolution = 'D'; // Diario
+        const symbol = 'AAPL'; // Apple
+        const interval = '1day'; // Datos diarios
+        const apikey = process.env.TWELVEDATA_API_KEY;
         
-        // --- AQUÍ ESTÁ TU NUEVA LLAVE ---
-        const token = "d4ekqk1r01qrumpfuk8gd4ekqk1r01qrumpfuk90"; 
+        // Si no hay llave configurada, forzamos error para usar simulación
+        if (!apikey || apikey.includes('TU_LLAVE')) throw new Error("Falta API Key");
 
-        const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
+        const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${interval}&apikey=${apikey}&outputsize=30`;
         
-        console.log(`📡 Consultando Finnhub con llave nueva...`);
+        console.log(`📡 Consultando Twelve Data (${symbol})...`);
         const response = await axios.get(url);
         
-        if (response.data.s === 'ok') {
-            console.log("✅ ¡Datos de mercado recibidos!");
-            res.json({
-                prices: response.data.c,
-                dates: response.data.t
+        // Twelve Data devuelve un objeto con un array 'values'
+        if (response.data.values) {
+            console.log("✅ Datos recibidos de Twelve Data");
+            
+            // ADAPTADOR: Convertir formato Twelve Data al formato que usa tu gráfica
+            // Twelve Data viene ordenado del más nuevo al más viejo, hay que invertirlo (.reverse)
+            const rawData = response.data.values.reverse();
+            
+            const prices = rawData.map(item => parseFloat(item.close));
+            const dates = rawData.map(item => {
+                // Convertir fecha "2023-10-25" a timestamp Unix para que tu gráfica lo entienda
+                return Math.floor(new Date(item.datetime).getTime() / 1000);
             });
+
+            res.json({ prices, dates });
         } else {
-            throw new Error("Respuesta API vacía: " + JSON.stringify(response.data));
+            // Si la API responde con error (ej. límite excedido)
+            console.error("⚠️ Error API:", response.data);
+            throw new Error("Respuesta API inválida");
         }
+
     } catch (error) {
-        console.error("❌ Error Finnhub:", error.message);
+        console.error("❌ Falló la API Real:", error.message);
+        console.log("⚠️ Usando respaldo simulado...");
         
-        // FALLBACK (Plan B)
-        console.log("⚠️ Usando datos simulados de respaldo");
+        // FALLBACK (PLAN B) - Simulación
         const points = 30; 
         const prices = [];
         const dates = [];
-        let currentPrice = 150;
+        let currentPrice = 180; // Precio base Apple aprox
         
         for (let i = 0; i < points; i++) {
             currentPrice = currentPrice * (1 + (Math.random() * 0.06 - 0.025));
