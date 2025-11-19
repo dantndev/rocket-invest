@@ -163,7 +163,35 @@ const portfolios = [
 
 // --- RUTAS API ---
 
-app.get('/api/portfolios', (req, res) => res.json(portfolios));
+// 1. Portafolios (Con conteo real desde Base de Datos)
+app.get('/api/portfolios', async (req, res) => {
+    try {
+        // Hacemos una copia de los portafolios base para no modificar el original permanentemente en memoria
+        // Usamos map para crear objetos nuevos
+        const livePortfolios = await Promise.all(portfolios.map(async (p) => {
+            // 1. Contar cuánto dinero real han metido los usuarios a este fondo
+            const sumRes = await query('SELECT SUM(amount) as total FROM investments WHERE portfolioId = $1', [p.id]);
+            const realMoney = parseFloat(sumRes.rows[0].total || 0);
+
+            // 2. Contar cuántos socios reales hay (usuarios únicos)
+            const countRes = await query('SELECT COUNT(DISTINCT userId) as sociocount FROM investments WHERE portfolioId = $1', [p.id]);
+            const realInvestors = parseInt(countRes.rows[0].sociocount || 0);
+
+            return {
+                ...p, // Copiamos nombre, ticker, riesgo...
+                // SUMAMOS: Lo que ya tenía el fondo (Base) + Lo que han invertido tus usuarios (Real)
+                currentAmount: p.currentAmount + realMoney, 
+                investors: p.investors + realInvestors
+            };
+        }));
+
+        res.json(livePortfolios);
+    } catch (error) {
+        console.error(error);
+        // Si falla la BD, devolvemos los estáticos
+        res.json(portfolios);
+    }
+});
 
 app.get('/api/transactions', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
