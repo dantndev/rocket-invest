@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currencyFormatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
     try {
-        // Petición al Backend
+        // Petición al Backend (Ruta relativa)
         const response = await fetch('/api/transactions', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error('Error de red');
 
         const transactions = await response.json();
-        tableBody.innerHTML = ''; // Limpiar carga
+        tableBody.innerHTML = ''; 
 
         if (transactions.length === 0) {
             tableBody.innerHTML = `
@@ -45,17 +45,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             let amountPrefix = '';
 
             if (tx.type === 'deposit' || tx.type === 'sell') {
-                // ENTRADAS DE DINERO (Verde)
+                // ENTRADAS (Verde)
                 typeBadgeClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400';
                 typeLabel = tx.type === 'deposit' ? 'Depósito' : 'Venta';
                 amountClass = 'text-emerald-600 dark:text-emerald-400';
                 amountPrefix = '+';
             } else {
-                // SALIDAS DE DINERO (Negro/Rojo)
+                // SALIDAS (Negro/Blanco)
                 typeBadgeClass = 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
                 typeLabel = tx.type === 'invest' ? 'Inversión' : 'Retiro';
                 amountClass = 'text-slate-900 dark:text-white';
-                amountPrefix = ''; // El monto ya viene negativo de la BD
+                amountPrefix = ''; // Viene negativo
             }
 
             // 3. Renderizar Fila
