@@ -7,29 +7,63 @@ let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConf
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. REFERENCIAS
+    // 1. REFERENCIAS DEL DOM
     modal = document.getElementById('invest-modal');
     modalTitle = document.getElementById('modal-portfolio-name');
     modalIdInput = document.getElementById('modal-portfolio-id');
     
-    // Referencias de pasos
+    // Referencias de pasos del modal
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
 
+    // --- CALCULADORA EN TIEMPO REAL (NUEVO) ---
+    const investInput = document.getElementById('invest-amount');
+    // Creamos el elemento de mensaje dinámicamente si no existe en el HTML base
+    let calcMsg = document.getElementById('invest-calculation');
+    if (!calcMsg && investInput) {
+        calcMsg = document.createElement('p');
+        calcMsg.id = 'invest-calculation';
+        calcMsg.className = 'text-xs font-bold text-primary text-right mt-1';
+        investInput.parentNode.parentNode.appendChild(calcMsg);
+    }
+    const btnContinue = document.querySelector('#investment-form-step1 button[type="submit"]');
+
+    if (investInput && calcMsg) {
+        investInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            
+            if (!val || val < 1000) {
+                calcMsg.innerText = "Mínimo $1,000 MXN";
+                calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else if (val % 1000 !== 0) {
+                calcMsg.innerText = "Solo múltiplos de $1,000";
+                calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else {
+                const parts = val / 1000;
+                calcMsg.innerText = `Adquiriendo ${parts} Participación${parts > 1 ? 'es' : ''}`;
+                calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = false;
+            }
+        });
+    }
+
+    // --- SEGURIDAD ---
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = '/login.html';
         return;
     }
 
-    // Cargar datos
+    // 2. CARGAR DATOS
     await updateUserData(token);
     loadAllPortfolios();
 
-    // --- LÓGICA DEL MODAL DE 2 PASOS ---
+    // --- LISTENERS FORMULARIOS ---
 
     // A) Paso 1: Click en "Continuar"
     const formStep1 = document.getElementById('investment-form-step1');
@@ -37,16 +71,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            const amount = document.getElementById('invest-amount').value;
+            const amount = parseInt(document.getElementById('invest-amount').value);
             const portfolioName = modalTitle.innerText;
 
-            if(amount <= 0) {
-                alert("Ingresa un monto válido");
+            // Validación estricta
+            if (!amount || amount < 1000 || amount % 1000 !== 0) {
+                alert("El monto debe ser múltiplo de $1,000");
                 return;
             }
 
             // Llenar datos del resumen
-            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
             if(confirmPortfolioName) confirmPortfolioName.innerText = portfolioName;
 
@@ -79,8 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response.ok) {
                     closeModal();
                     updateUserData(token);
-                    // Opcional: Recargar portafolios para ver subir la barra de progreso
-                    loadAllPortfolios(); 
+                    loadAllPortfolios(); // Recargar para ver crecer la barra
                 } else {
                     alert('Error: ' + data.message);
                     backToStep1();
@@ -107,6 +141,42 @@ window.backToStep1 = function() {
     }
 };
 
+window.selectPortfolio = function(id, name) {
+    if (!modal) return;
+    
+    // Resetear al paso 1 y limpiar input
+    if(step1Div && step2Div) {
+        step1Div.classList.remove('hidden');
+        step2Div.classList.add('hidden');
+        step2Div.classList.remove('flex');
+        
+        const input = document.getElementById('invest-amount');
+        if(input) input.value = '';
+        
+        const calc = document.getElementById('invest-calculation');
+        if(calc) calc.innerText = '';
+    }
+
+    modalTitle.innerText = name;
+    modalIdInput.value = id;
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+        modal.querySelector('div').classList.add('scale-100');
+    }, 10);
+};
+
+window.closeModal = function() {
+    if (!modal) return;
+    modal.classList.add('opacity-0');
+    modal.querySelector('div').classList.remove('scale-100');
+    modal.querySelector('div').classList.add('scale-95');
+    setTimeout(() => { modal.classList.add('hidden'); }, 300);
+};
+
+// --- CARGA DE DATOS ---
+
 async function updateUserData(token) {
     try {
         const response = await fetch('/api/auth/me', {
@@ -130,6 +200,7 @@ async function loadAllPortfolios() {
         if(!gridContainer) return;
         gridContainer.innerHTML = ''; 
 
+        // MOSTRAR TODOS (Sin slice)
         portfolios.forEach(portfolio => {
             // Lógica de Colores
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
@@ -138,8 +209,13 @@ async function loadAllPortfolios() {
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
-            // Cálculos de Comunidad
-            const progress = Math.min(100, (portfolio.currentInvestors / portfolio.targetInvestors) * 100);
+            // CÁLCULOS DE COMUNIDAD
+            const investorsCount = portfolio.currentInvestors || 0; 
+            const targetCount = portfolio.targetInvestors || 1000;
+            const missingAmount = (targetCount - investorsCount) * 1000; // Estimado
+            const spotsLeft = Math.max(0, targetCount - investorsCount);
+            
+            const progress = Math.min(100, (investorsCount / targetCount) * 100);
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             const numFormat = new Intl.NumberFormat('es-MX'); 
 
@@ -151,18 +227,22 @@ async function loadAllPortfolios() {
                             <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
                             <div class="flex flex-col items-end">
                                 <span class="px-2 py-1 text-[10px] uppercase font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder} mb-1">Riesgo ${portfolio.risk}</span>
-                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod || 'N/A'}</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod}</span>
                             </div>
                         </div>
                         <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1 leading-tight">${portfolio.name}</h3>
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-4">${portfolio.provider}</p>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 h-10">${portfolio.description}</p>
+                        
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="text-xs font-bold text-green-600 dark:text-green-400">${numFormat.format(spotsLeft)} cupos disponibles</span>
+                        </div>
                     </div>
 
                     <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
                         <div class="flex justify-between text-xs font-bold mb-1">
                             <span class="text-slate-700 dark:text-white">Progreso del Grupo</span>
-                            <span class="text-primary">${progress.toFixed(0)}%</span>
+                            <span class="text-primary">${progress.toFixed(1)}%</span>
                         </div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
                             <div class="bg-primary h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
@@ -170,9 +250,9 @@ async function loadAllPortfolios() {
                         <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                             <span class="flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[14px]">person</span>
-                                ${numFormat.format(portfolio.currentInvestors)} inscritos
+                                ${numFormat.format(investorsCount)} inscritos
                             </span>
-                            <span>Meta: ${numFormat.format(portfolio.targetInvestors)}</span>
+                            <span>Meta: ${numFormat.format(targetCount)}</span>
                         </div>
                     </div>
 
@@ -199,33 +279,3 @@ async function loadAllPortfolios() {
         });
     } catch (error) { console.error(error); }
 }
-
-// Funciones Globales
-window.selectPortfolio = function(id, name) {
-    if (!modal) return;
-    
-    // Resetear al paso 1
-    if(step1Div && step2Div) {
-        step1Div.classList.remove('hidden');
-        step2Div.classList.add('hidden');
-        step2Div.classList.remove('flex');
-        document.getElementById('invest-amount').value = '';
-    }
-
-    modalTitle.innerText = name;
-    modalIdInput.value = id;
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        modal.querySelector('div').classList.remove('scale-95');
-        modal.querySelector('div').classList.add('scale-100');
-    }, 10);
-};
-
-window.closeModal = function() {
-    if (!modal) return;
-    modal.classList.add('opacity-0');
-    modal.querySelector('div').classList.remove('scale-100');
-    modal.querySelector('div').classList.add('scale-95');
-    setTimeout(() => { modal.classList.add('hidden'); }, 300);
-};

@@ -137,25 +137,23 @@
                 <form id="investment-form-step1" class="flex flex-col gap-4">
                     <input type="hidden" id="modal-portfolio-id">
                     <div>
-                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Elige tu participación</label>
+                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Monto a Invertir</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold material-symbols-outlined text-lg">payments</span>
-                            <select id="invest-amount" class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold appearance-none cursor-pointer">
-                                <option value="" disabled selected>Selecciona monto...</option>
-                                <option value="1000">$1,000 MXN (1 Participación)</option>
-                                <option value="2000">$2,000 MXN (2 Participaciones)</option>
-                                <option value="5000">$5,000 MXN (5 Participaciones)</option>
-                                <option value="10000">$10,000 MXN (10 Participaciones)</option>
-                                <option value="20000">$20,000 MXN (20 Participaciones)</option>
-                                <option value="50000">$50,000 MXN (Socio Mayoritario)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                                <span class="material-symbols-outlined">expand_more</span>
-                            </div>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                            <input type="number" id="invest-amount" placeholder="Ej. 5000" step="1000" min="1000" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold" required>
                         </div>
-                        <p class="text-xs text-slate-400 mt-2 text-right">Saldo disponible: <span id="modal-balance-display">Cargando...</span></p>
+                        
+                        <div class="flex justify-between items-start mt-2">
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                Saldo: <span id="modal-balance-display" class="font-bold">...</span>
+                            </p>
+                            <p id="invest-calculation" class="text-xs font-bold text-primary text-right">
+                                Ingresa un monto (Mín. $1,000)
+                            </p>
+                        </div>
                     </div>
-                    <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2 flex justify-center items-center gap-2">
+                    
+                    <button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <span>Continuar</span>
                         <span class="material-symbols-outlined text-sm">arrow_forward</span>
                     </button>
