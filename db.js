@@ -1,57 +1,63 @@
-// db.js
-const sqlite3 = require('sqlite3');
-const { open } = require('sqlite');
+// db.js - VERSIÓN POSTGRESQL
+const { Pool } = require('pg');
 
-async function openDb() {
-    return open({
-        filename: './database.sqlite',
-        driver: sqlite3.Database
-    });
+// Usamos la variable de entorno DATABASE_URL si existe (Producción), 
+// si no, usa una cadena local vacía (o hardcodeada para pruebas rápidas)
+const connectionString = process.env.DATABASE_URL;
+
+const pool = new Pool({
+    connectionString: connectionString,
+    ssl: {
+        rejectUnauthorized: false // Necesario para conexiones seguras en la nube
+    }
+});
+
+async function query(text, params) {
+    return pool.query(text, params);
 }
 
 async function initDb() {
-    const db = await openDb();
-    
-    console.log("🔌 Conectando a la Base de Datos...");
+    console.log("🔌 Conectando a PostgreSQL en la nube...");
 
-    // 1. Usuarios
-    await db.exec(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE,
-            password TEXT,
-            balance REAL DEFAULT 50000
-        )
-    `);
+    try {
+        // 1. Tabla Usuarios (SERIAL es el AUTOINCREMENT de Postgres)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                balance DECIMAL(15, 2) DEFAULT 50000
+            )
+        `);
 
-    // 2. Inversiones Activas (Portafolio)
-    await db.exec(`
-        CREATE TABLE IF NOT EXISTS investments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            userId INTEGER,
-            portfolioId INTEGER,
-            amount REAL,
-            date TEXT,
-            FOREIGN KEY(userId) REFERENCES users(id)
-        )
-    `);
+        // 2. Tabla Inversiones
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS investments (
+                id SERIAL PRIMARY KEY,
+                userId INTEGER REFERENCES users(id),
+                portfolioId INTEGER,
+                amount DECIMAL(15, 2),
+                date TEXT
+            )
+        `);
 
-    // 3. [NUEVO] Historial de Transacciones (Logs)
-    // Tipos: 'deposit', 'withdraw', 'invest', 'sell'
-    await db.exec(`
-        CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            userId INTEGER,
-            type TEXT, 
-            description TEXT,
-            amount REAL,
-            date TEXT,
-            FOREIGN KEY(userId) REFERENCES users(id)
-        )
-    `);
+        // 3. Tabla Transacciones
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS transactions (
+                id SERIAL PRIMARY KEY,
+                userId INTEGER REFERENCES users(id),
+                type TEXT,
+                description TEXT,
+                amount DECIMAL(15, 2),
+                date TEXT
+            )
+        `);
 
-    console.log("✅ Base de Datos lista y tablas verificadas.");
-    return db;
+        console.log("✅ Tablas de PostgreSQL verificadas/creadas.");
+        return pool;
+    } catch (err) {
+        console.error("❌ Error conectando a la BD:", err);
+    }
 }
 
-module.exports = { openDb, initDb };
+module.exports = { query, initDb };

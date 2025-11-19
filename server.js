@@ -4,18 +4,18 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const { initDb, openDb } = require('./db'); 
+const { initDb, query } = require('./db'); // Importamos el nuevo query wrapper
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET_KEY = 'mi_secreto_super_seguro'; 
+const SECRET_KEY = process.env.SECRET_KEY || 'mi_secreto_super_seguro';
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-let db;
-initDb().then(database => { db = database; });
+// Inicializar BD
+initDb();
 
 const portfolios = [
     { id: 1, name: "Alpha Growth Fund", provider: "BlackRock Mexico", risk: "Alto", returnYTD: 99.99, users: 1240, minInvestment: 1000, description: "Enfoque agresivo en empresas tecnológicas y startups de LATAM." },
@@ -33,197 +33,203 @@ const portfolios = [
 
 app.get('/api/portfolios', (req, res) => res.json(portfolios));
 
-// [NUEVO] Obtener Historial
+// Historial
 app.get('/api/transactions', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token' });
 
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        // Ordenar por fecha descendente (lo más nuevo primero)
-        const history = await db.all('SELECT * FROM transactions WHERE userId = ? ORDER BY id DESC', [decoded.id]);
-        res.json(history);
+        // Postgres usa $1, $2...
+        const result = await query('SELECT * FROM transactions WHERE userId = $1 ORDER BY id DESC', [decoded.id]);
+        res.json(result.rows); // En Postgres los datos están en .rows
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Error obteniendo historial' });
     }
 });
 
+// Datos Usuario
 app.get('/api/auth/me', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token provided' });
+
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const user = await db.get('SELECT id, email, balance FROM users WHERE id = ?', [decoded.id]);
+        const userRes = await query('SELECT id, email, balance FROM users WHERE id = $1', [decoded.id]);
+        const user = userRes.rows[0];
+        
         if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-        // Calcular inversiones
-        const investmentsList = await db.all('SELECT amount FROM investments WHERE userId = ?', [user.id]);
+        const invRes = await query('SELECT amount FROM investments WHERE userId = $1', [user.id]);
         let totalInvested = 0;
         let totalCurrentValue = 0;
-        investmentsList.forEach(inv => {
-            totalInvested += inv.amount;
-            totalCurrentValue += inv.amount * 1.015; // Simulación ganancia
+        
+        invRes.rows.forEach(inv => {
+            // Postgres devuelve strings para DECIMAL, convertimos a float
+            const amount = parseFloat(inv.amount);
+            totalInvested += amount;
+            totalCurrentValue += amount * 1.015; 
         });
 
         res.json({ 
             email: user.email, 
-            availableBalance: user.balance, 
+            availableBalance: parseFloat(user.balance), 
             investedAmount: totalInvested,
             currentValue: totalCurrentValue,
             profit: totalCurrentValue - totalInvested,
-            netWorth: user.balance + totalCurrentValue
+            netWorth: parseFloat(user.balance) + totalCurrentValue
         });
     } catch (error) { res.status(401).json({ message: 'Token inválido' }); }
 });
 
+// Mis Inversiones
 app.get('/api/my-investments', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No autorizado' });
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const userInvestments = await db.all('SELECT * FROM investments WHERE userId = ?', [decoded.id]);
-        const enriched = userInvestments.map(inv => {
-            const portfolio = portfolios.find(p => p.id === inv.portfolioId);
-            const currentVal = inv.amount * 1.015;
+        const result = await query('SELECT * FROM investments WHERE userId = $1', [decoded.id]);
+        
+        const enriched = result.rows.map(inv => {
+            const amount = parseFloat(inv.amount);
+            const portfolio = portfolios.find(p => p.id === inv.portfolioid); // Nota: Postgres devuelve columnas en minúscula
+            const currentVal = amount * 1.015;
             return {
                 id: inv.id,
                 portfolioName: portfolio ? portfolio.name : 'Fondo Desconocido',
                 risk: portfolio ? portfolio.risk : 'N/A',
-                investedAmount: inv.amount,
+                investedAmount: amount,
                 currentValue: currentVal,
-                profit: currentVal - inv.amount,
+                profit: currentVal - amount,
                 date: inv.date
             };
         });
         res.json(enriched);
-    } catch (error) { res.status(500).json({ message: 'Error' }); }
+    } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// INVERTIR (Con registro en historial)
+// Invertir
 app.post('/api/invest', async (req, res) => {
     const { portfolioId, amount, token } = req.body;
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const user = await db.get('SELECT * FROM users WHERE id = ?', [decoded.id]);
+        const userRes = await query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+        const user = userRes.rows[0];
+        
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
         const investmentAmount = parseFloat(amount);
         const portfolio = portfolios.find(p => p.id === parseInt(portfolioId));
 
         if (investmentAmount <= 0 || user.balance < investmentAmount) return res.status(400).json({ message: 'Saldo inválido' });
 
-        await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [investmentAmount, user.id]);
-        await db.run('INSERT INTO investments (userId, portfolioId, amount, date) VALUES (?, ?, ?, ?)', [user.id, portfolioId, investmentAmount, new Date().toISOString()]);
-        
-        // [NUEVO] Guardar en Historial
-        await db.run(
-            'INSERT INTO transactions (userId, type, description, amount, date) VALUES (?, ?, ?, ?, ?)',
-            [user.id, 'invest', `Inversión en ${portfolio.name}`, -investmentAmount, new Date().toISOString()]
-        );
+        // Transacciones
+        await query('UPDATE users SET balance = balance - $1 WHERE id = $2', [investmentAmount, user.id]);
+        await query('INSERT INTO investments (userId, portfolioId, amount, date) VALUES ($1, $2, $3, $4)', [user.id, portfolioId, investmentAmount, new Date().toISOString()]);
+        await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
+            [user.id, 'invest', `Inversión en ${portfolio.name}`, -investmentAmount, new Date().toISOString()]);
 
-        const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [user.id]);
-        res.status(201).json({ message: 'Inversión exitosa', newBalance: updatedUser.balance });
+        const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
+        res.status(201).json({ message: 'Inversión exitosa', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// DEPOSITAR (Con registro en historial)
+// Depositar
 app.post('/api/deposit', async (req, res) => {
     const { amount, token } = req.body;
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const user = await db.get('SELECT * FROM users WHERE id = ?', [decoded.id]);
+        const userRes = await query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+        const user = userRes.rows[0];
+
         const depositAmount = parseFloat(amount);
-        
         if (depositAmount <= 0) return res.status(400).json({ message: 'Monto inválido' });
 
-        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [depositAmount, user.id]);
-        
-        // [NUEVO] Guardar en Historial
-        await db.run(
-            'INSERT INTO transactions (userId, type, description, amount, date) VALUES (?, ?, ?, ?, ?)',
-            [user.id, 'deposit', 'Depósito de Fondos', depositAmount, new Date().toISOString()]
-        );
+        await query('UPDATE users SET balance = balance + $1 WHERE id = $2', [depositAmount, user.id]);
+        await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
+            [user.id, 'deposit', 'Depósito de Fondos', depositAmount, new Date().toISOString()]);
 
-        const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [user.id]);
-        res.status(201).json({ message: 'Depósito exitoso', newBalance: updatedUser.balance });
+        const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
+        res.status(201).json({ message: 'Depósito exitoso', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// RETIRAR (Con registro en historial)
+// Retirar
 app.post('/api/withdraw', async (req, res) => {
     const { amount, token } = req.body;
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const user = await db.get('SELECT * FROM users WHERE id = ?', [decoded.id]);
+        const userRes = await query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+        const user = userRes.rows[0];
         const withdrawAmount = parseFloat(amount);
 
         if (withdrawAmount <= 0 || user.balance < withdrawAmount) return res.status(400).json({ message: 'Fondos insuficientes' });
 
-        await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [withdrawAmount, user.id]);
-        
-        // [NUEVO] Guardar en Historial
-        await db.run(
-            'INSERT INTO transactions (userId, type, description, amount, date) VALUES (?, ?, ?, ?, ?)',
-            [user.id, 'withdraw', 'Retiro a Cuenta Bancaria', -withdrawAmount, new Date().toISOString()]
-        );
+        await query('UPDATE users SET balance = balance - $1 WHERE id = $2', [withdrawAmount, user.id]);
+        await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
+            [user.id, 'withdraw', 'Retiro a Cuenta Bancaria', -withdrawAmount, new Date().toISOString()]);
 
-        const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [user.id]);
-        res.status(201).json({ message: 'Retiro exitoso', newBalance: updatedUser.balance });
+        const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
+        res.status(201).json({ message: 'Retiro exitoso', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// VENDER (Con registro en historial)
+// Vender
 app.post('/api/sell', async (req, res) => {
     const { investmentId, token } = req.body;
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const investment = await db.get('SELECT * FROM investments WHERE id = ? AND userId = ?', [investmentId, decoded.id]);
+        const invRes = await query('SELECT * FROM investments WHERE id = $1 AND userId = $2', [investmentId, decoded.id]);
+        const investment = invRes.rows[0];
+        
         if (!investment) return res.status(404).json({ message: 'Inversión no encontrada' });
 
-        const portfolio = portfolios.find(p => p.id === investment.portfolioId);
-        const finalAmount = investment.amount * 1.015; // Simulación
+        // Note: portfolioid en minúscula por Postgres
+        const portfolio = portfolios.find(p => p.id === investment.portfolioid); 
+        const amount = parseFloat(investment.amount);
+        const finalAmount = amount * 1.015; 
 
-        await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [finalAmount, decoded.id]);
-        await db.run('DELETE FROM investments WHERE id = ?', [investmentId]);
+        await query('UPDATE users SET balance = balance + $1 WHERE id = $2', [finalAmount, decoded.id]);
+        await query('DELETE FROM investments WHERE id = $1', [investmentId]);
+        await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
+            [decoded.id, 'sell', `Venta ${portfolio ? portfolio.name : 'Fondo'}`, finalAmount, new Date().toISOString()]);
 
-        // [NUEVO] Guardar en Historial
-        await db.run(
-            'INSERT INTO transactions (userId, type, description, amount, date) VALUES (?, ?, ?, ?, ?)',
-            [decoded.id, 'sell', `Venta ${portfolio ? portfolio.name : 'Fondo'}`, finalAmount, new Date().toISOString()]
-        );
-
-        const updatedUser = await db.get('SELECT balance FROM users WHERE id = ?', [decoded.id]);
-        res.status(200).json({ message: 'Venta exitosa', newBalance: updatedUser.balance });
+        const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [decoded.id]);
+        res.status(200).json({ message: 'Venta exitosa', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// AUTH
+// Register
 app.post('/api/auth/register', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const existing = await db.get('SELECT id FROM users WHERE email = ?', [email]);
-        if (existing) return res.status(400).json({ message: 'Usuario existe' });
+        const existingRes = await query('SELECT id FROM users WHERE email = $1', [email]);
+        if (existingRes.rows.length > 0) return res.status(400).json({ message: 'Usuario existe' });
+
         const hashed = await bcrypt.hash(password, 10);
-        
-        // Registrar usuario y su primera transacción (Bono)
-        const result = await db.run('INSERT INTO users (email, password, balance) VALUES (?, ?, ?)', [email, hashed, 50000]);
-        
-        // [NUEVO] Historial del bono
-        await db.run(
-            'INSERT INTO transactions (userId, type, description, amount, date) VALUES (?, ?, ?, ?, ?)',
-            [result.lastID, 'deposit', 'Bono de Bienvenida', 50000, new Date().toISOString()]
-        );
+        // RETURNING id nos da el ID del usuario recién creado
+        const result = await query('INSERT INTO users (email, password, balance) VALUES ($1, $2, $3) RETURNING id', [email, hashed, 50000]);
+        const newUserId = result.rows[0].id;
+
+        await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', 
+            [newUserId, 'deposit', 'Bono de Bienvenida', 50000, new Date().toISOString()]);
 
         res.status(201).json({ message: 'Creado' });
-    } catch (e) { res.status(500).json({ message: 'Error' }); }
+    } catch (e) { console.error(e); res.status(500).json({ message: 'Error' }); }
 });
 
+// Login
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
+        const userRes = await query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = userRes.rows[0];
+
         if (!user || !(await bcrypt.compare(password, user.password))) return res.status(400).json({ message: 'Credenciales inválidas' });
+        
         const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '1h' });
         res.json({ token, message: 'Login exitoso' });
-    } catch (e) { res.status(500).json({ message: 'Error' }); }
+    } catch (e) { console.error(e); res.status(500).json({ message: 'Error' }); }
 });
 
-app.listen(PORT, () => { console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`); });
+app.listen(PORT, () => { console.log(`🚀 Servidor Postgres corriendo en http://localhost:${PORT}`); });
