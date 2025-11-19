@@ -112,42 +112,40 @@ app.get('/api/my-investments', async (req, res) => {
     } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
 });
 
-// 5. Datos del Mercado (Con Plan B automático)
+// 5. Datos Reales del Mercado (S&P 500)
 app.get('/api/market', async (req, res) => {
     try {
+        // Configuración para traer velas semanales (Weekly)
         const to = Math.floor(Date.now() / 1000);
-        const from = to - (365 * 24 * 60 * 60);
-        const symbol = 'SPY';
-        const resolution = 'W';
-        const token = process.env.FINNHUB_API_KEY || "LLAVE_FALSA"; // Intenta leer la llave
+        const from = to - (365 * 24 * 60 * 60); // Último año
+        const symbol = 'SPY'; 
+        const resolution = 'W'; 
+        const token = process.env.FINNHUB_API_KEY;
 
-        // Intentamos conectar con Finnhub
+        // Conexión Real a Finnhub
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
+        
+        console.log("📡 Conectando a Finnhub...");
         const response = await axios.get(url);
         
         if (response.data.s === 'ok') {
-            // PLAN A: Datos Reales
+            console.log("✅ Datos de mercado recibidos correctamente.");
             res.json({
-                prices: response.data.c,
-                dates: response.data.t
+                prices: response.data.c, // Precios de cierre
+                dates: response.data.t   // Fechas
             });
         } else {
-            throw new Error("API respondió pero sin datos válidos");
+            console.error("⚠️ Finnhub respondió pero sin datos:", response.data);
+            res.status(500).json({ message: 'Sin datos de bolsa' });
         }
-    } catch (error) {
-        // PLAN B: DATOS SIMULADOS (Fallback)
-        // Si la API falla (403, sin internet, etc), usamos estos datos para que la gráfica se vea bien.
-        console.log("⚠️ Usando datos simulados de mercado (API falló o llave inválida).");
-        
-        // Generamos una gráfica simulada bonita
-        const mockPrices = [410, 415, 412, 420, 425, 430, 428, 435, 440, 438, 445, 450];
-        // Generamos fechas simuladas para esos precios
-        const mockDates = mockPrices.map((_, i) => Math.floor(Date.now() / 1000) - ((12 - i) * 7 * 24 * 60 * 60));
 
-        res.json({ 
-            prices: mockPrices, 
-            dates: mockDates 
-        });
+    } catch (error) {
+        // Si la llave falla (403) o no hay internet
+        console.error("❌ Error Finnhub:", error.response ? error.response.status : error.message);
+        
+        // Fallback: Enviar un error 500 para que sepas que falló la real
+        // (O puedes dejar la simulación aquí si prefieres que no se rompa)
+        res.status(500).json({ message: 'Error conectando a la Bolsa de Valores' });
     }
 });
 
