@@ -13,7 +13,7 @@ const pool = new Pool({
     connectionString: connectionString,
     ssl: true,
     family: 4, // Fuerza IPv4
-    connectionTimeoutMillis: 5000, // <--- NUEVO: Esperar máx 5 segundos
+    connectionTimeoutMillis: 20000, // <--- NUEVO: Esperar máx 5 segundos
 });
 
 async function query(text, params) {
