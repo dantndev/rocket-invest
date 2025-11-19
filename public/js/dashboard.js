@@ -3,27 +3,26 @@
 // --- VARIABLES GLOBALES ---
 let investModal, investModalTitle, investModalIdInput;
 let depositModal;
-let withdrawModal; // Nuevo
-// Variables para el Modal de Inversión de 2 Pasos
+let withdrawModal; 
 let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConfirm;
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. INICIALIZAR REFERENCIAS DEL DOM
+    // 1. INICIALIZAR REFERENCIAS
     investModal = document.getElementById('invest-modal');
     investModalTitle = document.getElementById('modal-portfolio-name');
     investModalIdInput = document.getElementById('modal-portfolio-id');
     depositModal = document.getElementById('deposit-modal');
-    withdrawModal = document.getElementById('withdraw-modal'); // Nuevo
+    withdrawModal = document.getElementById('withdraw-modal');
 
-    // Referencias de pasos de inversión
+    // Referencias pasos inversión
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
 
-    // --- LÓGICA DE FORMATO DE TARJETA ---
+    // --- TARJETA Y FECHA ---
     const cardInput = document.getElementById('card-number');
     if (cardInput) {
         cardInput.addEventListener('input', function (e) {
@@ -34,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- LÓGICA DE FORMATO DE FECHA ---
     const expiryInput = document.getElementById('card-expiry');
     if (expiryInput) {
         expiryInput.addEventListener('input', function (e) {
@@ -54,12 +52,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // 2. CARGAR DATOS INICIALES
+    // 2. CARGAR DATOS
     await updateUserData(token);
     loadPortfolios();
     renderMarketChart();
 
-    // --- BOTÓN VER TODOS ---
+    // Botón Ver Todos
     const btnVerTodos = document.getElementById('btn-ver-todos');
     if(btnVerTodos) {
         btnVerTodos.addEventListener('click', () => {
@@ -67,9 +65,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- LISTENERS DE FORMULARIOS ---
+    // --- LISTENERS FORMULARIOS ---
 
-    // A) Lógica Modal Inversión (2 PASOS)
+    // A) Inversión (2 Pasos)
     const formStep1 = document.getElementById('investment-form-step1');
     if (formStep1) {
         formStep1.addEventListener('submit', (e) => {
@@ -110,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response.ok) {
                     closeInvestModal();
                     updateUserData(token); 
+                    loadPortfolios(); // Recargar para ver progreso de barra
                 } else {
                     alert('Error: ' + data.message);
                     backToStep1();
@@ -125,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // B) Formulario de DEPÓSITO
+    // B) Depósito
     const depositForm = document.getElementById('deposit-form');
     if (depositForm) {
         depositForm.addEventListener('submit', async (e) => {
@@ -133,7 +132,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const amount = document.getElementById('deposit-amount').value;
             const btn = document.getElementById('btn-confirm-deposit');
             const originalText = btn.innerText;
-            
             btn.disabled = true;
             btn.innerText = "Procesando...";
             await new Promise(r => setTimeout(r, 1000)); 
@@ -163,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // C) Formulario de RETIRO (NUEVO)
+    // C) Retiro
     const withdrawForm = document.getElementById('withdraw-form');
     if (withdrawForm) {
         withdrawForm.addEventListener('submit', async (e) => {
@@ -171,7 +169,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const amount = document.getElementById('withdraw-amount').value;
             const btn = document.getElementById('btn-confirm-withdraw');
             const originalText = btn.innerText;
-            
             btn.disabled = true;
             btn.innerText = "Enviando...";
             await new Promise(r => setTimeout(r, 1000)); 
@@ -183,14 +180,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     body: JSON.stringify({ amount, token })
                 });
                 const data = await response.json();
-
                 if (response.ok) {
                     closeWithdrawModal();
                     updateUserData(token);
                     document.getElementById('withdraw-amount').value = '';
-                } else {
-                    alert('Error: ' + data.message);
-                }
+                } else { alert('Error: ' + data.message); }
             } catch (error) { console.error(error); alert('Error de conexión'); } 
             finally {
                 btn.disabled = false;
@@ -256,16 +250,12 @@ window.closeDepositModal = function() {
     setTimeout(() => { depositModal.classList.add('hidden'); }, 300);
 };
 
-// Funciones para Modal de Retiro (NUEVO)
 window.openWithdrawModal = function() {
     if (!withdrawModal) withdrawModal = document.getElementById('withdraw-modal');
     if (!withdrawModal) return;
-
-    // Actualizar saldo disponible en el modal de retiro
     const balanceText = document.getElementById('display-available')?.innerText || "$0.00";
     const modalBalance = document.getElementById('withdraw-max-balance');
     if(modalBalance) modalBalance.innerText = balanceText;
-
     withdrawModal.classList.remove('hidden');
     setTimeout(() => {
         withdrawModal.classList.remove('opacity-0');
@@ -282,8 +272,7 @@ window.closeWithdrawModal = function() {
     setTimeout(() => { withdrawModal.classList.add('hidden'); }, 300);
 };
 
-
-// --- FUNCIONES DE CARGA DE DATOS ---
+// --- CARGA DE DATOS ---
 
 async function updateUserData(token) {
     try {
@@ -299,23 +288,18 @@ async function updateUserData(token) {
 
 function updateBalanceUI(data) {
     const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
-
     const elNetWorth = document.getElementById('display-net-worth');
     if (elNetWorth) elNetWorth.innerHTML = `${formatter.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`;
-
     const elAvailable = document.getElementById('display-available');
     if (elAvailable) elAvailable.innerText = formatter.format(data.availableBalance);
-
     const elInvested = document.getElementById('display-invested');
     if (elInvested) elInvested.innerText = formatter.format(data.investedAmount);
-
     const elProfit = document.getElementById('display-profit');
     if (elProfit) {
         const sign = data.profit >= 0 ? '+' : '';
         elProfit.innerText = `${sign}${formatter.format(data.profit)}`;
         elProfit.className = data.profit < 0 ? "text-red-500 font-bold text-lg" : "text-emerald-600 dark:text-emerald-400 font-bold text-lg";
     }
-
     const modalBalance = document.querySelector('#investment-form-step1 p.text-xs.text-right');
     if(modalBalance) modalBalance.innerText = `Disponible para invertir: ${formatter.format(data.availableBalance)}`;
 }
@@ -329,6 +313,7 @@ async function loadPortfolios() {
         
         gridContainer.innerHTML = ''; 
 
+        // ACTUALIZACIÓN: Usamos el diseño de CROWDFUNDING (Barras de progreso)
         portfolios.slice(0, 3).forEach(portfolio => {
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
@@ -336,26 +321,58 @@ async function loadPortfolios() {
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
+            // Cálculos de Comunidad
+            const progress = Math.min(100, (portfolio.currentInvestors / portfolio.targetInvestors) * 100);
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+            const numFormat = new Intl.NumberFormat('es-MX'); 
+
             const cardHTML = `
-                <div class="flex flex-col p-6 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
-                        <span class="px-3 py-1 text-xs font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder}">Riesgo ${portfolio.risk}</span>
-                    </div>
-                    <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1">${portfolio.name}</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2">${portfolio.description}</p>
-                    <div class="mt-auto">
-                        <div class="flex items-end gap-2 mb-6">
-                            <p class="text-4xl font-bold text-green-600 dark:text-emerald-400">+${portfolio.returnYTD}%</p>
-                            <p class="text-slate-400 text-sm font-medium mb-1">Rendimiento (YTD)</p>
-                        </div>
-                        <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
-                            <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-                                <span class="material-symbols-outlined text-base">group</span>
-                                <span>${portfolio.users} inv.</span>
+                <div class="flex flex-col bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full overflow-hidden">
+                    <div class="p-6 pb-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
+                            <div class="flex flex-col items-end">
+                                <span class="px-2 py-1 text-[10px] uppercase font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder} mb-1">Riesgo ${portfolio.risk}</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod || 'N/A'}</span>
                             </div>
-                            <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="px-5 py-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold hover:bg-primary hover:text-white transition-colors">Invertir Ahora</button>
                         </div>
+                        <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1 leading-tight">${portfolio.name}</h3>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-4">${portfolio.provider}</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 h-10">${portfolio.description}</p>
+                    </div>
+
+                    <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-slate-700 dark:text-white">Progreso del Grupo</span>
+                            <span class="text-primary">${progress.toFixed(0)}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
+                            <div class="bg-primary h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">person</span>
+                                ${numFormat.format(portfolio.currentInvestors)} inscritos
+                            </span>
+                            <span>Meta: ${numFormat.format(portfolio.targetInvestors)}</span>
+                        </div>
+                    </div>
+
+                    <div class="p-6 pt-4 mt-auto">
+                        <div class="flex items-center justify-between mb-4">
+                             <div class="flex flex-col">
+                                <span class="text-xs text-slate-400">Rend. Histórico</span>
+                                <span class="text-lg font-bold text-green-500">+${portfolio.returnYTD}%</span>
+                             </div>
+                             <div class="flex flex-col text-right">
+                                <span class="text-xs text-slate-400">Ticket Mínimo</span>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">${formatter.format(portfolio.minInvestment)}</span>
+                             </div>
+                        </div>
+                        <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2">
+                            <span>Unirme al Grupo</span>
+                            <span class="material-symbols-outlined text-sm">group_add</span>
+                        </button>
                     </div>
                 </div>
             `;
@@ -364,35 +381,21 @@ async function loadPortfolios() {
     } catch (error) { console.error(error); }
 }
 
-async function renderMarketChart() {
+function renderMarketChart() {
     const ctx = document.getElementById('marketChart');
-    if (!ctx) return;
-
-    try {
-        // 1. Pedir datos reales al servidor
-        const response = await fetch('/api/market');
-        const marketData = await response.json();
-
-        // 2. Procesar fechas (Convertir timestamps a texto legible 'Ene 24')
-        const labels = marketData.dates.map(timestamp => {
-            const date = new Date(timestamp * 1000);
-            return date.toLocaleDateString('es-MX', { month: 'short', year: '2-digit' });
-        });
-
-        // 3. Configuración de colores
+    if (ctx) {
         const isDark = document.documentElement.classList.contains('dark');
         const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
         const textColor = isDark ? '#94a3b8' : '#64748b';
         const lineColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
 
-        // 4. Dibujar Gráfica
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
                 datasets: [{
-                    label: 'S&P 500 (SPY)',
-                    data: marketData.prices,
+                    label: 'Rendimiento',
+                    data: [12, 15, 14, 22, 28, 35],
                     borderColor: '#307de8',
                     backgroundColor: (context) => {
                         const ctx = context.chart.ctx;
@@ -402,7 +405,7 @@ async function renderMarketChart() {
                         return gradient;
                     },
                     borderWidth: 2,
-                    tension: 0.1, // Líneas más precisas para datos financieros
+                    tension: 0.1,
                     fill: true,
                     pointRadius: 0,
                     pointHoverRadius: 4
@@ -448,20 +451,10 @@ async function renderMarketChart() {
                 interaction: { mode: 'index', intersect: false },
                 hover: { mode: 'index', intersect: false },
                 scales: {
-                    y: { 
-                        grid: { color: gridColor, borderDash: [5, 5] }, 
-                        ticks: { color: textColor, callback: (v) => '$' + v }, 
-                        border: { display: false } 
-                    },
-                    x: { 
-                        grid: { display: false }, 
-                        ticks: { color: textColor, maxTicksLimit: 6 }, // Limitar etiquetas para que no se amontonen
-                        border: { display: false } 
-                    }
+                    y: { grid: { color: gridColor, borderDash: [5, 5] }, ticks: { color: textColor, callback: (v) => '$' + v }, border: { display: false } },
+                    x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 }, border: { display: false } }
                 }
             }
         });
-    } catch (e) {
-        console.error("Error renderizando gráfica:", e);
     }
 }
