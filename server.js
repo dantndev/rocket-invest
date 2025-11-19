@@ -119,7 +119,17 @@ app.get('/api/market', async (req, res) => {
         const from = to - (365 * 24 * 60 * 60);
         const symbol = 'SPY';
         const resolution = 'W';
-        const token = "d4eirkhr01qrumpfm6f0d4eirkhr01qrumpfm6fg"; // Tu llave directa
+// ... dentro de app.get('/api/market', ...)
+
+const symbol = 'SPY';
+const resolution = 'W';
+
+// CAMBIA ESTA LÍNEA (Pon tu llave real aquí):
+const token = "d4eirkhr01qrumpfm6f0d4eirkhr01qrumpfm6fg"; 
+
+const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
+
+// ... resto del código
 
         const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${token}`;
         
