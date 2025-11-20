@@ -1,48 +1,26 @@
 // public/js/dashboard.js
-
-// --- VARIABLES GLOBALES ---
-let investModal, investModalTitle, investModalIdInput;
+let investModal, step1Div, step2Div, btnFinalConfirm;
 let depositModal, withdrawModal;
-let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConfirm;
+let investModalTitle, investModalIdInput, confirmPortfolioName, confirmAmountDisplay;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    
-    // 1. REFERENCIAS DEL DOM
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = '/login.html'; return; }
+
+    // Refs
     investModal = document.getElementById('invest-modal');
     investModalTitle = document.getElementById('modal-portfolio-name');
     investModalIdInput = document.getElementById('modal-portfolio-id');
     depositModal = document.getElementById('deposit-modal');
     withdrawModal = document.getElementById('withdraw-modal');
-
-    // Referencias pasos inversión
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
 
-    // --- LÓGICA DE INPUTS (Tarjeta y Fecha) ---
-    const cardInput = document.getElementById('card-number');
-    if (cardInput) {
-        cardInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            value = value.substring(0, 16);
-            e.target.value = value.match(/.{1,4}/g)?.join(' ') || value;
-        });
-    }
-    const expiryInput = document.getElementById('card-expiry');
-    if (expiryInput) {
-        expiryInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 4) value = value.substring(0, 4);
-            if (value.length > 2) value = value.substring(0, 2) + '/' + value.substring(2);
-            e.target.value = value;
-        });
-    }
-
-    // --- CALCULADORA EN TIEMPO REAL (Modal Inversión) ---
+    // Calculadora Modal
     const investInput = document.getElementById('invest-amount');
-    // Crear mensaje si no existe
     let calcMsg = document.getElementById('invest-calculation');
     if (!calcMsg && investInput) {
         calcMsg = document.createElement('p');
@@ -72,331 +50,203 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- SEGURIDAD ---
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login.html';
-        return;
-    }
-
-    // 2. CARGAR DATOS
+    // Carga Inicial
     await updateUserData(token);
     loadPortfolios();
     renderMarketChart();
 
-    // Listener Botón Ver Todos
-    const btnVerTodos = document.getElementById('btn-ver-todos');
-    if(btnVerTodos) {
-        btnVerTodos.addEventListener('click', () => {
-            window.location.href = 'portfolios.html';
-        });
-    }
+    // Listeners
+    const btnVer = document.getElementById('btn-ver-todos');
+    if(btnVer) btnVer.addEventListener('click', () => window.location.href = 'portfolios.html');
 
-    // --- LISTENERS FORMULARIOS ---
-
-    // A) Inversión
-    const formStep1 = document.getElementById('investment-form-step1');
-    if (formStep1) {
-        formStep1.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const amount = parseInt(document.getElementById('invest-amount').value);
-            const portfolioName = investModalTitle.innerText;
-
-            if (!amount || amount < 1000 || amount % 1000 !== 0) {
-                alert("Monto inválido"); return;
-            }
-
-            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-            if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
-            if(confirmPortfolioName) confirmPortfolioName.innerText = portfolioName;
-
-            if(step1Div && step2Div) {
-                step1Div.classList.add('hidden');
-                step2Div.classList.remove('hidden');
-                step2Div.classList.add('flex');
-            }
-        });
-    }
-
-    if (btnFinalConfirm) {
-        btnFinalConfirm.addEventListener('click', async () => {
-            const amount = document.getElementById('invest-amount').value;
-            const portfolioId = investModalIdInput.value;
-            
-            btnFinalConfirm.disabled = true;
-            btnFinalConfirm.innerText = "Procesando...";
-
-            try {
-                const response = await fetch('/api/invest', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ portfolioId, amount, token })
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    closeInvestModal();
-                    updateUserData(token);
-                    loadPortfolios(); // Recargar barras de progreso
-                } else {
-                    alert('Error: ' + data.message);
-                    backToStep1();
-                }
-            } catch (error) { console.error(error); alert('Error de conexión'); backToStep1(); } 
-            finally {
-                btnFinalConfirm.disabled = false;
-                btnFinalConfirm.innerText = "Sí, Invertir";
-            }
-        });
-    }
-
-    // B) y C) Depósito y Retiro
     setupTransactionForms(token);
+    setupInvestmentForm(token);
 });
 
-// --- FUNCIONES GLOBALES ---
-
-window.backToStep1 = function() {
-    if(step1Div && step2Div) {
-        step2Div.classList.add('hidden');
-        step2Div.classList.remove('flex');
-        step1Div.classList.remove('hidden');
-    }
-};
-
-window.selectPortfolio = function(id, name) {
-    if (!investModal) return;
-    if(step1Div && step2Div) {
-        step1Div.classList.remove('hidden');
-        step2Div.classList.add('hidden');
-        step2Div.classList.remove('flex');
-        const input = document.getElementById('invest-amount');
-        if(input) input.value = '';
-        const calc = document.getElementById('invest-calculation');
-        if(calc) calc.innerText = '';
-    }
-    investModalTitle.innerText = name;
-    investModalIdInput.value = id;
-    investModal.classList.remove('hidden');
-    setTimeout(() => {
-        investModal.classList.remove('opacity-0');
-        investModal.querySelector('div').classList.remove('scale-95');
-        investModal.querySelector('div').classList.add('scale-100');
-    }, 10);
-};
-
-window.closeModal = function() { closeInvestModal(); };
-function closeInvestModal() {
-    if (!investModal) return;
-    investModal.classList.add('opacity-0');
-    setTimeout(() => { investModal.classList.add('hidden'); }, 300);
-}
-
-window.openDepositModal = function() { if(depositModal) { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }};
-window.closeDepositModal = function() { if(depositModal) { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }};
-
-window.openWithdrawModal = function() { 
-    if(withdrawModal) { 
-        const bal = document.getElementById('display-available')?.innerText || "$0.00";
-        const mb = document.getElementById('withdraw-max-balance');
-        if(mb) mb.innerText = bal;
-        withdrawModal.classList.remove('hidden'); 
-        setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); 
-    }
-};
-window.closeWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }};
-
-// --- CARGA DE DATOS ---
-
-async function updateUserData(token) {
+// FUNCIONES CARGA
+async function loadPortfolios() {
     try {
-        const response = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (response.ok) {
-            const userData = await response.json();
-            updateBalanceUI(userData);
-        }
-    } catch (error) { console.error("Error cargando usuario", error); }
-}
+        const res = await fetch('/api/portfolios');
+        const data = await res.json();
+        const grid = document.getElementById('portfolio-grid');
+        if(!grid) return;
+        grid.innerHTML = '';
 
-function updateBalanceUI(data) {
-    const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-    const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
-    
-    setText('display-net-worth', `${formatter.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`);
-    setText('display-available', formatter.format(data.availableBalance));
-    setText('display-invested', formatter.format(data.investedAmount));
-    setText('modal-balance-display', formatter.format(data.availableBalance));
-    setText('withdraw-max-balance', formatter.format(data.availableBalance));
-    
-    const elProfit = document.getElementById('display-profit');
-    if (elProfit) {
-        elProfit.innerText = (data.profit >= 0 ? '+' : '') + formatter.format(data.profit);
-        elProfit.className = data.profit >= 0 ? "text-emerald-500 font-bold text-lg" : "text-red-500 font-bold text-lg";
-    }
-}
-
-// Esta función va en dashboard.js (slice 3) y portfolios.js (sin slice)
-
-async function loadPortfolios() { // O loadAllPortfolios en portfolios.js
-    try {
-        const response = await fetch('/api/portfolios');
-        const portfolios = await response.json();
-        const gridContainer = document.getElementById('portfolio-grid');
-        
-        if(!gridContainer) return;
-        gridContainer.innerHTML = ''; 
-
-        // Nota: Si es dashboard.js usa .slice(0,3), si es portfolios.js quítalo.
-        portfolios.forEach(portfolio => { // Agrega .slice(0,3) aquí si es dashboard
+        // MOSTRAR SOLO LOS PRIMEROS 3
+        data.slice(0, 3).forEach(p => {
+            // Cálculo Cupos
+            const ticket = p.minInvestment || 1000;
+            const targetMoney = p.targetAmount || 1000000;
+            const currentMoney = p.currentAmount || 0;
             
-            // --- MATEMÁTICAS DE CUPOS (LA LÓGICA NUEVA) ---
-            
-            const ticketPrice = portfolio.minInvestment; // $1,000
-            
-            // 1. Cupos Totales del Fondo = Meta Dinero / Precio Ticket
-            const totalSlots = Math.floor(portfolio.targetAmount / ticketPrice);
-            
-            // 2. Cupos Ocupados = Dinero Recaudado / Precio Ticket
-            const occupiedSlots = Math.floor(portfolio.currentAmount / ticketPrice);
-            
-            // 3. Cupos Restantes (Lo que mostramos)
-            const remainingSlots = Math.max(0, totalSlots - occupiedSlots);
-            
-            // 4. Porcentaje de Llenado (Basado en dinero/cupos)
-            const progress = Math.min(100, (portfolio.currentAmount / portfolio.targetAmount) * 100);
-            
-            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-            const numFormat = new Intl.NumberFormat('es-MX'); 
+            const totalSlots = Math.floor(targetMoney / ticket);
+            const filledSlots = Math.floor(currentMoney / ticket);
+            const spotsLeft = Math.max(0, totalSlots - filledSlots);
+            const progress = Math.min(100, (currentMoney / targetMoney) * 100);
 
-            // Colores
-            let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
-            let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
-            let riskBorder = portfolio.risk === 'Alto' ? 'border-red-200 dark:border-red-500/20' : (portfolio.risk === 'Medio' ? 'border-orange-200 dark:border-orange-500/20' : 'border-green-200 dark:border-green-500/20');
-            const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
-            const icon = icons[(portfolio.id - 1) % icons.length];
+            const numFormat = new Intl.NumberFormat('es-MX');
+            const moneyFormat = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
 
-            const cardHTML = `
-                <div class="flex flex-col bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full overflow-hidden">
-                    
-                    <div class="p-6 pb-4">
-                        <div class="flex justify-between items-start mb-3">
-                            <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
-                            <div class="flex flex-col items-end">
-                                <span class="px-2 py-1 text-[10px] uppercase font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder} mb-1">Riesgo ${portfolio.risk}</span>
-                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod}</span>
-                            </div>
-                        </div>
-                        <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1 leading-tight">${portfolio.name}</h3>
-                        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-4">${portfolio.provider}</p>
-                        
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="flex h-2 w-2 rounded-full ${remainingSlots < 100 ? 'bg-red-500' : 'bg-green-500'} animate-pulse"></span>
-                            <span class="text-xs font-bold ${remainingSlots < 100 ? 'text-red-600' : 'text-green-600 dark:text-green-400'}">
-                                ${remainingSlots === 0 ? 'AGOTADO' : `Solo ${numFormat.format(remainingSlots)} cupos disponibles`}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
-                        <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-slate-700 dark:text-white">Progreso de Meta</span>
-                            <span class="text-primary">${progress.toFixed(1)}%</span>
-                        </div>
-                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
-                            <div class="bg-primary h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
-                        </div>
-                        <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                            <span>${formatter.format(portfolio.currentAmount)}</span>
-                            <span>Meta: ${formatter.format(portfolio.targetAmount)}</span>
-                        </div>
-                    </div>
-
-                    <div class="p-6 pt-4 mt-auto">
-                        <div class="flex items-center justify-between mb-4">
-                             <div class="flex flex-col">
-                                <span class="text-xs text-slate-400">Socios Activos</span>
-                                <span class="text-sm font-bold text-slate-900 dark:text-white">${numFormat.format(portfolio.investors)}</span>
-                             </div>
-                             <div class="flex flex-col text-right">
-                                <span class="text-xs text-slate-400">Participación</span>
-                                <span class="text-sm font-bold text-slate-900 dark:text-white">$1,000.00</span>
-                             </div>
-                        </div>
-                        
-                        <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" 
-                            class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            ${remainingSlots === 0 ? 'disabled' : ''}>
-                            <span>${remainingSlots === 0 ? 'Fondo Cerrado' : 'Unirme al Grupo'}</span>
-                            ${remainingSlots > 0 ? '<span class="material-symbols-outlined text-sm">group_add</span>' : ''}
-                        </button>
-                    </div>
+            const html = `
+            <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex flex-col h-full">
+                <div class="flex justify-between mb-3">
+                    <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">🚀</div>
+                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-blue-50 text-blue-600">${p.risk}</span>
                 </div>
-            `;
-            gridContainer.innerHTML += cardHTML;
-        });
-    } catch (error) { console.error(error); }
-}
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-1">${p.name}</h3>
+                <p class="text-xs text-slate-500 mb-4 line-clamp-2">${p.description}</p>
+                
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="flex h-2 w-2 rounded-full ${spotsLeft > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse"></span>
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${numFormat.format(spotsLeft)} cupos disp.</span>
+                </div>
 
-function renderMarketChart() {
-    const ctx = document.getElementById('marketChart');
-    if (!ctx) return;
-    // ... (Tu lógica de gráfica se mantiene igual, no la borré para ahorrar espacio, pero asegúrate de tenerla)
-    // Puedes pegar aquí el bloque de Chart.js de la versión anterior si te falta.
-    // Por completitud, aquí está el bloque:
-    try {
-        const isDark = document.documentElement.classList.contains('dark');
-        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-        const textColor = isDark ? '#94a3b8' : '#64748b';
-        
-        fetch('/api/market').then(res => res.json()).then(marketData => {
-            const labels = marketData.dates.map(ts => new Date(ts*1000).toLocaleDateString('es-MX', {month:'short', day:'numeric'}));
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'S&P 500',
-                        data: marketData.prices,
-                        borderColor: '#307de8',
-                        backgroundColor: (context) => {
-                            const ctx = context.chart.ctx;
-                            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-                            gradient.addColorStop(0, 'rgba(48, 125, 232, 0.2)');
-                            gradient.addColorStop(1, 'rgba(48, 125, 232, 0)');
-                            return gradient;
-                        },
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true,
-                        pointRadius: 0,
-                        pointHoverRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-                    interaction: { mode: 'index', intersect: false },
-                    scales: {
-                        y: { grid: { color: gridColor, borderDash: [5, 5] }, ticks: { color: textColor, callback: (v) => '$' + v }, border: { display: false } },
-                        x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 }, border: { display: false } }
-                    }
-                }
-            });
+                <div class="mt-auto">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span class="text-slate-500">Meta</span>
+                        <span class="text-primary">${progress.toFixed(0)}%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1">
+                        <div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-4">
+                        <span>${moneyFormat.format(currentMoney)}</span>
+                        <span>${moneyFormat.format(targetMoney)}</span>
+                    </div>
+                    <button onclick="setupInvest(${p.id}, '${p.name}')" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity">Unirme al Grupo</button>
+                </div>
+            </div>`;
+            grid.innerHTML += html;
         });
     } catch(e) { console.error(e); }
 }
 
-function setupTransactionForms(token) {
-    // Depósitos
+// HELPERS
+async function updateUserData(token) {
+    try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+        if(res.ok) updateBalanceUI(await res.json());
+    } catch(e) { console.error(e); }
+}
+
+function updateBalanceUI(data) {
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+    const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
+    setText('display-net-worth', `${fmt.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`);
+    setText('display-available', fmt.format(data.availableBalance));
+    setText('display-invested', fmt.format(data.investedAmount));
+    setText('modal-balance-display', fmt.format(data.availableBalance));
+    setText('withdraw-max-balance', fmt.format(data.availableBalance));
+}
+
+function setupInvestmentForm(token) {
+    const f1 = document.getElementById('investment-form-step1');
+    if(f1) f1.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const amount = parseInt(document.getElementById('invest-amount').value);
+        if(!amount || amount < 1000 || amount % 1000 !== 0) return;
+        
+        const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+        document.getElementById('confirm-amount-display').innerText = fmt.format(amount);
+        document.getElementById('confirm-portfolio-name').innerText = investModalTitle.innerText;
+        
+        step1Div.classList.add('hidden');
+        step2Div.classList.remove('hidden');
+        step2Div.classList.add('flex');
+    });
+
+    if(btnFinalConfirm) btnFinalConfirm.addEventListener('click', async () => {
+        btnFinalConfirm.innerText = "Procesando...";
+        const pid = document.getElementById('modal-portfolio-id').value;
+        const amount = document.getElementById('invest-amount').value;
+        try {
+            const res = await fetch('/api/invest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ portfolioId: pid, amount, token })
+            });
+            const d = await res.json();
+            if(res.ok) {
+                closeModal();
+                updateUserData(token);
+                loadPortfolios();
+            } else {
+                alert(d.message);
+                backToStep1();
+            }
+        } catch(e) { alert("Error"); backToStep1(); }
+        btnFinalConfirm.innerText = "Sí, Invertir";
+    });
+}
+
+function renderMarketChart() { /* Tu código de gráfica Chart.js que ya funciona */ 
+    const ctx = document.getElementById('marketChart');
+    if (!ctx) return;
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+    fetch('/api/market').then(res => res.json()).then(data => {
+        const labels = data.dates.map(ts => new Date(ts*1000).toLocaleDateString('es-MX', {month:'short', day:'numeric'}));
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data.prices,
+                    borderColor: '#307de8',
+                    backgroundColor: (ctx) => {
+                        const g = ctx.chart.ctx.createLinearGradient(0,0,0,200);
+                        g.addColorStop(0, 'rgba(48, 125, 232, 0.2)'); g.addColorStop(1, 'rgba(48, 125, 232, 0)');
+                        return g;
+                    },
+                    borderWidth: 2, tension: 0.3, fill: true, pointRadius: 0, pointHoverRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: { grid: { color: gridColor, borderDash: [5,5] }, ticks: { color: textColor, callback: v => '$'+v }, border: { display: false } },
+                    x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 }, border: { display: false } }
+                }
+            }
+        });
+    });
+}
+
+// GLOBAL HELPERS
+window.setupInvest = function(id, name) {
+    if(!investModal) return;
+    document.getElementById('modal-portfolio-name').innerText = name;
+    document.getElementById('modal-portfolio-id').value = id;
+    backToStep1();
+    investModal.classList.remove('hidden');
+    setTimeout(() => investModal.classList.remove('opacity-0'), 10);
+    const inp = document.getElementById('invest-amount'); if(inp) inp.value = '';
+    const msg = document.getElementById('invest-calculation'); if(msg) msg.innerText = '';
+}
+window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); step2Div.classList.remove('flex'); }
+window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
+// ... (Aquí pegas las funciones de openDepositModal, closeDepositModal, etc. para no repetir mucho código) ...
+window.openDepositModal = function() { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }
+window.closeDepositModal = function() { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }
+window.openWithdrawModal = function() { 
+    const b = document.getElementById('display-available')?.innerText || "0";
+    document.getElementById('withdraw-max-balance').innerText = b;
+    withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); 
+}
+window.closeWithdrawModal = function() { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }
+
+function setupTransactionForms(token) { /* Tu código de depósitos/retiros igual que siempre */ 
     const depositForm = document.getElementById('deposit-form');
     if (depositForm) {
         depositForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const amount = document.getElementById('deposit-amount').value;
             const btn = document.getElementById('btn-confirm-deposit');
-            const originalText = btn.innerText;
             btn.disabled = true; btn.innerText = "Procesando...";
-            await new Promise(r => setTimeout(r, 1000)); 
             try {
                 const res = await fetch('/api/deposit', {
                     method: 'POST',
@@ -408,20 +258,16 @@ function setupTransactionForms(token) {
                     updateUserData(token);
                     document.getElementById('deposit-amount').value = '';
                 } else { const d = await res.json(); alert(d.message); }
-            } catch (e) { alert('Error'); } finally { btn.disabled = false; btn.innerText = originalText; }
+            } catch (e) { alert('Error'); } finally { btn.disabled = false; btn.innerText = "Pagar Ahora"; }
         });
     }
-
-    // Retiros
     const withdrawForm = document.getElementById('withdraw-form');
     if (withdrawForm) {
         withdrawForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const amount = document.getElementById('withdraw-amount').value;
             const btn = document.getElementById('btn-confirm-withdraw');
-            const originalText = btn.innerText;
             btn.disabled = true; btn.innerText = "Enviando...";
-            await new Promise(r => setTimeout(r, 1000)); 
             try {
                 const res = await fetch('/api/withdraw', {
                     method: 'POST',
@@ -433,7 +279,7 @@ function setupTransactionForms(token) {
                     updateUserData(token);
                     document.getElementById('withdraw-amount').value = '';
                 } else { const d = await res.json(); alert(d.message); }
-            } catch (e) { alert('Error'); } finally { btn.disabled = false; btn.innerText = originalText; }
+            } catch (e) { alert('Error'); } finally { btn.disabled = false; btn.innerText = "Confirmar Retiro"; }
         });
     }
 }

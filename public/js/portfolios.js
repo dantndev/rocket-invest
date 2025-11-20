@@ -1,27 +1,48 @@
 // public/js/portfolios.js
 
 // --- VARIABLES GLOBALES ---
-let modal, modalTitle, modalIdInput;
-// Variables para el Modal de 2 Pasos
+let investModal, investModalTitle, investModalIdInput;
+let depositModal, withdrawModal;
 let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConfirm;
 
 document.addEventListener('DOMContentLoaded', async () => {
     
     // 1. REFERENCIAS DEL DOM
-    modal = document.getElementById('invest-modal');
-    modalTitle = document.getElementById('modal-portfolio-name');
-    modalIdInput = document.getElementById('modal-portfolio-id');
-    
-    // Referencias de pasos del modal
+    investModal = document.getElementById('invest-modal');
+    investModalTitle = document.getElementById('modal-portfolio-name');
+    investModalIdInput = document.getElementById('modal-portfolio-id');
+    depositModal = document.getElementById('deposit-modal');
+    withdrawModal = document.getElementById('withdraw-modal');
+
+    // Referencias pasos inversión
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
 
-    // --- CALCULADORA EN TIEMPO REAL (NUEVO) ---
+    // --- LÓGICA DE INPUTS (Tarjeta y Fecha) ---
+    const cardInput = document.getElementById('card-number');
+    if (cardInput) {
+        cardInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.substring(0, 16);
+            e.target.value = value.match(/.{1,4}/g)?.join(' ') || value;
+        });
+    }
+
+    const expiryInput = document.getElementById('card-expiry');
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) value = value.substring(0, 4);
+            if (value.length > 2) value = value.substring(0, 2) + '/' + value.substring(2);
+            e.target.value = value;
+        });
+    }
+
+    // --- CALCULADORA EN TIEMPO REAL (Modal) ---
     const investInput = document.getElementById('invest-amount');
-    // Creamos el elemento de mensaje dinámicamente si no existe en el HTML base
     let calcMsg = document.getElementById('invest-calculation');
     if (!calcMsg && investInput) {
         calcMsg = document.createElement('p');
@@ -34,7 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (investInput && calcMsg) {
         investInput.addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
-            
             if (!val || val < 1000) {
                 calcMsg.innerText = "Mínimo $1,000 MXN";
                 calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
@@ -61,31 +81,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. CARGAR DATOS
     await updateUserData(token);
-    loadAllPortfolios();
+    loadAllPortfolios(); // Carga TODOS los portafolios
 
     // --- LISTENERS FORMULARIOS ---
 
-    // A) Paso 1: Click en "Continuar"
+    // A) Inversión (2 Pasos)
     const formStep1 = document.getElementById('investment-form-step1');
     if (formStep1) {
         formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
-            
-            const amount = parseInt(document.getElementById('invest-amount').value);
-            const portfolioName = modalTitle.innerText;
+            const amountInput = document.getElementById('invest-amount');
+            const amount = parseInt(amountInput.value);
+            const portfolioName = investModalTitle.innerText;
 
-            // Validación estricta
             if (!amount || amount < 1000 || amount % 1000 !== 0) {
-                alert("El monto debe ser múltiplo de $1,000");
+                alert("Monto inválido. Debe ser múltiplo de $1,000.");
                 return;
             }
 
-            // Llenar datos del resumen
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
             if(confirmPortfolioName) confirmPortfolioName.innerText = portfolioName;
 
-            // Cambiar pantalla
             if(step1Div && step2Div) {
                 step1Div.classList.add('hidden');
                 step2Div.classList.remove('hidden');
@@ -94,11 +111,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // B) Paso 2: Click en "Sí, Invertir"
     if (btnFinalConfirm) {
         btnFinalConfirm.addEventListener('click', async () => {
             const amount = document.getElementById('invest-amount').value;
-            const portfolioId = modalIdInput.value;
+            const portfolioId = investModalIdInput.value;
             
             btnFinalConfirm.disabled = true;
             btnFinalConfirm.innerText = "Procesando...";
@@ -112,23 +128,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    closeModal();
+                    closeInvestModal();
                     updateUserData(token);
-                    loadAllPortfolios(); // Recargar para ver crecer la barra
+                    loadAllPortfolios(); // Recargar tarjetas para ver progreso
                 } else {
                     alert('Error: ' + data.message);
                     backToStep1();
                 }
-            } catch (error) { 
-                console.error(error); 
-                alert('Error de conexión');
-                backToStep1();
-            } finally {
+            } catch (error) { console.error(error); alert('Error de conexión'); backToStep1(); } 
+            finally {
                 btnFinalConfirm.disabled = false;
                 btnFinalConfirm.innerText = "Sí, Invertir";
             }
         });
     }
+
+    // B) y C) Depósito y Retiro
+    setupTransactionForms(token);
 });
 
 // --- FUNCIONES GLOBALES ---
@@ -142,58 +158,70 @@ window.backToStep1 = function() {
 };
 
 window.selectPortfolio = function(id, name) {
-    if (!modal) return;
+    if (!investModal) return;
     
-    // Resetear al paso 1 y limpiar input
+    // Resetear al paso 1
     if(step1Div && step2Div) {
         step1Div.classList.remove('hidden');
         step2Div.classList.add('hidden');
         step2Div.classList.remove('flex');
         
+        // Limpiar inputs
         const input = document.getElementById('invest-amount');
         if(input) input.value = '';
-        
         const calc = document.getElementById('invest-calculation');
         if(calc) calc.innerText = '';
     }
 
-    modalTitle.innerText = name;
-    modalIdInput.value = id;
-    modal.classList.remove('hidden');
+    investModalTitle.innerText = name;
+    investModalIdInput.value = id;
+    investModal.classList.remove('hidden');
     setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        modal.querySelector('div').classList.remove('scale-95');
-        modal.querySelector('div').classList.add('scale-100');
+        investModal.classList.remove('opacity-0');
+        investModal.querySelector('div').classList.remove('scale-95');
+        investModal.querySelector('div').classList.add('scale-100');
     }, 10);
 };
 
-window.closeModal = function() {
-    if (!modal) return;
-    modal.classList.add('opacity-0');
-    modal.querySelector('div').classList.remove('scale-100');
-    modal.querySelector('div').classList.add('scale-95');
-    setTimeout(() => { modal.classList.add('hidden'); }, 300);
+window.closeModal = function() { closeInvestModal(); };
+function closeInvestModal() {
+    if (!investModal) return;
+    investModal.classList.add('opacity-0');
+    setTimeout(() => { investModal.classList.add('hidden'); }, 300);
+}
+
+window.openDepositModal = function() { if(depositModal) { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }};
+window.closeDepositModal = function() { if(depositModal) { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }};
+
+window.openWithdrawModal = function() { 
+    if(withdrawModal) { 
+        const bal = document.getElementById('display-available')?.innerText || "$0.00"; // Intenta leer del HTML si existe
+        const mb = document.getElementById('withdraw-max-balance');
+        if(mb) mb.innerText = bal;
+        withdrawModal.classList.remove('hidden'); 
+        setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); 
+    }
 };
+window.closeWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }};
 
 // --- CARGA DE DATOS ---
 
 async function updateUserData(token) {
     try {
-        const response = await fetch('/api/auth/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
         if (response.ok) {
-            const user = await response.json();
-            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
-            const balanceSpan = document.getElementById('modal-balance-display');
-            if(balanceSpan) balanceSpan.innerText = formatter.format(user.availableBalance);
+            const userData = await response.json();
+            // Actualizar solo lo disponible en modales (Portfolios no tiene tarjeta de saldo grande)
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+            const modalBal = document.getElementById('modal-balance-display');
+            if(modalBal) modalBal.innerText = formatter.format(userData.availableBalance);
+            const withBal = document.getElementById('withdraw-max-balance');
+            if(withBal) withBal.innerText = formatter.format(userData.availableBalance);
         }
     } catch (error) { console.error("Error cargando usuario", error); }
 }
 
-// Esta función va en dashboard.js (slice 3) y portfolios.js (sin slice)
-
-async function loadPortfolios() { // O loadAllPortfolios en portfolios.js
+async function loadAllPortfolios() {
     try {
         const response = await fetch('/api/portfolios');
         const portfolios = await response.json();
@@ -202,24 +230,14 @@ async function loadPortfolios() { // O loadAllPortfolios en portfolios.js
         if(!gridContainer) return;
         gridContainer.innerHTML = ''; 
 
-        // Nota: Si es dashboard.js usa .slice(0,3), si es portfolios.js quítalo.
-        portfolios.forEach(portfolio => { // Agrega .slice(0,3) aquí si es dashboard
+        // AQUÍ NO USAMOS SLICE (Mostramos todos)
+        portfolios.forEach(portfolio => {
             
-            // --- MATEMÁTICAS DE CUPOS (LA LÓGICA NUEVA) ---
-            
-            const ticketPrice = portfolio.minInvestment; // $1,000
-            
-            // 1. Cupos Totales del Fondo = Meta Dinero / Precio Ticket
-            const totalSlots = Math.floor(portfolio.targetAmount / ticketPrice);
-            
-            // 2. Cupos Ocupados = Dinero Recaudado / Precio Ticket
-            const occupiedSlots = Math.floor(portfolio.currentAmount / ticketPrice);
-            
-            // 3. Cupos Restantes (Lo que mostramos)
-            const remainingSlots = Math.max(0, totalSlots - occupiedSlots);
-            
-            // 4. Porcentaje de Llenado (Basado en dinero/cupos)
-            const progress = Math.min(100, (portfolio.currentAmount / portfolio.targetAmount) * 100);
+            // VALIDACIÓN DE DATOS
+            const investors = portfolio.currentInvestors || 0;
+            const target = portfolio.targetInvestors || 5000;
+            const spotsLeft = Math.max(0, target - investors);
+            const progress = Math.min(100, (investors / target) * 100);
             
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             const numFormat = new Intl.NumberFormat('es-MX'); 
@@ -239,51 +257,47 @@ async function loadPortfolios() { // O loadAllPortfolios en portfolios.js
                             <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
                             <div class="flex flex-col items-end">
                                 <span class="px-2 py-1 text-[10px] uppercase font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder} mb-1">Riesgo ${portfolio.risk}</span>
-                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod}</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod || 'N/A'}</span>
                             </div>
                         </div>
                         <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1 leading-tight">${portfolio.name}</h3>
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-4">${portfolio.provider}</p>
                         
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="flex h-2 w-2 rounded-full ${remainingSlots < 100 ? 'bg-red-500' : 'bg-green-500'} animate-pulse"></span>
-                            <span class="text-xs font-bold ${remainingSlots < 100 ? 'text-red-600' : 'text-green-600 dark:text-green-400'}">
-                                ${remainingSlots === 0 ? 'AGOTADO' : `Solo ${numFormat.format(remainingSlots)} cupos disponibles`}
-                            </span>
+                            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="text-xs font-bold text-green-600 dark:text-green-400">${numFormat.format(spotsLeft)} cupos disp.</span>
                         </div>
                     </div>
 
                     <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
                         <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-slate-700 dark:text-white">Progreso de Meta</span>
+                            <span class="text-slate-700 dark:text-white">Progreso del Grupo</span>
                             <span class="text-primary">${progress.toFixed(1)}%</span>
                         </div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
                             <div class="bg-primary h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
                         </div>
                         <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                            <span>${formatter.format(portfolio.currentAmount)}</span>
-                            <span>Meta: ${formatter.format(portfolio.targetAmount)}</span>
+                            <span>${numFormat.format(investors)} socios</span>
+                            <span>Meta: ${numFormat.format(target)}</span>
                         </div>
                     </div>
 
                     <div class="p-6 pt-4 mt-auto">
                         <div class="flex items-center justify-between mb-4">
                              <div class="flex flex-col">
-                                <span class="text-xs text-slate-400">Socios Activos</span>
-                                <span class="text-sm font-bold text-slate-900 dark:text-white">${numFormat.format(portfolio.investors)}</span>
+                                <span class="text-xs text-slate-400">Rend. Histórico</span>
+                                <span class="text-lg font-bold text-green-500">+${portfolio.returnYTD}%</span>
                              </div>
                              <div class="flex flex-col text-right">
-                                <span class="text-xs text-slate-400">Participación</span>
-                                <span class="text-sm font-bold text-slate-900 dark:text-white">$1,000.00</span>
+                                <span class="text-xs text-slate-400">Ticket Mínimo</span>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">${formatter.format(portfolio.minInvestment)}</span>
                              </div>
                         </div>
                         
-                        <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" 
-                            class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            ${remainingSlots === 0 ? 'disabled' : ''}>
-                            <span>${remainingSlots === 0 ? 'Fondo Cerrado' : 'Unirme al Grupo'}</span>
-                            ${remainingSlots > 0 ? '<span class="material-symbols-outlined text-sm">group_add</span>' : ''}
+                        <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2">
+                            <span>Unirme al Grupo</span>
+                            <span class="material-symbols-outlined text-sm">group_add</span>
                         </button>
                     </div>
                 </div>
@@ -291,4 +305,51 @@ async function loadPortfolios() { // O loadAllPortfolios en portfolios.js
             gridContainer.innerHTML += cardHTML;
         });
     } catch (error) { console.error(error); }
+}
+
+function setupTransactionForms(token) {
+    const depositForm = document.getElementById('deposit-form');
+    if (depositForm) {
+        depositForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('deposit-amount').value;
+            const btn = document.getElementById('btn-confirm-deposit');
+            btn.disabled = true; btn.innerText = "Procesando...";
+            await new Promise(r => setTimeout(r, 1000)); 
+            try {
+                const res = await fetch('/api/deposit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ amount, token })
+                });
+                if (res.ok) {
+                    closeDepositModal();
+                    updateUserData(token);
+                    document.getElementById('deposit-amount').value = '';
+                } else { const d = await res.json(); alert(d.message); }
+            } catch (e) { alert('Error'); } finally { btn.disabled = false; btn.innerText = "Pagar Ahora"; }
+        });
+    }
+    const withdrawForm = document.getElementById('withdraw-form');
+    if (withdrawForm) {
+        withdrawForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('withdraw-amount').value;
+            const btn = document.getElementById('btn-confirm-withdraw');
+            btn.disabled = true; btn.innerText = "Enviando...";
+            await new Promise(r => setTimeout(r, 1000)); 
+            try {
+                const res = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ amount, token })
+                });
+                if (res.ok) {
+                    closeWithdrawModal();
+                    updateUserData(token);
+                    document.getElementById('withdraw-amount').value = '';
+                } else { const d = await res.json(); alert(d.message); }
+            } catch (e) { alert('Error'); } finally { btn.disabled = false; btn.innerText = "Confirmar Retiro"; }
+        });
+    }
 }
