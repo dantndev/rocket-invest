@@ -1,13 +1,15 @@
 // public/js/portfolios.js
-let investModal, step1Div, step2Div, btnFinalConfirm;
+let investModal, successModal;
+let step1Div, step2Div, btnFinalConfirm;
 let investModalTitle, investModalIdInput, confirmPortfolioName, confirmAmountDisplay;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
-    // Refs
+    // REFS
     investModal = document.getElementById('invest-modal');
+    successModal = document.getElementById('success-modal');
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
 
-    // Calculadora
+    // CALCULADORA
     const investInput = document.getElementById('invest-amount');
     let calcMsg = document.getElementById('invest-calculation');
     if (!calcMsg && investInput) {
@@ -26,11 +28,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         investInput.parentNode.parentNode.appendChild(calcMsg);
     }
     const btnContinue = document.getElementById('btn-continue-invest');
-    if (investInput) investInput.addEventListener('input', (e) => {
+    if(investInput) investInput.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
-        if (!val || val < 1000) { calcMsg.innerText = "Mínimo $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
-        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
-        else { const p = val/1000; calcMsg.innerText = `Adquiriendo ${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled = false; }
+        if (!val || val < 1000) { calcMsg.innerText = "Mín $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
+        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
+        else { const p = val/1000; calcMsg.innerText = `Adquiriendo ${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled=false; }
     });
 
     await updateUserData(token);
@@ -55,7 +57,7 @@ async function loadAllPortfolios() {
             const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             let color = p.risk === 'Alto' ? 'bg-red-100 text-red-600' : (p.risk === 'Bajo' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600');
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
-            const icon = icons[(p.id - 1) % icons.length] || '📈';
+            const icon = icons[(p.id - 1) % icons.length];
 
             grid.innerHTML += `
             <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex flex-col h-full group hover:shadow-lg transition-all duration-300">
@@ -116,9 +118,16 @@ function setupFormListeners(token) {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ portfolioId: pid, amount, token })
             });
-            if(res.ok) { closeInvestModal(); updateUserData(token); loadAllPortfolios(); } 
-            else { const d = await res.json(); alert(d.message); backToStep1(); }
-        } catch(e) { alert("Error"); backToStep1(); }
+            
+            if(res.ok) { 
+                closeModal(); 
+                updateUserData(token); 
+                loadAllPortfolios(); 
+                showSuccess(); // MOSTRAR MODAL DE ÉXITO
+            } else { 
+                const d = await res.json(); alert(d.message); backToStep1(); 
+            }
+        } catch(e) { alert("Error de red"); backToStep1(); }
         btnFinalConfirm.innerText = "Confirmar";
     });
 }
@@ -135,3 +144,5 @@ window.setupInvest = function(id, name) {
 }
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
+window.showSuccess = function() { if(successModal) { successModal.classList.remove('hidden'); setTimeout(() => successModal.classList.remove('opacity-0'),10); } }
+window.closeSuccessModal = function() { if(successModal) { successModal.classList.add('opacity-0'); setTimeout(() => successModal.classList.add('hidden'),300); } }
