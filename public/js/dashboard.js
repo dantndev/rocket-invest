@@ -1,8 +1,8 @@
-// public/js/dashboard.js - VERSIÓN FINAL CORREGIDA
+// public/js/dashboard.js
 
 // --- VARIABLES GLOBALES ---
 let investModal, investModalTitle, investModalIdInput;
-let depositModal, withdrawModal;
+let depositModal, withdrawModal; 
 let step1Div, step2Div, confirmPortfolioName, confirmAmountDisplay, btnFinalConfirm;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     depositModal = document.getElementById('deposit-modal');
     withdrawModal = document.getElementById('withdraw-modal');
 
-    // Referencias pasos
+    // Referencias pasos inversión
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
@@ -51,16 +51,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 2. CARGAR DATOS
-    console.log("Iniciando carga de datos...");
     await updateUserData(token);
-    await loadPortfolios(); // Esperamos a que carguen
-    renderMarketChart();    // Dibujamos la gráfica
+    loadPortfolios();
+    renderMarketChart();
 
     // Botón Ver Todos
     const btnVerTodos = document.getElementById('btn-ver-todos');
     if(btnVerTodos) {
         btnVerTodos.addEventListener('click', () => {
             window.location.href = 'portfolios.html';
+        });
+    }
+
+    // --- CALCULADORA EN TIEMPO REAL (MODAL) ---
+    const investInput = document.getElementById('invest-amount');
+    let calcMsg = document.getElementById('invest-calculation');
+    if (!calcMsg && investInput) {
+        calcMsg = document.createElement('p');
+        calcMsg.id = 'invest-calculation';
+        calcMsg.className = 'text-xs font-bold text-primary text-right mt-1';
+        investInput.parentNode.parentNode.appendChild(calcMsg);
+    }
+    const btnContinue = document.querySelector('#investment-form-step1 button[type="submit"]');
+
+    if (investInput && calcMsg) {
+        investInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (!val || val < 1000) {
+                calcMsg.innerText = "Mínimo $1,000 MXN";
+                calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else if (val % 1000 !== 0) {
+                calcMsg.innerText = "Solo múltiplos de $1,000";
+                calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else {
+                const parts = val / 1000;
+                calcMsg.innerText = `Adquiriendo ${parts} Participación${parts > 1 ? 'es' : ''}`;
+                calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = false;
+            }
         });
     }
 
@@ -71,14 +101,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (formStep1) {
         formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
-            const amountInput = document.getElementById('invest-amount');
-            // Soporte para select o input
-            const amount = amountInput.tagName === 'SELECT' ? parseInt(amountInput.value) : parseInt(amountInput.value);
+            const amount = parseInt(document.getElementById('invest-amount').value);
             const portfolioName = investModalTitle.innerText;
 
-            if (!amount || amount <= 0) { alert("Monto inválido"); return; }
+            if (!amount || amount < 1000 || amount % 1000 !== 0) {
+                alert("Monto inválido (Múltiplos de $1,000)");
+                return;
+            }
 
-            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             if(confirmAmountDisplay) confirmAmountDisplay.innerText = formatter.format(amount);
             if(confirmPortfolioName) confirmPortfolioName.innerText = portfolioName;
 
@@ -122,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // B) Depósito y C) Retiro (Listeners simplificados para ahorrar espacio, funcionan igual)
+    // B) y C) Depósito y Retiro
     setupTransactionForms(token);
 });
 
@@ -141,9 +172,9 @@ window.selectPortfolio = function(id, name) {
         step1Div.classList.remove('hidden');
         step2Div.classList.add('hidden');
         step2Div.classList.remove('flex');
-        // Resetear input/select
+        
         const input = document.getElementById('invest-amount');
-        if(input) input.value = input.tagName === 'SELECT' ? "" : "";
+        if(input) input.value = '';
         const calc = document.getElementById('invest-calculation');
         if(calc) calc.innerText = '';
     }
@@ -191,16 +222,15 @@ async function updateUserData(token) {
 }
 
 function updateBalanceUI(data) {
-    const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+    const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
     
-    const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+    const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
     
-    const elNetWorth = document.getElementById('display-net-worth');
-    if (elNetWorth) elNetWorth.innerHTML = `${formatter.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`;
-
+    setText('display-net-worth', `${formatter.format(data.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`);
     setText('display-available', formatter.format(data.availableBalance));
     setText('display-invested', formatter.format(data.investedAmount));
     setText('modal-balance-display', formatter.format(data.availableBalance));
+    setText('withdraw-max-balance', formatter.format(data.availableBalance)); // Actualizar modal retiro también
 
     const elProfit = document.getElementById('display-profit');
     if (elProfit) {
@@ -215,17 +245,20 @@ async function loadPortfolios() {
         const response = await fetch('/api/portfolios');
         const portfolios = await response.json();
         const gridContainer = document.getElementById('portfolio-grid');
-        
         if(!gridContainer) return;
+        
         gridContainer.innerHTML = ''; 
 
         // SLICE: Solo mostramos los primeros 3 en el dashboard
         portfolios.slice(0, 3).forEach(portfolio => {
-            // VALIDAR DATOS (Evitar NaN)
-            const investors = portfolio.investors || 0; // Usar 'investors' que viene del server
+            
+            // --- DISEÑO CROWDFUNDING (Igual que en Portfolios.js) ---
+            
+            // Validar datos
+            const investors = portfolio.investors || 0;
             const target = portfolio.targetInvestors || 5000;
-            const progress = Math.min(100, (investors / target) * 100);
             const spotsLeft = Math.max(0, target - investors);
+            const progress = Math.min(100, (investors / target) * 100);
             
             const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             const numFormat = new Intl.NumberFormat('es-MX'); 
@@ -237,7 +270,6 @@ async function loadPortfolios() {
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
-            // DISEÑO DE TARJETA CROWDFUNDING (El que se ve bien)
             const cardHTML = `
                 <div class="flex flex-col bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full overflow-hidden">
                     
@@ -246,7 +278,7 @@ async function loadPortfolios() {
                             <div class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors">${icon}</div>
                             <div class="flex flex-col items-end">
                                 <span class="px-2 py-1 text-[10px] uppercase font-bold rounded-full ${riskColorBg} ${riskColorText} border ${riskBorder} mb-1">Riesgo ${portfolio.risk}</span>
-                                <span class="text-[10px] text-slate-400 font-medium">Plazo: ${portfolio.lockUpPeriod || '12 Meses'}</span>
+                                <span class="text-[10px] text-slate-400 font-medium">Lock-up: ${portfolio.lockUpPeriod}</span>
                             </div>
                         </div>
                         <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-1 leading-tight">${portfolio.name}</h3>
@@ -275,7 +307,7 @@ async function loadPortfolios() {
                     <div class="p-6 pt-4 mt-auto">
                         <div class="flex items-center justify-between mb-4">
                              <div class="flex flex-col">
-                                <span class="text-xs text-slate-400">Rend. (YTD)</span>
+                                <span class="text-xs text-slate-400">Rend. Histórico</span>
                                 <span class="text-lg font-bold text-green-500">+${portfolio.returnYTD}%</span>
                              </div>
                              <div class="flex flex-col text-right">
@@ -286,6 +318,7 @@ async function loadPortfolios() {
                         
                         <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2">
                             <span>Unirme al Grupo</span>
+                            <span class="material-symbols-outlined text-sm">group_add</span>
                         </button>
                     </div>
                 </div>
@@ -295,108 +328,79 @@ async function loadPortfolios() {
     } catch (error) { console.error(error); }
 }
 
-// --- GRÁFICA BLINDADA ---
-async function renderMarketChart() {
+function renderMarketChart() {
     const ctx = document.getElementById('marketChart');
     if (!ctx) return;
 
     try {
-        console.log("Pidiendo datos de gráfica...");
-        const response = await fetch('/api/market');
-        // Si falla, usamos datos dummy locales por si acaso
-        let marketData;
-        
-        if (response.ok) {
-            marketData = await response.json();
-        } else {
-            console.warn("API falló, usando datos locales para el canvas");
-            marketData = { 
-                prices: [150, 155, 153, 160, 165, 162, 170], 
-                dates: [1700000000, 1701000000, 1702000000, 1703000000, 1704000000, 1705000000, 1706000000]
-            };
-        }
-
-        const labels = marketData.dates.map(timestamp => {
-            const date = new Date(timestamp * 1000);
-            return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
-        });
-
         const isDark = document.documentElement.classList.contains('dark');
         const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
         const textColor = isDark ? '#94a3b8' : '#64748b';
         const lineColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'S&P 500',
-                    data: marketData.prices,
-                    borderColor: '#307de8',
-                    backgroundColor: (context) => {
-                        const ctx = context.chart.ctx;
-                        const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-                        gradient.addColorStop(0, 'rgba(48, 125, 232, 0.2)');
-                        gradient.addColorStop(1, 'rgba(48, 125, 232, 0)');
-                        return gradient;
-                    },
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 0,
-                    pointHoverRadius: 4
-                }]
-            },
-            plugins: [{
-                id: 'verticalHoverLine',
-                afterDatasetsDraw: (chart) => {
-                    if (chart.tooltip?._active?.length) {
-                        const x = chart.tooltip._active[0].element.x;
-                        const yAxis = chart.scales.y;
-                        const ctx = chart.ctx;
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.moveTo(x, yAxis.top);
-                        ctx.lineTo(x, yAxis.bottom);
-                        ctx.lineWidth = 1;
-                        ctx.strokeStyle = lineColor;
-                        ctx.setLineDash([5, 5]);
-                        ctx.stroke();
-                        ctx.restore();
-                    }
-                }
-            }],
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                        titleColor: isDark ? '#ffffff' : '#0f172a',
-                        bodyColor: isDark ? '#cbd5e1' : '#475569',
-                        borderColor: isDark ? '#334155' : '#e2e8f0',
-                        borderWidth: 1,
-                        padding: 10,
-                        displayColors: false,
-                        callbacks: { label: function(context) { return '$' + context.parsed.y.toFixed(2); } }
-                    }
+        // Llamada API (Misma que tenías)
+        fetch('/api/market').then(res => res.json()).then(marketData => {
+             const labels = marketData.dates.map(ts => new Date(ts*1000).toLocaleDateString('es-MX', {month:'short', day:'numeric'}));
+             
+             new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'S&P 500',
+                        data: marketData.prices,
+                        borderColor: '#307de8',
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                            gradient.addColorStop(0, 'rgba(48, 125, 232, 0.2)');
+                            gradient.addColorStop(1, 'rgba(48, 125, 232, 0)');
+                            return gradient;
+                        },
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    }]
                 },
-                interaction: { mode: 'index', intersect: false },
-                hover: { mode: 'index', intersect: false },
-                scales: {
-                    y: { grid: { color: gridColor, borderDash: [5, 5] }, ticks: { color: textColor, callback: (v) => '$' + v }, border: { display: false } },
-                    x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 }, border: { display: false } }
+                plugins: [{
+                    id: 'verticalHoverLine',
+                    afterDatasetsDraw: (chart) => {
+                        if (chart.tooltip?._active?.length) {
+                            const x = chart.tooltip._active[0].element.x;
+                            const yAxis = chart.scales.y;
+                            const ctx = chart.ctx;
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(x, yAxis.top);
+                            ctx.lineTo(x, yAxis.bottom);
+                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = lineColor;
+                            ctx.setLineDash([5, 5]);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }],
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                    interaction: { mode: 'index', intersect: false },
+                    hover: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { grid: { color: gridColor, borderDash: [5, 5] }, ticks: { color: textColor, callback: (v) => '$' + v }, border: { display: false } },
+                        x: { grid: { display: false }, ticks: { color: textColor, maxTicksLimit: 6 }, border: { display: false } }
+                    }
                 }
-            }
+            });
         });
-    } catch (e) { console.error("Error gráfica:", e); }
+    } catch (e) { console.error("Error renderizando gráfica:", e); }
 }
 
 function setupTransactionForms(token) {
+    // Helpers para depósitos y retiros
     const depositForm = document.getElementById('deposit-form');
     if (depositForm) {
         depositForm.addEventListener('submit', async (e) => {
