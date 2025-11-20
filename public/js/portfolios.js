@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
+    // Referencias
     investModal = document.getElementById('invest-modal');
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
 
+    // Calculadora
     const investInput = document.getElementById('invest-amount');
     let calcMsg = document.getElementById('invest-calculation');
     if (!calcMsg && investInput) {
@@ -23,16 +25,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         calcMsg.className = 'text-xs font-bold text-primary text-right mt-1';
         investInput.parentNode.parentNode.appendChild(calcMsg);
     }
-    const btnContinue = document.querySelector('#investment-form-step1 button[type="submit"]');
+    const btnContinue = document.getElementById('btn-continue-invest');
     if (investInput) investInput.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
-        if (!val || val < 1000) { calcMsg.innerText = "Mín $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
-        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
-        else { const p = val/1000; calcMsg.innerText = `${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled = false; }
+        if (!val || val < 1000) { calcMsg.innerText = "Mínimo $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
+        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
+        else { const p = val/1000; calcMsg.innerText = `${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled=false; }
     });
-
-    const cardInput = document.getElementById('card-number'); if (cardInput) cardInput.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').substring(0,16).match(/.{1,4}/g)?.join(' ') || e.target.value; });
-    const expiryInput = document.getElementById('card-expiry'); if (expiryInput) expiryInput.addEventListener('input', (e) => { let v = e.target.value.replace(/\D/g, ''); if(v.length>2) v=v.substring(0,2)+'/'+v.substring(2,4); e.target.value = v; });
 
     await updateUserData(token);
     await loadAllPortfolios();
@@ -56,19 +55,19 @@ async function loadAllPortfolios() {
             const moneyFormat = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             let color = p.risk === 'Alto' ? 'bg-red-100 text-red-600' : (p.risk === 'Bajo' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600');
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
-            const icon = icons[(p.id - 1) % icons.length] || '📈';
+            const icon = icons[(p.id - 1) % icons.length];
 
             grid.innerHTML += `
             <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex flex-col h-full group hover:shadow-lg transition-all duration-300">
                 <div class="flex justify-between mb-3 items-start">
                     <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors duration-300">${icon}</div>
                     <div class="flex flex-col items-end">
-                        <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${color} leading-none">Riesgo ${p.risk}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${color} leading-none">Riesgo ${p.risk}</span>
                         <span class="text-[10px] text-slate-400 mt-1">Lock: ${p.lockUpPeriod}</span>
                     </div>
                 </div>
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-1 leading-tight">${p.name}</h3>
-                <p class="text-xs text-slate-500 mb-4 line-clamp-2">${p.description}</p>
+                <p class="text-xs text-slate-500 mb-4 line-clamp-2 h-8">${p.description}</p>
                 <div class="flex items-center gap-2 mb-4">
                     <span class="flex h-2 w-2 rounded-full ${spotsLeft>0?'bg-green-500':'bg-red-500'} animate-pulse"></span>
                     <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${numFormat.format(spotsLeft)} cupos disp.</span>
@@ -84,11 +83,15 @@ async function loadAllPortfolios() {
     } catch(e) { console.error(e); }
 }
 
-// HELPERS
-async function updateUserData(token) { try { const r = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } }); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
-function updateBalanceUI(data) {
-    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-    const bal = document.getElementById('modal-balance-display'); if(bal) bal.innerText = fmt.format(data.availableBalance);
+async function updateUserData(token) {
+    try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+        if(res.ok) {
+            const d = await res.json();
+            const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+            const b = document.getElementById('modal-balance-display'); if(b) b.innerText = fmt.format(d.availableBalance);
+        }
+    } catch(e) {}
 }
 
 function setupFormListeners(token) {
@@ -128,7 +131,7 @@ window.setupInvest = function(id, name) {
     backToStep1();
     investModal.classList.remove('hidden'); setTimeout(() => investModal.classList.remove('opacity-0'), 10);
     const inp = document.getElementById('invest-amount'); if(inp) inp.value = '';
-    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = "Ingresa monto (Mín $1,000)"; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
+    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = "Ingresa un monto (Mín. $1,000)"; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
 }
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
