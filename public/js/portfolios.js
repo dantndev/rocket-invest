@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
-    // Refs
     investModal = document.getElementById('invest-modal');
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
@@ -28,10 +27,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnContinue = document.getElementById('btn-continue-invest');
     if (investInput) investInput.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
-        if (!val || val < 1000) { calcMsg.innerText = "Mínimo $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
-        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
-        else { const p = val/1000; calcMsg.innerText = `Adquiriendo ${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled = false; }
+        if (!val || val < 1000) { calcMsg.innerText = "Mín $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
+        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
+        else { const p = val/1000; calcMsg.innerText = `${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled=false; }
     });
+
+    // Init Inputs
+    const cardInput = document.getElementById('card-number'); if (cardInput) cardInput.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').substring(0,16).match(/.{1,4}/g)?.join(' ') || e.target.value; });
+    const expiryInput = document.getElementById('card-expiry'); if (expiryInput) expiryInput.addEventListener('input', (e) => { let v = e.target.value.replace(/\D/g, ''); if(v.length>2) v=v.substring(0,2)+'/'+v.substring(2,4); e.target.value = v; });
 
     await updateUserData(token);
     await loadAllPortfolios();
@@ -103,7 +106,7 @@ function setupFormListeners(token) {
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
         document.getElementById('confirm-amount-display').innerText = fmt.format(amount);
         document.getElementById('confirm-portfolio-name').innerText = investModalTitle.innerText;
-        step1Div.classList.add('hidden'); step2Div.classList.remove('hidden');
+        step1Div.classList.add('hidden'); step2Div.classList.remove('hidden'); step2Div.classList.add('flex');
     });
 
     if(btnFinalConfirm) btnFinalConfirm.addEventListener('click', async () => {
@@ -116,14 +119,30 @@ function setupFormListeners(token) {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ portfolioId: pid, amount, token })
             });
-            if(res.ok) { closeInvestModal(); updateUserData(token); loadAllPortfolios(); } 
-            else { const d = await res.json(); alert(d.message); backToStep1(); }
-        } catch(e) { alert("Error"); backToStep1(); }
+            
+            const data = await res.json();
+
+            if(res.ok) {
+                closeModal();
+                updateUserData(token);
+                loadAllPortfolios();
+                alert("¡Inversión exitosa! 🚀"); // MENSAJE DE ÉXITO
+            } else {
+                alert(data.message);
+                backToStep1();
+            }
+        } catch(e) { 
+            alert("Error de conexión"); 
+            backToStep1(); 
+        }
         btnFinalConfirm.innerText = "Confirmar";
     });
+
+    // Depósitos/Retiros
+    const dep = document.getElementById('deposit-form'); if(dep) dep.addEventListener('submit', async(e)=>{ e.preventDefault(); const amount=document.getElementById('deposit-amount').value; const btn=document.getElementById('btn-confirm-deposit'); btn.disabled=true; try{ const r=await fetch('/api/deposit',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount,token})}); if(r.ok){closeDepositModal(); updateUserData(token); document.getElementById('deposit-amount').value='';alert("Depósito exitoso");} }catch(e){} finally{btn.disabled=false;} });
+    const wit = document.getElementById('withdraw-form'); if(wit) wit.addEventListener('submit', async(e)=>{ e.preventDefault(); const amount=document.getElementById('withdraw-amount').value; const btn=document.getElementById('btn-confirm-withdraw'); btn.disabled=true; try{ const r=await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount,token})}); if(r.ok){closeWithdrawModal(); updateUserData(token); document.getElementById('withdraw-amount').value='';alert("Retiro exitoso");} }catch(e){} finally{btn.disabled=false;} });
 }
 
-// GLOBALES
 window.setupInvest = function(id, name) {
     if(!investModal) return;
     investModalTitle.innerText = name;
@@ -131,7 +150,11 @@ window.setupInvest = function(id, name) {
     backToStep1();
     investModal.classList.remove('hidden'); setTimeout(() => investModal.classList.remove('opacity-0'), 10);
     const inp = document.getElementById('invest-amount'); if(inp) inp.value = '';
-    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = "Ingresa monto (Mín $1,000)"; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
+    const msg = document.getElementById('invest-calculation'); if(msg) msg.innerText = '';
 }
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
+window.openDepositModal = function() { if(depositModal) { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }};
+window.closeDepositModal = function() { if(depositModal) { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }};
+window.openWithdrawModal = function() { if(withdrawModal) { const b = document.getElementById('modal-balance-display')?.innerText || "0"; document.getElementById('withdraw-max-balance').innerText = b; withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); }};
+window.closeWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }};
