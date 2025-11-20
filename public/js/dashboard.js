@@ -1,5 +1,5 @@
 // public/js/dashboard.js
-let investModal, successModal, depositModal, withdrawModal;
+let investModal, depositModal, withdrawModal, successModal;
 let step1Div, step2Div, btnFinalConfirm;
 let investModalTitle, investModalIdInput, confirmPortfolioName, confirmAmountDisplay;
 
@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
-    // Refs
+    // REFS
     investModal = document.getElementById('invest-modal');
     successModal = document.getElementById('success-modal');
     depositModal = document.getElementById('deposit-modal');
@@ -20,70 +20,94 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
 
-    // Calculadora
+    // CALCULADORA
     const investInput = document.getElementById('invest-amount');
     let calcMsg = document.getElementById('invest-calculation');
     const btnContinue = document.getElementById('btn-continue-invest');
-    if (investInput) investInput.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value);
-        // Leemos el ticket mínimo del atributo data que pusimos al abrir
-        const min = parseInt(investModal.dataset.ticket || 1000); 
-        if (!val || val < min) { calcMsg.innerText = `Mínimo $${min}`; calcMsg.className = "text-xs font-bold text-red-400 text-right"; if(btnContinue) btnContinue.disabled=true; }
-        else if (val % min !== 0) { calcMsg.innerText = `Múltiplos de $${min}`; calcMsg.className = "text-xs font-bold text-orange-400 text-right"; if(btnContinue) btnContinue.disabled=true; }
-        else { const p = val/min; calcMsg.innerText = `Ocuparás ${p} Cupo${p>1?'s':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right"; if(btnContinue) btnContinue.disabled=false; }
-    });
+    
+    if (investInput) {
+        // Crear mensaje si no existe
+        if (!calcMsg) { 
+            calcMsg = document.createElement('p'); 
+            calcMsg.id = 'invest-calculation'; 
+            calcMsg.className = 'text-xs font-bold text-primary text-right mt-1'; 
+            investInput.parentNode.parentNode.appendChild(calcMsg); 
+        }
+        
+        investInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            // Leer ticket del dataset (guardado al abrir modal)
+            const min = parseInt(investModal.dataset.ticket || 1000);
+
+            if (!val || val < min) {
+                calcMsg.innerText = `Mínimo $${min.toLocaleString()}`;
+                calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else if (val % min !== 0) {
+                calcMsg.innerText = `Solo múltiplos de $${min.toLocaleString()}`;
+                calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else {
+                const parts = val / min;
+                calcMsg.innerText = `Adquiriendo ${parts} Cupo${parts > 1 ? 's' : ''}`;
+                calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = false;
+            }
+        });
+    }
 
     await updateUserData(token);
     await loadPortfolios();
     renderMarketChart();
-
-    const btnVer = document.getElementById('btn-ver-todos');
-    if(btnVer) btnVer.addEventListener('click', () => window.location.href = 'portfolios.html');
-
+    document.getElementById('btn-ver-todos')?.addEventListener('click', () => window.location.href = 'portfolios.html');
     setupFormListeners(token);
 });
 
+// CARGAR PORTAFOLIOS (DASHBOARD - SLICE 3)
 async function loadPortfolios() {
     try {
-        const res = await fetch('/api/portfolios');
+        // Agregamos timestamp para evitar caché del navegador
+        const res = await fetch('/api/portfolios?t=' + Date.now());
         const data = await res.json();
         const grid = document.getElementById('portfolio-grid');
         if(!grid) return;
         grid.innerHTML = '';
 
         data.slice(0, 3).forEach(p => {
-            // LÓGICA SEMÁFORO
-            const totalTickets = p.totalTickets || 1000;
-            const soldTickets = p.soldTickets || 0;
-            const remaining = Math.max(0, totalTickets - soldTickets);
-            const percentage = (soldTickets / totalTickets) * 100;
+            // USAMOS DATOS DIRECTOS DEL SERVIDOR (Ya calculados)
+            const total = p.totalTickets;
+            const remaining = p.remainingTickets;
+            const sold = p.soldTickets;
+            const progress = Math.min(100, (sold / total) * 100);
+            
+            const numFormat = new Intl.NumberFormat('es-MX');
+            const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
 
-            // Definir colores según disponibilidad
+            // SEMÁFORO
             let badgeColor = "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
             let dotColor = "bg-green-500";
-            let statusText = `${new Intl.NumberFormat('es-MX').format(remaining)} cupos disp.`;
+            let statusText = `${numFormat.format(remaining)} cupos disp.`;
             let disabled = "";
+            let btnText = "Unirme al Grupo";
 
             if (remaining === 0) {
-                badgeColor = "bg-slate-200 text-slate-500"; dotColor = "hidden"; statusText = "AGOTADO"; disabled = "disabled";
-            } else if (percentage >= 90) { // Queda < 10% -> ROJO (Urgencia)
+                badgeColor = "bg-slate-200 text-slate-500"; dotColor = "hidden"; statusText = "AGOTADO"; disabled = "disabled"; btnText = "Cerrado";
+            } else if (progress >= 90) { 
                 badgeColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"; dotColor = "bg-red-500"; statusText = `¡Últimos ${remaining} cupos!`;
-            } else if (percentage >= 50) { // Queda < 50% -> AMARILLO
+            } else if (progress >= 50) { 
                 badgeColor = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; dotColor = "bg-amber-500";
             }
 
-            const numFormat = new Intl.NumberFormat('es-MX');
-            const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-            let color = p.risk === 'Alto' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600';
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(p.id - 1) % icons.length];
+            let riskColor = p.risk === 'Alto' ? 'text-red-600 bg-red-50' : (p.risk === 'Bajo' ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50');
 
             grid.innerHTML += `
             <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex flex-col h-full group hover:shadow-lg transition-all duration-300">
                 <div class="flex justify-between mb-3 items-start">
                     <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors duration-300">${icon}</div>
                     <div class="flex flex-col items-end">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${color} leading-none">Riesgo ${p.risk}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${riskColor} border border-slate-100 dark:border-slate-700 leading-none">Riesgo ${p.risk}</span>
                         <span class="text-[10px] text-slate-400 mt-1">Lock: ${p.lockUpPeriod}</span>
                     </div>
                 </div>
@@ -98,44 +122,75 @@ async function loadPortfolios() {
                 </div>
 
                 <div class="mt-auto">
-                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-500">Progreso</span><span class="text-primary">${percentage.toFixed(0)}%</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1"><div class="bg-primary h-2 rounded-full" style="width: ${percentage}%"></div></div>
+                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-500">Progreso</span><span class="text-primary">${progress.toFixed(0)}%</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1"><div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div></div>
                     
-                    <div class="flex justify-between text-[10px] text-slate-400 mb-4 pt-2 border-t border-slate-100 dark:border-slate-700 mt-2">
-                        <span>Ticket: ${moneyFmt.format(p.minInvestment)}</span>
+                    <div class="flex justify-between items-end mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                         <div class="flex flex-col">
+                            <span class="text-xs text-slate-400">Ticket</span>
+                            <span class="text-sm font-bold text-slate-900 dark:text-white">${moneyFmt.format(p.minInvestment)}</span>
+                         </div>
+                         <button onclick="setupInvest(${p.id}, '${p.name}', ${p.minInvestment})" class="px-6 py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50" ${disabled}>
+                            ${btnText}
+                         </button>
                     </div>
-
-                    <button onclick="setupInvest(${p.id}, '${p.name}', ${p.minInvestment})" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity" ${disabled}>${disabled?'Agotado':'Unirme al Grupo'}</button>
                 </div>
             </div>`;
         });
     } catch(e) { console.error(e); }
 }
 
-// Helpers y Forms...
-async function updateUserData(token) { try { const r=await fetch('/api/auth/me',{headers:{'Authorization':`Bearer ${token}`}}); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
-function updateBalanceUI(d) {
-    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-    const set = (id, v) => { const el = document.getElementById(id); if(el) el.innerHTML = v; };
-    set('display-net-worth', `${fmt.format(d.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`);
-    set('display-available', fmt.format(d.availableBalance));
-    set('display-invested', fmt.format(d.investedAmount));
-    set('modal-balance-display', fmt.format(d.availableBalance));
-    set('withdraw-max-balance', fmt.format(d.availableBalance));
-    const p = document.getElementById('display-profit');
-    if(p) { p.innerText = (d.profit >= 0 ? '+' : '') + fmt.format(d.profit); p.className = d.profit >= 0 ? "text-emerald-500 font-bold text-lg" : "text-red-500 font-bold text-lg"; }
+// CHART RESTAURADO (INTERACTIVO)
+function renderMarketChart() {
+    const ctx = document.getElementById('marketChart'); if(!ctx) return;
+    try {
+        const isDark = document.documentElement.classList.contains('dark'); 
+        const textColor = isDark ? '#94a3b8' : '#64748b'; 
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+        
+        fetch('/api/market').then(r=>r.json()).then(d=>{
+            new Chart(ctx, { 
+                type: 'line', 
+                data: { 
+                    labels: d.dates.map(ts=>new Date(ts*1000).toLocaleDateString('es-MX')), 
+                    datasets: [{ 
+                        label:'S&P 500', 
+                        data:d.prices, 
+                        borderColor:'#307de8', 
+                        borderWidth:2, 
+                        pointRadius:0, 
+                        pointHoverRadius: 6, // Hover visible
+                        hoverBackgroundColor: '#fff'
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false }, // ESTO HACE LA MAGIA
+                    plugins: { 
+                        legend: {display:false}, 
+                        tooltip: { enabled: true, mode: 'index', intersect: false } // Tooltip activado
+                    }, 
+                    scales: { 
+                        y: { grid: {color:gridColor}, ticks: {color:textColor} }, 
+                        x: { display:false } 
+                    } 
+                } 
+            });
+        });
+    } catch(e){}
 }
 
+// FORM LISTENERS
 function setupFormListeners(token) {
     const f1 = document.getElementById('investment-form-step1');
     if(f1) f1.addEventListener('submit', (e) => {
         e.preventDefault();
         const amount = parseInt(document.getElementById('invest-amount').value);
-        // Validación contra el ticket guardado
-        const ticket = parseInt(investModal.dataset.ticket || 1000);
-
-        if(!amount || amount < ticket || amount % ticket !== 0) return;
-
+        const min = parseInt(investModal.dataset.ticket || 1000);
+        
+        if(!amount || amount < min || amount % min !== 0) return;
+        
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
         document.getElementById('confirm-amount-display').innerText = fmt.format(amount);
         document.getElementById('confirm-portfolio-name').innerText = investModalTitle.innerText;
@@ -157,37 +212,45 @@ function setupFormListeners(token) {
                 closeModal(); 
                 updateUserData(token); 
                 loadPortfolios(); 
-                showSuccess(); // MODAL EXITO
-            } 
-            else { alert(d.message); backToStep1(); }
+                showSuccess(); // MODAL ÉXITO
+            } else { 
+                alert(d.message); 
+                backToStep1(); 
+            }
         } catch(e) { alert("Error de red"); backToStep1(); }
         btnFinalConfirm.innerText = "Confirmar";
     });
-    
+
+    // Depósitos/Retiros simplificados
     const dep = document.getElementById('deposit-form'); if(dep) dep.addEventListener('submit', async(e)=>{ e.preventDefault(); const a=document.getElementById('deposit-amount').value; try{ const r=await fetch('/api/deposit',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount:a,token})}); if(r.ok){closeDepositModal();updateUserData(token);document.getElementById('deposit-amount').value='';alert("Depósito OK");} }catch(e){} });
     const wit = document.getElementById('withdraw-form'); if(wit) wit.addEventListener('submit', async(e)=>{ e.preventDefault(); const a=document.getElementById('withdraw-amount').value; try{ const r=await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount:a,token})}); if(r.ok){closeWithdrawModal();updateUserData(token);document.getElementById('withdraw-amount').value='';alert("Retiro OK");} }catch(e){} });
 }
 
-function renderMarketChart() { /* chart logic */ const ctx = document.getElementById('marketChart'); if(!ctx) return; try { const isDark = document.documentElement.classList.contains('dark'); const textColor = isDark ? '#94a3b8' : '#64748b'; const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'; fetch('/api/market').then(r=>r.json()).then(d=>{ new Chart(ctx, { type: 'line', data: { labels: d.dates.map(t=>new Date(t*1000).toLocaleDateString('es-MX')), datasets: [{ data: d.prices, borderColor: '#307de8', borderWidth: 2, pointRadius: 0 }] }, options: { maintainAspectRatio:false, scales: { y: { grid: {color:gridColor}, ticks: {color:textColor} }, x: { display:false } }, plugins: { legend: {display:false} } } }); }); } catch(e){} }
+// GLOBALES
+async function updateUserData(token) { try { const r=await fetch('/api/auth/me',{headers:{'Authorization':`Bearer ${token}`}}); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
+function updateBalanceUI(d) {
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+    const set = (id, v) => { const el = document.getElementById(id); if(el) el.innerHTML = v; };
+    set('display-net-worth', `${fmt.format(d.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`);
+    set('display-available', fmt.format(d.availableBalance));
+    set('display-invested', fmt.format(d.investedAmount));
+    set('modal-balance-display', fmt.format(d.availableBalance));
+    set('withdraw-max-balance', fmt.format(d.availableBalance));
+    const p = document.getElementById('display-profit');
+    if(p) { p.innerText = (d.profit >= 0 ? '+' : '') + fmt.format(d.profit); p.className = d.profit >= 0 ? "text-emerald-500 font-bold text-lg" : "text-red-500 font-bold text-lg"; }
+}
 
-// Globales
 window.setupInvest = function(id, name, ticket) {
     if(!investModal) return;
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
-    investModal.dataset.ticket = ticket; // Guardamos el precio ticket
-    
+    investModal.dataset.ticket = ticket;
     backToStep1();
     investModal.classList.remove('hidden'); setTimeout(() => { investModal.classList.remove('opacity-0'); investModal.querySelector('div').classList.add('scale-100'); }, 10);
-    
     const inp = document.getElementById('invest-amount'); 
-    if(inp) { 
-        inp.value = ''; 
-        inp.placeholder = `Ej. ${ticket}`;
-        inp.step = ticket;
-        inp.min = ticket;
-    }
-    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = `Mínimo $${ticket}`; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
+    if(inp) { inp.value = ''; inp.placeholder = `Ej. ${ticket}`; inp.step = ticket; inp.min = ticket; }
+    const msg = document.getElementById('invest-calculation'); 
+    if(msg) { msg.innerText = `Mínimo $${ticket}`; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
 }
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
@@ -195,5 +258,5 @@ window.showSuccess = function() { if(successModal) { successModal.classList.remo
 window.closeSuccessModal = function() { if(successModal) { successModal.classList.add('opacity-0'); setTimeout(() => successModal.classList.add('hidden'), 300); } }
 window.openDepositModal = function() { if(depositModal) { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }};
 window.closeDepositModal = function() { if(depositModal) { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }};
-window.openWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); }};
+window.openWithdrawModal = function() { if(withdrawModal) { const b = document.getElementById('display-available')?.innerText || "0"; document.getElementById('withdraw-max-balance').innerText = b; withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); }};
 window.closeWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }};

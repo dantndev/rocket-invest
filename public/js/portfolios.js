@@ -60,17 +60,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupFormListeners(token);
 });
 
-async function loadAllPortfolios() {
+// public/js/portfolios.js
+// (Copia EXACTAMENTE el código de dashboard.js que te acabo de dar arriba)
+// Y solo cambia la función loadPortfolios por esta (para quitar el .slice):
+
+async function loadPortfolios() {
     try {
-        const res = await fetch('/api/portfolios');
+        const res = await fetch('/api/portfolios?t=' + Date.now());
         const data = await res.json();
         const grid = document.getElementById('portfolio-grid');
         if(!grid) return;
         grid.innerHTML = '';
 
-        // RECORRER TODOS
+        // SIN SLICE (Mostrar todos)
         data.forEach(p => {
-            // CÁLCULOS DE CUPOS
+            // ... (Copia exactamente el mismo contenido del forEach de dashboard.js) ...
+            // Es el bloque que calcula remaining, progress y genera el cardHTML
+            // Es vital que sea idéntico para que se vean iguales.
             const totalTickets = p.totalTickets || 1000;
             const soldTickets = p.soldTickets || 0;
             const remaining = Math.max(0, totalTickets - soldTickets);
@@ -79,7 +85,6 @@ async function loadAllPortfolios() {
             const numFormat = new Intl.NumberFormat('es-MX');
             const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
 
-            // SEMÁFORO
             let badgeColor = "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
             let dotColor = "bg-green-500";
             let statusText = `${numFormat.format(remaining)} cupos disp.`;
@@ -88,17 +93,17 @@ async function loadAllPortfolios() {
 
             if (remaining === 0) {
                 badgeColor = "bg-slate-200 text-slate-500"; dotColor = "hidden"; statusText = "AGOTADO"; disabled = "disabled"; btnText = "Cerrado";
-            } else if (percentFilled >= 90) {
+            } else if (percentFilled >= 90) { 
                 badgeColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"; dotColor = "bg-red-500"; statusText = `¡Últimos ${remaining} cupos!`;
-            } else if (percentFilled >= 50) {
+            } else if (percentFilled >= 50) { 
                 badgeColor = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; dotColor = "bg-amber-500";
             }
 
             let riskColor = p.risk === 'Alto' ? 'text-red-600 bg-red-50' : (p.risk === 'Bajo' ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50');
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
-            const icon = icons[(p.id - 1) % icons.length] || '📈';
+            const icon = icons[(p.id - 1) % icons.length];
 
-            const cardHTML = `
+            grid.innerHTML += `
             <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex flex-col h-full group hover:shadow-lg transition-all duration-300">
                 <div class="flex justify-between mb-3 items-start">
                     <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors duration-300">${icon}</div>
@@ -132,7 +137,6 @@ async function loadAllPortfolios() {
                     </div>
                 </div>
             </div>`;
-            grid.innerHTML += cardHTML;
         });
     } catch(e) { console.error(e); }
 }
