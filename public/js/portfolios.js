@@ -1,16 +1,13 @@
 // public/js/portfolios.js
-let investModal, depositModal, withdrawModal;
-let step1Div, step2Div, btnFinalConfirm;
+let investModal, step1Div, step2Div, btnFinalConfirm;
 let investModalTitle, investModalIdInput, confirmPortfolioName, confirmAmountDisplay;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
-    // REFERENCIAS DOM
+    // Refs
     investModal = document.getElementById('invest-modal');
-    depositModal = document.getElementById('deposit-modal');
-    withdrawModal = document.getElementById('withdraw-modal');
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
@@ -19,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
 
-    // CALCULADORA (Input Manual)
+    // Calculadora
     const investInput = document.getElementById('invest-amount');
     let calcMsg = document.getElementById('invest-calculation');
     if (!calcMsg && investInput) {
@@ -31,30 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnContinue = document.getElementById('btn-continue-invest');
     if (investInput) investInput.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
-        if (!val || val < 1000) {
-            calcMsg.innerText = "Mínimo $1,000";
-            calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
-            if(btnContinue) btnContinue.disabled = true;
-        } else if (val % 1000 !== 0) {
-            calcMsg.innerText = "Solo múltiplos de $1,000";
-            calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
-            if(btnContinue) btnContinue.disabled = true;
-        } else {
-            const parts = val / 1000;
-            calcMsg.innerText = `Adquiriendo ${parts} Participación${parts > 1 ? 'es' : ''}`;
-            calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
-            if(btnContinue) btnContinue.disabled = false;
-        }
+        if (!val || val < 1000) { calcMsg.innerText = "Mínimo $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
+        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled = true; }
+        else { const p = val/1000; calcMsg.innerText = `Adquiriendo ${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled = false; }
     });
 
-    // Inputs Extra
-    const cardInput = document.getElementById('card-number'); if (cardInput) cardInput.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').substring(0,16).match(/.{1,4}/g)?.join(' ') || e.target.value; });
-    const expiryInput = document.getElementById('card-expiry'); if (expiryInput) expiryInput.addEventListener('input', (e) => { let v = e.target.value.replace(/\D/g, ''); if(v.length>2) v=v.substring(0,2)+'/'+v.substring(2,4); e.target.value = v; });
-
-    // Carga de Datos
     await updateUserData(token);
     await loadAllPortfolios();
-
     setupFormListeners(token);
 });
 
@@ -66,16 +46,13 @@ async function loadAllPortfolios() {
         if(!grid) return;
         grid.innerHTML = '';
 
-        // MOSTRAR TODOS (Sin slice)
         data.forEach(p => {
             const investors = p.investors || 0;
             const target = p.targetInvestors || 5000;
             const spotsLeft = Math.max(0, target - investors);
             const progress = Math.min(100, (investors / target) * 100);
-            
             const numFormat = new Intl.NumberFormat('es-MX');
             const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-
             let color = p.risk === 'Alto' ? 'bg-red-100 text-red-600' : (p.risk === 'Bajo' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600');
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(p.id - 1) % icons.length] || '📈';
@@ -113,7 +90,6 @@ async function updateUserData(token) {
             const d = await res.json();
             const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             const b = document.getElementById('modal-balance-display'); if(b) b.innerText = fmt.format(d.availableBalance);
-            const w = document.getElementById('withdraw-max-balance'); if(w) w.innerText = fmt.format(d.availableBalance);
         }
     } catch(e) {}
 }
@@ -127,7 +103,7 @@ function setupFormListeners(token) {
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
         document.getElementById('confirm-amount-display').innerText = fmt.format(amount);
         document.getElementById('confirm-portfolio-name').innerText = investModalTitle.innerText;
-        step1Div.classList.add('hidden'); step2Div.classList.remove('hidden'); step2Div.classList.add('flex');
+        step1Div.classList.add('hidden'); step2Div.classList.remove('hidden');
     });
 
     if(btnFinalConfirm) btnFinalConfirm.addEventListener('click', async () => {
@@ -145,12 +121,9 @@ function setupFormListeners(token) {
         } catch(e) { alert("Error"); backToStep1(); }
         btnFinalConfirm.innerText = "Confirmar";
     });
-
-    const dep = document.getElementById('deposit-form'); if(dep) dep.addEventListener('submit', async(e)=>{ e.preventDefault(); const amount=document.getElementById('deposit-amount').value; const btn=document.getElementById('btn-confirm-deposit'); btn.disabled=true; try{ const r=await fetch('/api/deposit',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount,token})}); if(r.ok){closeDepositModal(); updateUserData(token); document.getElementById('deposit-amount').value='';} }catch(e){} finally{btn.disabled=false;} });
-    const wit = document.getElementById('withdraw-form'); if(wit) wit.addEventListener('submit', async(e)=>{ e.preventDefault(); const amount=document.getElementById('withdraw-amount').value; const btn=document.getElementById('btn-confirm-withdraw'); btn.disabled=true; try{ const r=await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount,token})}); if(r.ok){closeWithdrawModal(); updateUserData(token); document.getElementById('withdraw-amount').value='';} }catch(e){} finally{btn.disabled=false;} });
 }
 
-// Globales
+// GLOBALES
 window.setupInvest = function(id, name) {
     if(!investModal) return;
     investModalTitle.innerText = name;
@@ -162,7 +135,3 @@ window.setupInvest = function(id, name) {
 }
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
-window.openDepositModal = function() { if(depositModal) { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }};
-window.closeDepositModal = function() { if(depositModal) { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }};
-window.openWithdrawModal = function() { if(withdrawModal) { const b = document.getElementById('modal-balance-display')?.innerText || "0"; document.getElementById('withdraw-max-balance').innerText = b; withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); }};
-window.closeWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }};
