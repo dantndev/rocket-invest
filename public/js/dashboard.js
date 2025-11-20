@@ -21,7 +21,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
 
-    // --- LÓGICA DE FORMATO DE TARJETA ---
+    // --- CALCULADORA EN TIEMPO REAL (MODAL) ---
+    const investInput = document.getElementById('invest-amount');
+    // Mensaje dinámico (Si no existe, lo creamos)
+    let calcMsg = document.getElementById('invest-calculation');
+    if (!calcMsg && investInput) {
+        calcMsg = document.createElement('p');
+        calcMsg.id = 'invest-calculation';
+        calcMsg.className = 'text-xs font-bold text-primary text-right mt-1';
+        investInput.parentNode.parentNode.appendChild(calcMsg);
+    }
+    const btnContinue = document.querySelector('#investment-form-step1 button[type="submit"]');
+
+    if (investInput && calcMsg) {
+        investInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (!val || val < 1000) {
+                calcMsg.innerText = "Mínimo $1,000 MXN";
+                calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else if (val % 1000 !== 0) {
+                calcMsg.innerText = "Solo múltiplos de $1,000";
+                calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else {
+                const parts = val / 1000;
+                calcMsg.innerText = `Adquiriendo ${parts} Participación${parts > 1 ? 'es' : ''}`;
+                calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = false;
+            }
+        });
+    }
+
+    // --- LÓGICA DE TARJETA Y FECHA ---
     const cardInput = document.getElementById('card-number');
     if (cardInput) {
         cardInput.addEventListener('input', function (e) {
@@ -32,7 +64,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- LÓGICA DE FECHA ---
     const expiryInput = document.getElementById('card-expiry');
     if (expiryInput) {
         expiryInput.addEventListener('input', function (e) {
@@ -63,37 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- CALCULADORA EN TIEMPO REAL (MODAL) ---
-    const investInput = document.getElementById('invest-amount');
-    let calcMsg = document.getElementById('invest-calculation');
-    if (!calcMsg && investInput) {
-        calcMsg = document.createElement('p');
-        calcMsg.id = 'invest-calculation';
-        calcMsg.className = 'text-xs font-bold text-primary text-right mt-1';
-        investInput.parentNode.parentNode.appendChild(calcMsg);
-    }
-    const btnContinue = document.querySelector('#investment-form-step1 button[type="submit"]');
-
-    if (investInput && calcMsg) {
-        investInput.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            if (!val || val < 1000) {
-                calcMsg.innerText = "Mínimo $1,000 MXN";
-                calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
-                if(btnContinue) btnContinue.disabled = true;
-            } else if (val % 1000 !== 0) {
-                calcMsg.innerText = "Solo múltiplos de $1,000";
-                calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
-                if(btnContinue) btnContinue.disabled = true;
-            } else {
-                const parts = val / 1000;
-                calcMsg.innerText = `Adquiriendo ${parts} Participación${parts > 1 ? 'es' : ''}`;
-                calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
-                if(btnContinue) btnContinue.disabled = false;
-            }
-        });
-    }
-
     // --- LISTENERS FORMULARIOS ---
 
     // A) Inversión
@@ -101,7 +101,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (formStep1) {
         formStep1.addEventListener('submit', (e) => {
             e.preventDefault();
-            const amount = parseInt(document.getElementById('invest-amount').value);
+            const amountInput = document.getElementById('invest-amount');
+            // Puede ser input o select según el HTML
+            const amount = parseInt(amountInput.value);
             const portfolioName = investModalTitle.innerText;
 
             if (!amount || amount < 1000 || amount % 1000 !== 0) {
@@ -140,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response.ok) {
                     closeInvestModal();
                     updateUserData(token);
-                    loadPortfolios();
+                    loadPortfolios(); // RECARGAR PARA ACTUALIZAR BARRAS DE PROGRESO
                 } else {
                     alert('Error: ' + data.message);
                     backToStep1();
@@ -174,9 +176,11 @@ window.selectPortfolio = function(id, name) {
         step2Div.classList.remove('flex');
         
         const input = document.getElementById('invest-amount');
-        if(input) input.value = '';
+        if(input) input.value = ''; // Reset input
+        
+        // Reset mensaje
         const calc = document.getElementById('invest-calculation');
-        if(calc) calc.innerText = '';
+        if(calc) { calc.innerText = "Ingresa un monto (Mín. $1,000)"; calc.className = "text-xs font-bold text-primary text-right mt-1"; }
     }
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
@@ -230,7 +234,7 @@ function updateBalanceUI(data) {
     setText('display-available', formatter.format(data.availableBalance));
     setText('display-invested', formatter.format(data.investedAmount));
     setText('modal-balance-display', formatter.format(data.availableBalance));
-    setText('withdraw-max-balance', formatter.format(data.availableBalance)); // Actualizar modal retiro también
+    setText('withdraw-max-balance', formatter.format(data.availableBalance));
 
     const elProfit = document.getElementById('display-profit');
     if (elProfit) {
@@ -240,6 +244,7 @@ function updateBalanceUI(data) {
     }
 }
 
+// --- DISEÑO CROWDFUNDING ACTUALIZADO PARA DASHBOARD ---
 async function loadPortfolios() {
     try {
         const response = await fetch('/api/portfolios');
@@ -249,13 +254,11 @@ async function loadPortfolios() {
         
         gridContainer.innerHTML = ''; 
 
-        // SLICE: Solo mostramos los primeros 3 en el dashboard
+        // SOLO LOS PRIMEROS 3
         portfolios.slice(0, 3).forEach(portfolio => {
             
-            // --- DISEÑO CROWDFUNDING (Igual que en Portfolios.js) ---
-            
-            // Validar datos
-            const investors = portfolio.investors || 0;
+            // VALIDACIÓN DE DATOS
+            const investors = portfolio.currentInvestors || 0; // Usar currentInvestors que es el real (base + BD)
             const target = portfolio.targetInvestors || 5000;
             const spotsLeft = Math.max(0, target - investors);
             const progress = Math.min(100, (investors / target) * 100);
@@ -270,6 +273,7 @@ async function loadPortfolios() {
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
 
+            // TARJETA IDÉNTICA A PORTFOLIOS.HTML
             const cardHTML = `
                 <div class="flex flex-col bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full overflow-hidden">
                     
@@ -292,7 +296,7 @@ async function loadPortfolios() {
 
                     <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
                         <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-slate-700 dark:text-white">Progreso</span>
+                            <span class="text-slate-700 dark:text-white">Progreso del Grupo</span>
                             <span class="text-primary">${progress.toFixed(1)}%</span>
                         </div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
@@ -311,7 +315,7 @@ async function loadPortfolios() {
                                 <span class="text-lg font-bold text-green-500">+${portfolio.returnYTD}%</span>
                              </div>
                              <div class="flex flex-col text-right">
-                                <span class="text-xs text-slate-400">Ticket</span>
+                                <span class="text-xs text-slate-400">Ticket Mínimo</span>
                                 <span class="text-sm font-bold text-slate-900 dark:text-white">${formatter.format(portfolio.minInvestment)}</span>
                              </div>
                         </div>
@@ -338,7 +342,7 @@ function renderMarketChart() {
         const textColor = isDark ? '#94a3b8' : '#64748b';
         const lineColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
 
-        // Llamada API (Misma que tenías)
+        // Llamada API
         fetch('/api/market').then(res => res.json()).then(marketData => {
              const labels = marketData.dates.map(ts => new Date(ts*1000).toLocaleDateString('es-MX', {month:'short', day:'numeric'}));
              
@@ -400,7 +404,6 @@ function renderMarketChart() {
 }
 
 function setupTransactionForms(token) {
-    // Helpers para depósitos y retiros
     const depositForm = document.getElementById('deposit-form');
     if (depositForm) {
         depositForm.addEventListener('submit', async (e) => {
