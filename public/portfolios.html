@@ -46,6 +46,7 @@
                     </a>
                     <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary"><span class="material-symbols-outlined">close</span></button>
                 </div>
+                
                 <nav class="flex flex-col gap-2">
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="index.html"><span class="material-symbols-outlined">home</span><p class="text-sm font-semibold">Inicio</p></a>
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><p class="text-sm font-semibold">Dashboard</p></a>
@@ -84,55 +85,41 @@
         </main>
     </div>
 
-    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
-        <div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-md transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700 overflow-hidden relative">
+    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-700 overflow-hidden relative">
+            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold">Invertir</h3><button onclick="closeModal()"><span class="material-symbols-outlined">close</span></button></div>
             
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Realizar Inversión</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white z-10"><span class="material-symbols-outlined">close</span></button>
-            </div>
-    
-            <div id="invest-step-1" class="transition-all duration-300">
-                <div class="bg-primary/10 p-4 rounded-xl mb-6 flex items-center gap-4 border border-primary/20">
-                    <div class="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">🚀</div>
-                    <div>
-                        <p class="text-xs text-primary font-bold uppercase tracking-wide">Estás invirtiendo en</p>
-                        <p id="modal-portfolio-name" class="text-slate-900 dark:text-white font-bold text-lg">Nombre del Fondo</p>
-                    </div>
-                </div>
-                
+            <div id="invest-step-1">
+                <div class="bg-primary/10 p-4 rounded-xl mb-4 flex items-center gap-4"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><div><p class="text-xs uppercase font-bold text-primary">Fondo</p><p id="modal-portfolio-name" class="font-bold text-lg">...</p></div></div>
                 <form id="investment-form-step1" class="flex flex-col gap-4">
                     <input type="hidden" id="modal-portfolio-id">
                     <div>
-                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Monto a Invertir (MXN)</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                            <input type="number" id="invest-amount" placeholder="Ej. 5000" step="1000" min="1000" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold" required>
-                        </div>
+                        <label class="text-sm font-bold text-slate-500 mb-1 block">Monto a Invertir</label>
+                        <div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">$</span><input type="number" id="invest-amount" placeholder="Ej. 5000" step="1000" min="1000" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold outline-none focus:border-primary" required></div>
                         <div class="flex justify-between mt-2"><p class="text-xs text-slate-400">Saldo: <span id="modal-balance-display">...</span></p><p id="invest-calculation" class="text-xs font-bold text-primary text-right"></p></div>
                     </div>
-                    <button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/25 transition-all mt-2 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"><span>Continuar</span><span class="material-symbols-outlined text-sm">arrow_forward</span></button>
+                    <button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50">Continuar</button>
                 </form>
             </div>
-    
+
             <div id="invest-step-2" class="hidden text-center">
                 <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-600"><span class="material-symbols-outlined text-3xl">priority_high</span></div>
                 <h3 class="text-lg font-bold mb-4">Confirmar Inversión</h3>
                 
                 <div class="bg-slate-50 dark:bg-slate-900 w-full rounded-lg p-4 mb-6 border border-slate-200 dark:border-slate-700 text-left">
-                    <div class="flex justify-between mb-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-700">
                         <span class="text-xs uppercase font-bold text-slate-500">Fondo</span>
-                        <span class="font-bold text-sm text-slate-900 dark:text-white text-right" id="confirm-portfolio-name">...</span>
+                        <span class="font-bold text-sm text-slate-900 dark:text-white text-right break-words max-w-[60%]" id="confirm-portfolio-name">...</span>
                     </div>
                     <div class="flex justify-between items-center pt-1">
-                        <span class="text-xs uppercase font-bold text-slate-500">Total a Invertir</span>
+                        <span class="text-xs uppercase font-bold text-slate-500">Total</span>
                         <span class="text-2xl font-bold text-primary" id="confirm-amount-display">$0.00</span>
                     </div>
                 </div>
 
                 <div class="flex gap-3">
-                    <button onclick="backToStep1()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 font-bold rounded-xl text-sm">Cancelar</button>
-                    <button id="btn-final-confirm" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl text-sm">Confirmar</button>
+                    <button onclick="backToStep1()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 font-bold rounded-xl text-sm hover:bg-slate-200">Cancelar</button>
+                    <button id="btn-final-confirm" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-blue-600">Confirmar</button>
                 </div>
             </div>
         </div>

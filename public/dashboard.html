@@ -104,12 +104,12 @@
         </main>
     </div>
 
-    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300">
+    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-700 overflow-hidden relative">
             <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold">Invertir</h3><button onclick="closeModal()"><span class="material-symbols-outlined">close</span></button></div>
             
             <div id="invest-step-1">
-                <div class="bg-primary/10 p-4 rounded-xl mb-4 flex items-center gap-4"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><div><p class="text-xs uppercase font-bold text-primary">Fondo</p><p id="modal-portfolio-name" class="font-bold text-lg break-words">...</p></div></div>
+                <div class="bg-primary/10 p-4 rounded-xl mb-4 flex items-center gap-4"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><div><p class="text-xs uppercase font-bold text-primary">Fondo</p><p id="modal-portfolio-name" class="font-bold text-lg">...</p></div></div>
                 <form id="investment-form-step1" class="flex flex-col gap-4">
                     <input type="hidden" id="modal-portfolio-id">
                     <div>
@@ -126,19 +126,19 @@
                 <h3 class="text-lg font-bold mb-4">Confirmar Inversión</h3>
                 
                 <div class="bg-slate-50 dark:bg-slate-900 w-full rounded-lg p-4 mb-6 border border-slate-200 dark:border-slate-700 text-left">
-                    <div class="flex justify-between mb-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-700">
                         <span class="text-xs uppercase font-bold text-slate-500">Fondo</span>
                         <span class="font-bold text-sm text-slate-900 dark:text-white text-right break-words max-w-[60%]" id="confirm-portfolio-name">...</span>
                     </div>
-                    <div class="flex justify-between items-center pt-1">
-                        <span class="text-xs uppercase font-bold text-slate-500">Monto</span>
-                        <span class="text-xl font-bold text-primary" id="confirm-amount-display">$0.00</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs uppercase font-bold text-slate-500">Total</span>
+                        <span class="text-2xl font-bold text-primary" id="confirm-amount-display">$0.00</span>
                     </div>
                 </div>
 
                 <div class="flex gap-3">
-                    <button onclick="backToStep1()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 font-bold rounded-xl text-sm">Cancelar</button>
-                    <button id="btn-final-confirm" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl text-sm">Confirmar</button>
+                    <button onclick="backToStep1()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 font-bold rounded-xl text-sm hover:bg-slate-200">Cancelar</button>
+                    <button id="btn-final-confirm" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-blue-600">Confirmar</button>
                 </div>
             </div>
         </div>
