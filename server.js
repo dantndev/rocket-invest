@@ -19,47 +19,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 initDb();
 
-// --- DATOS BASE ---
+// --- DATOS BASE DE LOS FONDOS ---
 const portfoliosBase = [
-    { 
-        id: 1, 
-        name: "Alpha Tech Giants", 
-        provider: "BlackRock", 
-        ticker: "QQQ", 
-        risk: "Alto", 
-        returnYTD: 99.99, 
-        targetAmount: 10000000, 
-        baseAmount: 7545000, 
-        baseInvestors: 3420, 
-        minInvestment: 1000, 
-        status: "open", 
-        lockUpPeriod: "12 Meses", 
-        description: "Acceso grupal a las 100 tecnológicas más grandes." 
-    },
-    { 
-        id: 2, name: "Deuda Soberana Plus", provider: "Santander", ticker: "SHV", risk: "Bajo", returnYTD: 8.12, targetAmount: 5000000, baseAmount: 4800000, baseInvestors: 890, minInvestment: 1000, status: "open", lockUpPeriod: "3 Meses", description: "Bonos de gobierno con tasa preferencial." 
-    },
-    { 
-        id: 3, name: "Energía Limpia Global", provider: "iShares", ticker: "ICLN", risk: "Medio", returnYTD: 14.50, targetAmount: 2000000, baseAmount: 150000, baseInvestors: 45, minInvestment: 1000, status: "open", lockUpPeriod: "24 Meses", description: "Infraestructura renovable global." 
-    },
-    { 
-        id: 4, name: "Crypto Proxies", provider: "ProShares", ticker: "BITO", risk: "Alto", returnYTD: 145.20, targetAmount: 8000000, baseAmount: 1200000, baseInvestors: 80, minInvestment: 1000, status: "open", lockUpPeriod: "6 Meses", description: "Exposición a futuros de Bitcoin." 
-    },
-    { 
-        id: 5, name: "Bienes Raíces FIBRAs", provider: "Fibra Uno", ticker: "VNQ", risk: "Medio", returnYTD: 12.30, targetAmount: 20000000, baseAmount: 15000000, baseInvestors: 1400, minInvestment: 1000, status: "open", lockUpPeriod: "12 Meses", description: "Rentas comerciales diversificadas." 
-    },
-    { 
-        id: 6, name: "Asian Tigers", provider: "HSBC Global", ticker: "VWO", risk: "Alto", returnYTD: 18.40, targetAmount: 5000000, baseAmount: 500000, baseInvestors: 40, minInvestment: 1000, status: "open", lockUpPeriod: "18 Meses", description: "Mercados emergentes de Asia." 
-    },
-    { 
-        id: 7, name: "Deuda Corporativa USA", provider: "Vanguard", ticker: "LQD", risk: "Bajo", returnYTD: 4.50, targetAmount: 10000000, baseAmount: 9000000, baseInvestors: 2000, minInvestment: 1000, status: "open", lockUpPeriod: "6 Meses", description: "Bonos corporativos grado inversión." 
-    },
-    { 
-        id: 8, name: "Gaming & eSports", provider: "VanEck", ticker: "ESPO", risk: "Alto", returnYTD: 32.10, targetAmount: 3000000, baseAmount: 2800000, baseInvestors: 900, minInvestment: 1000, status: "open", lockUpPeriod: "12 Meses", description: "Entretenimiento digital." 
-    },
-    { 
-        id: 9, name: "Oro Físico", provider: "SPDR", ticker: "GLD", risk: "Medio", returnYTD: 9.80, targetAmount: 50000000, baseAmount: 41000000, baseInvestors: 3100, minInvestment: 1000, status: "open", lockUpPeriod: "Indefinido", description: "Resguardo en lingotes reales." 
-    }
+    { id: 1, name: "Alpha Tech Giants", provider: "BlackRock", ticker: "QQQ", risk: "Alto", returnYTD: 99.99, targetAmount: 10000000, baseAmount: 7545000, baseInvestors: 3420, minInvestment: 1000, status: "open", lockUpPeriod: "12 Meses", description: "Acceso grupal a las 100 tecnológicas más grandes." },
+    { id: 2, name: "Deuda Soberana Plus", provider: "Santander", ticker: "SHV", risk: "Bajo", returnYTD: 8.12, targetAmount: 5000000, baseAmount: 4800000, baseInvestors: 890, minInvestment: 1000, status: "open", lockUpPeriod: "3 Meses", description: "Bonos de gobierno con tasa preferencial." },
+    { id: 3, name: "Energía Limpia Global", provider: "iShares", ticker: "ICLN", risk: "Medio", returnYTD: 14.50, targetAmount: 2000000, baseAmount: 150000, baseInvestors: 45, minInvestment: 1000, status: "open", lockUpPeriod: "24 Meses", description: "Infraestructura renovable global." },
+    { id: 4, name: "Crypto Proxies", provider: "ProShares", ticker: "BITO", risk: "Alto", returnYTD: 145.20, targetAmount: 8000000, baseAmount: 1200000, baseInvestors: 80, minInvestment: 1000, status: "open", lockUpPeriod: "6 Meses", description: "Exposición a futuros de Bitcoin." },
+    { id: 5, name: "Bienes Raíces FIBRAs", provider: "Fibra Uno", ticker: "VNQ", risk: "Medio", returnYTD: 12.30, targetAmount: 20000000, baseAmount: 15000000, baseInvestors: 1400, minInvestment: 1000, status: "open", lockUpPeriod: "12 Meses", description: "Rentas comerciales diversificadas." },
+    { id: 6, name: "Asian Tigers", provider: "HSBC Global", ticker: "VWO", risk: "Alto", returnYTD: 18.40, targetAmount: 5000000, baseAmount: 500000, baseInvestors: 40, minInvestment: 1000, status: "open", lockUpPeriod: "18 Meses", description: "Mercados emergentes de Asia." },
+    { id: 7, name: "Deuda Corporativa USA", provider: "Vanguard", ticker: "LQD", risk: "Bajo", returnYTD: 4.50, targetAmount: 10000000, baseAmount: 9000000, baseInvestors: 2000, minInvestment: 1000, status: "open", lockUpPeriod: "6 Meses", description: "Bonos corporativos grado inversión." },
+    { id: 8, name: "Gaming & eSports", provider: "VanEck", ticker: "ESPO", risk: "Alto", returnYTD: 32.10, targetAmount: 3000000, baseAmount: 2800000, baseInvestors: 900, minInvestment: 1000, status: "open", lockUpPeriod: "12 Meses", description: "Entretenimiento digital." },
+    { id: 9, name: "Oro Físico", provider: "SPDR", ticker: "GLD", risk: "Medio", returnYTD: 9.80, targetAmount: 50000000, baseAmount: 41000000, baseInvestors: 3100, minInvestment: 1000, status: "open", lockUpPeriod: "Indefinido", description: "Resguardo en lingotes reales." }
 ];
 
 // --- RUTAS API ---
@@ -67,9 +37,9 @@ const portfoliosBase = [
 app.get('/api/portfolios', async (req, res) => {
     try {
         const livePortfolios = await Promise.all(portfoliosBase.map(async (p) => {
+            // Consultar BD para sumar datos reales a los base
             const sumRes = await query('SELECT SUM(amount) as total FROM investments WHERE portfolioId = $1', [p.id]);
             const realMoney = parseFloat(sumRes.rows[0].total || 0);
-            
             const countRes = await query('SELECT COUNT(DISTINCT userId) as count FROM investments WHERE portfolioId = $1', [p.id]);
             const realInvestors = parseInt(countRes.rows[0].count || 0);
 
@@ -77,15 +47,16 @@ app.get('/api/portfolios', async (req, res) => {
                 ...p,
                 currentAmount: p.baseAmount + realMoney,
                 investors: p.baseInvestors + realInvestors,
-                // Enviamos estos para que el frontend no falle si faltan
+                // Calculamos cupos dinámicamente
                 targetInvestors: Math.floor(p.targetAmount / p.minInvestment),
-                currentInvestors: p.baseInvestors + realInvestors // Alias
+                currentInvestors: p.baseInvestors + realInvestors 
             };
         }));
         res.json(livePortfolios);
     } catch (error) {
         console.error(error);
-        res.json(portfoliosBase); // Fallback
+        // Fallback si falla la BD
+        res.json(portfoliosBase); 
     }
 });
 
@@ -117,6 +88,30 @@ app.get('/api/auth/me', async (req, res) => {
     } catch (error) { res.status(401).json({ message: 'Token inválido' }); }
 });
 
+app.get('/api/my-investments', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No autorizado' });
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const result = await query('SELECT * FROM investments WHERE userId = $1', [decoded.id]);
+        const enriched = result.rows.map(inv => {
+            const amount = parseFloat(inv.amount);
+            const portfolio = portfoliosBase.find(p => p.id === inv.portfolioid);
+            const currentVal = amount * 1.015;
+            return {
+                id: inv.id,
+                portfolioName: portfolio ? portfolio.name : 'Fondo Desconocido',
+                risk: portfolio ? portfolio.risk : 'N/A',
+                investedAmount: amount,
+                currentValue: currentVal,
+                profit: currentVal - amount,
+                date: inv.date
+            };
+        });
+        res.json(enriched);
+    } catch (error) { res.status(500).json({ message: 'Error' }); }
+});
+
 app.get('/api/market', async (req, res) => {
     try {
         const symbol = 'AAPL'; 
@@ -146,7 +141,17 @@ app.get('/api/market', async (req, res) => {
     }
 });
 
-// TRANSACCIONES
+app.get('/api/transactions', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token' });
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const result = await query('SELECT * FROM transactions WHERE userId = $1 ORDER BY id DESC', [decoded.id]);
+        res.json(result.rows);
+    } catch (error) { res.status(500).json({ message: 'Error historial' }); }
+});
+
+// OPERACIONES
 app.post('/api/invest', async (req, res) => {
     const { portfolioId, amount, token } = req.body;
     try {
@@ -158,19 +163,20 @@ app.post('/api/invest', async (req, res) => {
         const investmentAmount = parseFloat(amount);
         const portfolio = portfoliosBase.find(p => p.id === parseInt(portfolioId));
 
-        if (investmentAmount < 1000 || investmentAmount % 1000 !== 0) return res.status(400).json({ message: 'Monto inválido' });
-        if (user.balance < investmentAmount) return res.status(400).json({ message: 'Saldo insuficiente' });
+        // Validaciones
+        if (investmentAmount < 1000 || investmentAmount % 1000 !== 0) return res.status(400).json({ message: 'El monto debe ser múltiplo de $1,000' });
+        if (parseFloat(user.balance) < investmentAmount) return res.status(400).json({ message: 'Saldo insuficiente' });
 
         const existing = await query('SELECT id FROM investments WHERE userId = $1 AND portfolioId = $2', [user.id, portfolioId]);
-        if (existing.rows.length > 0) return res.status(400).json({ message: 'Ya eres socio de este fondo.' });
+        if (existing.rows.length > 0) return res.status(400).json({ message: 'Ya eres socio de este fondo. Solo una participación permitida.' });
 
         await query('UPDATE users SET balance = balance - $1 WHERE id = $2', [investmentAmount, user.id]);
         await query('INSERT INTO investments (userId, portfolioId, amount, date) VALUES ($1, $2, $3, $4)', [user.id, portfolioId, investmentAmount, new Date().toISOString()]);
-        await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', [user.id, 'invest', `Entrada a grupo ${portfolio.name}`, -investmentAmount, new Date().toISOString()]);
+        await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', [user.id, 'invest', `Entrada a ${portfolio.name}`, -investmentAmount, new Date().toISOString()]);
 
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
         res.status(201).json({ message: 'Inversión exitosa', newBalance: parseFloat(updatedUserRes.rows[0].balance) });
-    } catch (error) { console.error(error); res.status(500).json({ message: 'Error' }); }
+    } catch (error) { console.error(error); res.status(500).json({ message: 'Error procesando inversión' }); }
 });
 
 app.post('/api/deposit', async (req, res) => {
@@ -195,7 +201,7 @@ app.post('/api/withdraw', async (req, res) => {
         const userRes = await query('SELECT * FROM users WHERE id = $1', [decoded.id]);
         const user = userRes.rows[0];
         const val = parseFloat(amount);
-        if (val <= 0 || user.balance < val) return res.status(400).json({ message: 'Fondos insuficientes' });
+        if (val <= 0 || parseFloat(user.balance) < val) return res.status(400).json({ message: 'Fondos insuficientes' });
         await query('UPDATE users SET balance = balance - $1 WHERE id = $2', [val, user.id]);
         await query('INSERT INTO transactions (userId, type, description, amount, date) VALUES ($1, $2, $3, $4, $5)', [user.id, 'withdraw', 'Retiro', -val, new Date().toISOString()]);
         const updatedUserRes = await query('SELECT balance FROM users WHERE id = $1', [user.id]);
@@ -219,7 +225,8 @@ app.post('/api/sell', async (req, res) => {
     } catch (e) { res.status(500).json({ message: 'Error' }); }
 });
 
-app.post('/api/auth/register', async (req, res) => { /* Register igual */
+// Auth
+app.post('/api/auth/register', async (req, res) => {
     const { email, password } = req.body;
     try {
         const existing = await query('SELECT id FROM users WHERE email = $1', [email]);
@@ -231,7 +238,7 @@ app.post('/api/auth/register', async (req, res) => { /* Register igual */
     } catch (e) { res.status(500).json({ message: 'Error' }); }
 });
 
-app.post('/api/auth/login', async (req, res) => { /* Login igual */
+app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     try {
         const userRes = await query('SELECT * FROM users WHERE email = $1', [email]);
@@ -240,9 +247,5 @@ app.post('/api/auth/login', async (req, res) => { /* Login igual */
         res.json({ token, message: 'Login exitoso' });
     } catch (e) { res.status(500).json({ message: 'Error' }); }
 });
-
-// Rutas extras para que no falle my-investments y transactions
-app.get('/api/my-investments', async (req, res) => { /* ... copia la del mensaje anterior si falta, pero la puse arriba */ });
-app.get('/api/transactions', async (req, res) => { /* ... copia la del mensaje anterior ... */ });
 
 app.listen(PORT, () => { console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`); });
