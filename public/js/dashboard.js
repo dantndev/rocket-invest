@@ -1,5 +1,5 @@
 // public/js/dashboard.js
-let investModal, depositModal, withdrawModal, successModal;
+let investModal, successModal, depositModal, withdrawModal;
 let step1Div, step2Div, btnFinalConfirm;
 let investModalTitle, investModalIdInput, confirmPortfolioName, confirmAmountDisplay;
 
@@ -9,9 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Refs
     investModal = document.getElementById('invest-modal');
+    successModal = document.getElementById('success-modal');
     depositModal = document.getElementById('deposit-modal');
     withdrawModal = document.getElementById('withdraw-modal');
-    successModal = document.getElementById('success-modal'); // Nuevo
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
@@ -23,25 +23,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Calculadora
     const investInput = document.getElementById('invest-amount');
     let calcMsg = document.getElementById('invest-calculation');
-    if (!calcMsg && investInput) {
-        calcMsg = document.createElement('p');
-        calcMsg.id = 'invest-calculation';
-        calcMsg.className = 'text-xs font-bold text-primary text-right mt-1';
-        investInput.parentNode.parentNode.appendChild(calcMsg);
-    }
     const btnContinue = document.getElementById('btn-continue-invest');
     if (investInput) investInput.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
-        if (!val || val < 1000) { calcMsg.innerText = "Mín $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
-        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
-        else { const p = val/1000; calcMsg.innerText = `${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled=false; }
+        // Leemos el ticket mínimo del atributo data que pusimos al abrir
+        const min = parseInt(investModal.dataset.ticket || 1000); 
+        if (!val || val < min) { calcMsg.innerText = `Mínimo $${min}`; calcMsg.className = "text-xs font-bold text-red-400 text-right"; if(btnContinue) btnContinue.disabled=true; }
+        else if (val % min !== 0) { calcMsg.innerText = `Múltiplos de $${min}`; calcMsg.className = "text-xs font-bold text-orange-400 text-right"; if(btnContinue) btnContinue.disabled=true; }
+        else { const p = val/min; calcMsg.innerText = `Ocuparás ${p} Cupo${p>1?'s':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right"; if(btnContinue) btnContinue.disabled=false; }
     });
 
-    // Init
     await updateUserData(token);
     await loadPortfolios();
     renderMarketChart();
-    document.getElementById('btn-ver-todos')?.addEventListener('click', () => window.location.href = 'portfolios.html');
+
+    const btnVer = document.getElementById('btn-ver-todos');
+    if(btnVer) btnVer.addEventListener('click', () => window.location.href = 'portfolios.html');
+
     setupFormListeners(token);
 });
 
@@ -54,11 +52,27 @@ async function loadPortfolios() {
         grid.innerHTML = '';
 
         data.slice(0, 3).forEach(p => {
-            const investors = p.investors || 0;
-            const target = p.targetInvestors || 5000;
-            const spotsLeft = Math.max(0, target - investors);
-            const progress = Math.min(100, (investors / target) * 100);
-            const fmt = new Intl.NumberFormat('es-MX');
+            // LÓGICA SEMÁFORO
+            const totalTickets = p.totalTickets || 1000;
+            const soldTickets = p.soldTickets || 0;
+            const remaining = Math.max(0, totalTickets - soldTickets);
+            const percentage = (soldTickets / totalTickets) * 100;
+
+            // Definir colores según disponibilidad
+            let badgeColor = "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+            let dotColor = "bg-green-500";
+            let statusText = `${new Intl.NumberFormat('es-MX').format(remaining)} cupos disp.`;
+            let disabled = "";
+
+            if (remaining === 0) {
+                badgeColor = "bg-slate-200 text-slate-500"; dotColor = "hidden"; statusText = "AGOTADO"; disabled = "disabled";
+            } else if (percentage >= 90) { // Queda < 10% -> ROJO (Urgencia)
+                badgeColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"; dotColor = "bg-red-500"; statusText = `¡Últimos ${remaining} cupos!`;
+            } else if (percentage >= 50) { // Queda < 50% -> AMARILLO
+                badgeColor = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; dotColor = "bg-amber-500";
+            }
+
+            const numFormat = new Intl.NumberFormat('es-MX');
             const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             let color = p.risk === 'Alto' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600';
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
@@ -75,21 +89,30 @@ async function loadPortfolios() {
                 </div>
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-1 leading-tight">${p.name}</h3>
                 <p class="text-xs text-slate-500 mb-4 line-clamp-2 h-8">${p.description}</p>
+                
                 <div class="flex items-center gap-2 mb-4">
-                    <span class="flex h-2 w-2 rounded-full ${spotsLeft>0?'bg-green-500':'bg-red-500'} animate-pulse"></span>
-                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${fmt.format(spotsLeft)} cupos disp.</span>
+                    <span class="px-2 py-1 rounded-md text-[11px] font-bold flex items-center gap-2 ${badgeColor}">
+                        <span class="flex h-2 w-2 rounded-full ${dotColor} animate-pulse"></span>
+                        ${statusText}
+                    </span>
                 </div>
+
                 <div class="mt-auto">
-                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-500">Progreso</span><span class="text-primary">${progress.toFixed(0)}%</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1"><div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div></div>
-                    <div class="flex justify-between text-[10px] text-slate-400 mb-4"><span>${fmt.format(investors)} socios</span><span>Meta: ${moneyFmt.format(p.targetAmount)}</span></div>
-                    <button onclick="setupInvest(${p.id}, '${p.name}')" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity" ${spotsLeft===0?'disabled':''}>${spotsLeft===0?'Lleno':'Unirme'}</button>
+                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-500">Progreso</span><span class="text-primary">${percentage.toFixed(0)}%</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1"><div class="bg-primary h-2 rounded-full" style="width: ${percentage}%"></div></div>
+                    
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-4 pt-2 border-t border-slate-100 dark:border-slate-700 mt-2">
+                        <span>Ticket: ${moneyFmt.format(p.minInvestment)}</span>
+                    </div>
+
+                    <button onclick="setupInvest(${p.id}, '${p.name}', ${p.minInvestment})" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity" ${disabled}>${disabled?'Agotado':'Unirme al Grupo'}</button>
                 </div>
             </div>`;
         });
     } catch(e) { console.error(e); }
 }
 
+// Helpers y Forms...
 async function updateUserData(token) { try { const r=await fetch('/api/auth/me',{headers:{'Authorization':`Bearer ${token}`}}); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
 function updateBalanceUI(d) {
     const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
@@ -108,7 +131,11 @@ function setupFormListeners(token) {
     if(f1) f1.addEventListener('submit', (e) => {
         e.preventDefault();
         const amount = parseInt(document.getElementById('invest-amount').value);
-        if(!amount || amount < 1000 || amount % 1000 !== 0) return;
+        // Validación contra el ticket guardado
+        const ticket = parseInt(investModal.dataset.ticket || 1000);
+
+        if(!amount || amount < ticket || amount % ticket !== 0) return;
+
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
         document.getElementById('confirm-amount-display').innerText = fmt.format(amount);
         document.getElementById('confirm-portfolio-name').innerText = investModalTitle.innerText;
@@ -125,48 +152,48 @@ function setupFormListeners(token) {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ portfolioId: pid, amount, token })
             });
+            const d = await res.json();
             if(res.ok) { 
                 closeModal(); 
                 updateUserData(token); 
                 loadPortfolios(); 
-                showSuccess(); // MOSTRAR MODAL DE ÉXITO
-            } else { 
-                const d = await res.json(); alert(d.message); backToStep1(); 
-            }
-        } catch(e) { alert("Error"); backToStep1(); }
+                showSuccess(); // MODAL EXITO
+            } 
+            else { alert(d.message); backToStep1(); }
+        } catch(e) { alert("Error de red"); backToStep1(); }
         btnFinalConfirm.innerText = "Confirmar";
     });
-
-    // Deps/Ret (simplificado)
+    
     const dep = document.getElementById('deposit-form'); if(dep) dep.addEventListener('submit', async(e)=>{ e.preventDefault(); const a=document.getElementById('deposit-amount').value; try{ const r=await fetch('/api/deposit',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount:a,token})}); if(r.ok){closeDepositModal();updateUserData(token);document.getElementById('deposit-amount').value='';alert("Depósito OK");} }catch(e){} });
     const wit = document.getElementById('withdraw-form'); if(wit) wit.addEventListener('submit', async(e)=>{ e.preventDefault(); const a=document.getElementById('withdraw-amount').value; try{ const r=await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount:a,token})}); if(r.ok){closeWithdrawModal();updateUserData(token);document.getElementById('withdraw-amount').value='';alert("Retiro OK");} }catch(e){} });
 }
 
-function renderMarketChart() { /* (Tu lógica de Chart.js aquí, mantenla intacta) */ 
-    const ctx = document.getElementById('marketChart'); if(!ctx) return;
-    try {
-        const isDark = document.documentElement.classList.contains('dark'); const textColor = isDark ? '#94a3b8' : '#64748b'; const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-        fetch('/api/market').then(r=>r.json()).then(d=>{
-            new Chart(ctx, { type: 'line', data: { labels: d.dates.map(ts=>new Date(ts*1000).toLocaleDateString('es-MX')), datasets: [{ label:'S&P 500', data:d.prices, borderColor:'#307de8', borderWidth:2, pointRadius:0, hoverBackgroundColor: isDark ? '#fff' : '#000' }] }, options: { maintainAspectRatio:false, responsive:true, plugins: { legend: {display:false}, tooltip: {mode:'index', intersect:false} }, interaction: {mode:'index', intersect:false}, scales: { y: { grid: {color:gridColor}, ticks: {color:textColor} }, x: { display:false } } } });
-        });
-    } catch(e){}
-}
+function renderMarketChart() { /* chart logic */ const ctx = document.getElementById('marketChart'); if(!ctx) return; try { const isDark = document.documentElement.classList.contains('dark'); const textColor = isDark ? '#94a3b8' : '#64748b'; const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'; fetch('/api/market').then(r=>r.json()).then(d=>{ new Chart(ctx, { type: 'line', data: { labels: d.dates.map(t=>new Date(t*1000).toLocaleDateString('es-MX')), datasets: [{ data: d.prices, borderColor: '#307de8', borderWidth: 2, pointRadius: 0 }] }, options: { maintainAspectRatio:false, scales: { y: { grid: {color:gridColor}, ticks: {color:textColor} }, x: { display:false } }, plugins: { legend: {display:false} } } }); }); } catch(e){} }
 
-// GLOBALES
-window.setupInvest = function(id, name) {
+// Globales
+window.setupInvest = function(id, name, ticket) {
     if(!investModal) return;
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
+    investModal.dataset.ticket = ticket; // Guardamos el precio ticket
+    
     backToStep1();
-    investModal.classList.remove('hidden'); setTimeout(() => { investModal.classList.remove('opacity-0'); investModal.querySelector('div').classList.remove('scale-95'); investModal.querySelector('div').classList.add('scale-100'); }, 10);
-    const inp = document.getElementById('invest-amount'); if(inp) inp.value = '';
-    const msg = document.getElementById('invest-calculation'); if(msg) msg.innerText = '';
+    investModal.classList.remove('hidden'); setTimeout(() => { investModal.classList.remove('opacity-0'); investModal.querySelector('div').classList.add('scale-100'); }, 10);
+    
+    const inp = document.getElementById('invest-amount'); 
+    if(inp) { 
+        inp.value = ''; 
+        inp.placeholder = `Ej. ${ticket}`;
+        inp.step = ticket;
+        inp.min = ticket;
+    }
+    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = `Mínimo $${ticket}`; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
 }
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
-window.closeModal = function() { investModal.classList.add('opacity-0'); investModal.querySelector('div').classList.remove('scale-100'); investModal.querySelector('div').classList.add('scale-95'); setTimeout(() => investModal.classList.add('hidden'), 300); }
+window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
 window.showSuccess = function() { if(successModal) { successModal.classList.remove('hidden'); setTimeout(() => { successModal.classList.remove('opacity-0'); successModal.querySelector('div').classList.add('scale-100'); }, 10); } }
-window.closeSuccessModal = function() { if(successModal) { successModal.classList.add('opacity-0'); successModal.querySelector('div').classList.remove('scale-100'); setTimeout(() => successModal.classList.add('hidden'), 300); } }
+window.closeSuccessModal = function() { if(successModal) { successModal.classList.add('opacity-0'); setTimeout(() => successModal.classList.add('hidden'), 300); } }
 window.openDepositModal = function() { if(depositModal) { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }};
 window.closeDepositModal = function() { if(depositModal) { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }};
-window.openWithdrawModal = function() { if(withdrawModal) { const b = document.getElementById('display-available')?.innerText || "0"; document.getElementById('withdraw-max-balance').innerText = b; withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); }};
+window.openWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); }};
 window.closeWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }};

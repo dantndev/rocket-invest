@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
-    // REFS
+    // 1. REFS DOM
     investModal = document.getElementById('invest-modal');
     successModal = document.getElementById('success-modal');
     step1Div = document.getElementById('invest-step-1');
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
 
-    // CALCULADORA
+    // 2. CALCULADORA
     const investInput = document.getElementById('invest-amount');
     let calcMsg = document.getElementById('invest-calculation');
     if (!calcMsg && investInput) {
@@ -28,15 +28,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         investInput.parentNode.parentNode.appendChild(calcMsg);
     }
     const btnContinue = document.getElementById('btn-continue-invest');
-    if(investInput) investInput.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value);
-        if (!val || val < 1000) { calcMsg.innerText = "Mín $1,000"; calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
-        else if (val % 1000 !== 0) { calcMsg.innerText = "Solo múltiplos de $1,000"; calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1"; if(btnContinue) btnContinue.disabled=true; }
-        else { const p = val/1000; calcMsg.innerText = `Adquiriendo ${p} Participación${p>1?'es':''}`; calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1"; if(btnContinue) btnContinue.disabled=false; }
-    });
 
+    if (investInput) {
+        investInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            // Validamos contra el valor guardado en el modal
+            const min = parseInt(investModal.dataset.ticket || 1000);
+
+            if (!val || val < min) {
+                calcMsg.innerText = `Mínimo $${min.toLocaleString()}`;
+                calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else if (val % min !== 0) {
+                calcMsg.innerText = `Múltiplos de $${min.toLocaleString()}`;
+                calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = true;
+            } else {
+                const parts = val / min;
+                calcMsg.innerText = `Adquiriendo ${parts} Participación${parts > 1 ? 'es' : ''}`;
+                calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
+                if(btnContinue) btnContinue.disabled = false;
+            }
+        });
+    }
+
+    // 3. CARGA DE DATOS
     await updateUserData(token);
     await loadAllPortfolios();
+    
+    // 4. FORM LISTENERS
     setupFormListeners(token);
 });
 
@@ -48,52 +68,80 @@ async function loadAllPortfolios() {
         if(!grid) return;
         grid.innerHTML = '';
 
+        // RECORRER TODOS
         data.forEach(p => {
-            const investors = p.investors || 0;
-            const target = p.targetInvestors || 5000;
-            const spotsLeft = Math.max(0, target - investors);
-            const progress = Math.min(100, (investors / target) * 100);
+            // CÁLCULOS DE CUPOS
+            const totalTickets = p.totalTickets || 1000;
+            const soldTickets = p.soldTickets || 0;
+            const remaining = Math.max(0, totalTickets - soldTickets);
+            const percentFilled = (soldTickets / totalTickets) * 100;
+            
             const numFormat = new Intl.NumberFormat('es-MX');
             const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-            let color = p.risk === 'Alto' ? 'bg-red-100 text-red-600' : (p.risk === 'Bajo' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600');
-            const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
-            const icon = icons[(p.id - 1) % icons.length];
 
-            grid.innerHTML += `
+            // SEMÁFORO
+            let badgeColor = "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+            let dotColor = "bg-green-500";
+            let statusText = `${numFormat.format(remaining)} cupos disp.`;
+            let disabled = "";
+            let btnText = "Unirme al Grupo";
+
+            if (remaining === 0) {
+                badgeColor = "bg-slate-200 text-slate-500"; dotColor = "hidden"; statusText = "AGOTADO"; disabled = "disabled"; btnText = "Cerrado";
+            } else if (percentFilled >= 90) {
+                badgeColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"; dotColor = "bg-red-500"; statusText = `¡Últimos ${remaining} cupos!`;
+            } else if (percentFilled >= 50) {
+                badgeColor = "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"; dotColor = "bg-amber-500";
+            }
+
+            let riskColor = p.risk === 'Alto' ? 'text-red-600 bg-red-50' : (p.risk === 'Bajo' ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50');
+            const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
+            const icon = icons[(p.id - 1) % icons.length] || '📈';
+
+            const cardHTML = `
             <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex flex-col h-full group hover:shadow-lg transition-all duration-300">
                 <div class="flex justify-between mb-3 items-start">
                     <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-primary group-hover:text-white transition-colors duration-300">${icon}</div>
                     <div class="flex flex-col items-end">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${color} leading-none">Riesgo ${p.risk}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${riskColor} border border-slate-100 dark:border-slate-700 leading-none">Riesgo ${p.risk}</span>
                         <span class="text-[10px] text-slate-400 mt-1">Lock: ${p.lockUpPeriod}</span>
                     </div>
                 </div>
                 <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-1 leading-tight">${p.name}</h3>
                 <p class="text-xs text-slate-500 mb-4 line-clamp-2 h-8">${p.description}</p>
+                
                 <div class="flex items-center gap-2 mb-4">
-                    <span class="flex h-2 w-2 rounded-full ${spotsLeft>0?'bg-green-500':'bg-red-500'} animate-pulse"></span>
-                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${numFormat.format(spotsLeft)} cupos disp.</span>
+                    <span class="px-2 py-1 rounded-md text-[11px] font-bold flex items-center gap-2 ${badgeColor}">
+                        <span class="flex h-2 w-2 rounded-full ${dotColor} animate-pulse"></span>
+                        ${statusText}
+                    </span>
                 </div>
+
                 <div class="mt-auto">
-                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-500">Progreso</span><span class="text-primary">${progress.toFixed(0)}%</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1"><div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div></div>
-                    <div class="flex justify-between text-[10px] text-slate-400 mb-4"><span>${numFormat.format(investors)} socios</span><span>Meta: ${moneyFmt.format(p.targetAmount)}</span></div>
-                    <button onclick="setupInvest(${p.id}, '${p.name}')" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity" ${spotsLeft===0?'disabled':''}>${spotsLeft===0?'Lleno':'Unirme'}</button>
+                    <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-500">Progreso</span><span class="text-primary">${percentFilled.toFixed(0)}%</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1"><div class="bg-primary h-2 rounded-full" style="width: ${percentFilled}%"></div></div>
+                    
+                    <div class="flex justify-between items-end mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                         <div class="flex flex-col">
+                            <span class="text-xs text-slate-400">Ticket</span>
+                            <span class="text-sm font-bold text-slate-900 dark:text-white">${moneyFmt.format(p.minInvestment)}</span>
+                         </div>
+                         <button onclick="setupInvest(${p.id}, '${p.name}', ${p.minInvestment})" class="px-6 py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50" ${disabled}>
+                            ${btnText}
+                         </button>
+                    </div>
                 </div>
             </div>`;
+            grid.innerHTML += cardHTML;
         });
     } catch(e) { console.error(e); }
 }
 
-async function updateUserData(token) {
-    try {
-        const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
-        if(res.ok) {
-            const d = await res.json();
-            const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-            const b = document.getElementById('modal-balance-display'); if(b) b.innerText = fmt.format(d.availableBalance);
-        }
-    } catch(e) {}
+// HELPERS
+async function updateUserData(token) { try { const r=await fetch('/api/auth/me',{headers:{'Authorization':`Bearer ${token}`}}); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
+function updateBalanceUI(d) {
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+    const b = document.getElementById('modal-balance-display'); if(b) b.innerText = fmt.format(d.availableBalance);
 }
 
 function setupFormListeners(token) {
@@ -101,8 +149,10 @@ function setupFormListeners(token) {
     if(f1) f1.addEventListener('submit', (e) => {
         e.preventDefault();
         const amount = parseInt(document.getElementById('invest-amount').value);
-        if(!amount || amount < 1000 || amount % 1000 !== 0) return;
-        const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+        const min = parseInt(investModal.dataset.ticket || 1000);
+        if(!amount || amount < min || amount % min !== 0) return;
+        
+        const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
         document.getElementById('confirm-amount-display').innerText = fmt.format(amount);
         document.getElementById('confirm-portfolio-name').innerText = investModalTitle.innerText;
         step1Div.classList.add('hidden'); step2Div.classList.remove('hidden');
@@ -118,12 +168,11 @@ function setupFormListeners(token) {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ portfolioId: pid, amount, token })
             });
-            
             if(res.ok) { 
                 closeModal(); 
                 updateUserData(token); 
                 loadAllPortfolios(); 
-                showSuccess(); // MOSTRAR MODAL DE ÉXITO
+                showSuccess(); // MODAL EXITO
             } else { 
                 const d = await res.json(); alert(d.message); backToStep1(); 
             }
@@ -133,16 +182,27 @@ function setupFormListeners(token) {
 }
 
 // GLOBALES
-window.setupInvest = function(id, name) {
+window.setupInvest = function(id, name, ticket) {
     if(!investModal) return;
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
+    investModal.dataset.ticket = ticket; // Guardamos ticket
+    
     backToStep1();
-    investModal.classList.remove('hidden'); setTimeout(() => investModal.classList.remove('opacity-0'), 10);
-    const inp = document.getElementById('invest-amount'); if(inp) inp.value = '';
-    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = "Ingresa monto (Mín $1,000)"; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
+    investModal.classList.remove('hidden'); setTimeout(() => { investModal.classList.remove('opacity-0'); investModal.querySelector('div').classList.add('scale-100'); }, 10);
+    
+    const inp = document.getElementById('invest-amount'); 
+    if(inp) { 
+        inp.value = ''; 
+        inp.placeholder = `Ej. ${ticket}`;
+        inp.step = ticket;
+        inp.min = ticket;
+    }
+    const msg = document.getElementById('invest-calculation'); 
+    if(msg) { msg.innerText = `Mínimo $${ticket}`; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
 }
+
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
-window.showSuccess = function() { if(successModal) { successModal.classList.remove('hidden'); setTimeout(() => successModal.classList.remove('opacity-0'),10); } }
-window.closeSuccessModal = function() { if(successModal) { successModal.classList.add('opacity-0'); setTimeout(() => successModal.classList.add('hidden'),300); } }
+window.showSuccess = function() { if(successModal) { successModal.classList.remove('hidden'); setTimeout(() => { successModal.classList.remove('opacity-0'); successModal.querySelector('div').classList.add('scale-100'); }, 10); } }
+window.closeSuccessModal = function() { if(successModal) { successModal.classList.add('opacity-0'); setTimeout(() => successModal.classList.add('hidden'), 300); } }
