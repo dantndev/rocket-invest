@@ -44,9 +44,7 @@
                         <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
                         <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-normal tracking-tight">RocketInvest</h1>
                     </a>
-                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary"><span class="material-symbols-outlined">close</span></button>
                 </div>
                 <nav class="flex flex-col gap-2">
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="index.html"><span class="material-symbols-outlined">home</span><p class="text-sm font-semibold">Inicio</p></a>
@@ -64,7 +62,7 @@
                 <header class="flex items-center justify-between mb-8">
                     <div class="flex items-center gap-3">
                         <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm"><span class="material-symbols-outlined">menu</span></button>
-                        <div><h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold">Hola, Inversor</h2></div>
+                        <div><h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold">Hola, Inversor</h2><p class="text-slate-500 dark:text-slate-400 text-xs md:text-sm hidden sm:block">Resumen del mercado hoy.</p></div>
                     </div>
                     <div class="flex items-center gap-2">
                         <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all"><span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span></button>
@@ -72,10 +70,11 @@
                     </div>
                 </header>
 
-                <div class="bg-white dark:bg-gradient-to-br dark:from-card-dark dark:to-background-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-8 shadow-lg relative overflow-hidden">
-                    <div class="p-6 md:p-8 relative z-10">
-                        <div class="flex flex-col md:flex-row justify-between gap-4 mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
-                            <div><p class="text-xs font-bold text-slate-500 uppercase mb-1">Patrimonio Total</p><h2 id="display-net-worth" class="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white">$0.00</h2></div>
+                <div class="bg-white dark:bg-gradient-to-br dark:from-card-dark dark:to-background-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-8 shadow-lg dark:shadow-xl relative overflow-hidden transition-all duration-300">
+                    <div class="hidden dark:block absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10 p-6 md:p-8">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
+                            <div><p class="text-slate-500 dark:text-slate-400 text-xs font-bold tracking-wide uppercase mb-1">Patrimonio Total (Neto)</p><h2 id="display-net-worth" class="text-slate-900 dark:text-white text-4xl md:text-5xl font-bold tracking-tight">$0.00</h2></div>
                             <div class="flex gap-3 w-full md:w-auto">
                                 <button onclick="openWithdrawModal()" class="flex-1 md:flex-none h-12 px-6 rounded-xl border-2 border-slate-200 dark:border-slate-600 font-bold text-slate-600 dark:text-white text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center gap-2"><span class="material-symbols-outlined">arrow_upward</span>Retirar</button>
                                 <button onclick="openDepositModal()" class="flex-1 md:flex-none h-12 px-6 rounded-xl bg-primary text-white font-bold text-sm hover:bg-blue-600 flex items-center justify-center gap-2 shadow-lg"><span class="material-symbols-outlined">add_circle</span>Depositar</button>
@@ -83,8 +82,8 @@
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                             <div class="flex items-center gap-3"><div class="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500"><span class="material-symbols-outlined">account_balance_wallet</span></div><div><p class="text-xs text-slate-400 uppercase">Disponible</p><p id="display-available" class="font-bold text-lg">$0.00</p></div></div>
-                            <div class="flex items-center gap-3"><div class="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary"><span class="material-symbols-outlined">pie_chart</span></div><div><p class="text-xs text-slate-400 uppercase">Invertido</p><p id="display-invested" class="font-bold text-lg">$0.00</p></div></div>
-                            <div class="flex items-center gap-3"><div class="h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500"><span class="material-symbols-outlined">trending_up</span></div><div><p class="text-xs text-slate-400 uppercase">Ganancia</p><p id="display-profit" class="font-bold text-lg text-emerald-500">+$0.00</p></div></div>
+                            <div class="flex items-center gap-3"><div class="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-500"><span class="material-symbols-outlined">pie_chart</span></div><div><p class="text-xs text-slate-400 uppercase">Invertido</p><p id="display-invested" class="font-bold text-lg">$0.00</p></div></div>
+                            <div class="flex items-center gap-3"><div class="h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-500"><span class="material-symbols-outlined">trending_up</span></div><div><p class="text-xs text-slate-400 uppercase">Ganancia</p><p id="display-profit" class="font-bold text-lg text-emerald-500">+$0.00</p></div></div>
                         </div>
                     </div>
                 </div>
@@ -100,7 +99,7 @@
                 </div>
                 
                 <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 w-full">
-                    <div class="col-span-full text-center py-10 text-slate-500">Cargando...</div>
+                    <div class="col-span-full text-center py-10 text-slate-500">Cargando datos...</div>
                 </div>
             </div>
         </main>
@@ -117,7 +116,7 @@
                     <div>
                         <label class="text-sm font-bold text-slate-500 mb-1 block">Monto a Invertir</label>
                         <div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">$</span><input type="number" id="invest-amount" placeholder="Ej. 5000" step="1000" min="1000" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold outline-none focus:border-primary" required></div>
-                        <div class="flex justify-between mt-2"><p class="text-xs text-slate-400">Saldo: <span id="modal-balance-display">...</span></p><p id="invest-calculation" class="text-xs font-bold text-primary text-right">Ingresa monto (Mín $1,000)</p></div>
+                        <div class="flex justify-between mt-2"><p class="text-xs text-slate-400">Saldo: <span id="modal-balance-display">...</span></p><p id="invest-calculation" class="text-xs font-bold text-primary text-right"></p></div>
                     </div>
                     <button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50">Continuar</button>
                 </form>
@@ -126,13 +125,13 @@
             <div id="invest-step-2" class="hidden text-center">
                 <div class="text-6xl mb-4">🤔</div>
                 <h3 class="text-lg font-bold mb-2">¿Confirmar?</h3>
-                <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl mb-4 text-left">
+                <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg mb-4 text-left border border-slate-200 dark:border-slate-700">
                     <div class="flex justify-between mb-1"><span class="text-sm">Fondo:</span><span class="font-bold" id="confirm-portfolio-name">...</span></div>
                     <div class="flex justify-between"><span class="text-sm">Monto:</span><span class="font-bold text-primary text-xl" id="confirm-amount-display">...</span></div>
                 </div>
                 <div class="flex gap-3">
-                    <button type="button" onclick="backToStep1()" class="flex-1 py-3 bg-slate-200 dark:bg-slate-700 font-bold rounded-xl">Cancelar</button>
-                    <button type="button" id="btn-final-confirm" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl">Sí, Invertir</button>
+                    <button onclick="backToStep1()" class="flex-1 py-3 bg-slate-200 dark:bg-slate-700 font-bold rounded-xl">Cancelar</button>
+                    <button id="btn-final-confirm" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl">Sí, Invertir</button>
                 </div>
             </div>
         </div>
