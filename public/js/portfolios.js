@@ -191,7 +191,9 @@ async function updateUserData(token) {
     } catch (error) { console.error("Error cargando usuario", error); }
 }
 
-async function loadAllPortfolios() {
+// Esta función va en dashboard.js (slice 3) y portfolios.js (sin slice)
+
+async function loadPortfolios() { // O loadAllPortfolios en portfolios.js
     try {
         const response = await fetch('/api/portfolios');
         const portfolios = await response.json();
@@ -200,24 +202,34 @@ async function loadAllPortfolios() {
         if(!gridContainer) return;
         gridContainer.innerHTML = ''; 
 
-        // MOSTRAR TODOS (Sin slice)
-        portfolios.forEach(portfolio => {
-            // Lógica de Colores
+        // Nota: Si es dashboard.js usa .slice(0,3), si es portfolios.js quítalo.
+        portfolios.forEach(portfolio => { // Agrega .slice(0,3) aquí si es dashboard
+            
+            // --- MATEMÁTICAS DE CUPOS (LA LÓGICA NUEVA) ---
+            
+            const ticketPrice = portfolio.minInvestment; // $1,000
+            
+            // 1. Cupos Totales del Fondo = Meta Dinero / Precio Ticket
+            const totalSlots = Math.floor(portfolio.targetAmount / ticketPrice);
+            
+            // 2. Cupos Ocupados = Dinero Recaudado / Precio Ticket
+            const occupiedSlots = Math.floor(portfolio.currentAmount / ticketPrice);
+            
+            // 3. Cupos Restantes (Lo que mostramos)
+            const remainingSlots = Math.max(0, totalSlots - occupiedSlots);
+            
+            // 4. Porcentaje de Llenado (Basado en dinero/cupos)
+            const progress = Math.min(100, (portfolio.currentAmount / portfolio.targetAmount) * 100);
+            
+            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+            const numFormat = new Intl.NumberFormat('es-MX'); 
+
+            // Colores
             let riskColorBg = portfolio.risk === 'Alto' ? 'bg-red-100 dark:bg-red-500/10' : (portfolio.risk === 'Medio' ? 'bg-orange-100 dark:bg-orange-500/10' : 'bg-green-100 dark:bg-green-500/10');
             let riskColorText = portfolio.risk === 'Alto' ? 'text-red-600 dark:text-red-400' : (portfolio.risk === 'Medio' ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400');
             let riskBorder = portfolio.risk === 'Alto' ? 'border-red-200 dark:border-red-500/20' : (portfolio.risk === 'Medio' ? 'border-orange-200 dark:border-orange-500/20' : 'border-green-200 dark:border-green-500/20');
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(portfolio.id - 1) % icons.length];
-
-            // CÁLCULOS DE COMUNIDAD
-            const investorsCount = portfolio.currentInvestors || 0; 
-            const targetCount = portfolio.targetInvestors || 1000;
-            const missingAmount = (targetCount - investorsCount) * 1000; // Estimado
-            const spotsLeft = Math.max(0, targetCount - investorsCount);
-            
-            const progress = Math.min(100, (investorsCount / targetCount) * 100);
-            const formatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-            const numFormat = new Intl.NumberFormat('es-MX'); 
 
             const cardHTML = `
                 <div class="flex flex-col bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary dark:hover:border-primary/50 hover:shadow-lg transition-all duration-300 group h-full overflow-hidden">
@@ -234,43 +246,44 @@ async function loadAllPortfolios() {
                         <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-4">${portfolio.provider}</p>
                         
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span class="text-xs font-bold text-green-600 dark:text-green-400">${numFormat.format(spotsLeft)} cupos disponibles</span>
+                            <span class="flex h-2 w-2 rounded-full ${remainingSlots < 100 ? 'bg-red-500' : 'bg-green-500'} animate-pulse"></span>
+                            <span class="text-xs font-bold ${remainingSlots < 100 ? 'text-red-600' : 'text-green-600 dark:text-green-400'}">
+                                ${remainingSlots === 0 ? 'AGOTADO' : `Solo ${numFormat.format(remainingSlots)} cupos disponibles`}
+                            </span>
                         </div>
                     </div>
 
                     <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-b border-slate-100 dark:border-slate-700">
                         <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-slate-700 dark:text-white">Progreso del Grupo</span>
+                            <span class="text-slate-700 dark:text-white">Progreso de Meta</span>
                             <span class="text-primary">${progress.toFixed(1)}%</span>
                         </div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2">
                             <div class="bg-primary h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
                         </div>
                         <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">person</span>
-                                ${numFormat.format(investorsCount)} inscritos
-                            </span>
-                            <span>Meta: ${numFormat.format(targetCount)}</span>
+                            <span>${formatter.format(portfolio.currentAmount)}</span>
+                            <span>Meta: ${formatter.format(portfolio.targetAmount)}</span>
                         </div>
                     </div>
 
                     <div class="p-6 pt-4 mt-auto">
                         <div class="flex items-center justify-between mb-4">
                              <div class="flex flex-col">
-                                <span class="text-xs text-slate-400">Rend. Histórico</span>
-                                <span class="text-lg font-bold text-green-500">+${portfolio.returnYTD}%</span>
+                                <span class="text-xs text-slate-400">Socios Activos</span>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">${numFormat.format(portfolio.investors)}</span>
                              </div>
                              <div class="flex flex-col text-right">
-                                <span class="text-xs text-slate-400">Ticket Mínimo</span>
-                                <span class="text-sm font-bold text-slate-900 dark:text-white">${formatter.format(portfolio.minInvestment)}</span>
+                                <span class="text-xs text-slate-400">Participación</span>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">$1,000.00</span>
                              </div>
                         </div>
                         
-                        <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2">
-                            <span>Unirme al Grupo</span>
-                            <span class="material-symbols-outlined text-sm">group_add</span>
+                        <button onclick="selectPortfolio(${portfolio.id}, '${portfolio.name}')" 
+                            class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors shadow-lg shadow-slate-200/50 dark:shadow-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            ${remainingSlots === 0 ? 'disabled' : ''}>
+                            <span>${remainingSlots === 0 ? 'Fondo Cerrado' : 'Unirme al Grupo'}</span>
+                            ${remainingSlots > 0 ? '<span class="material-symbols-outlined text-sm">group_add</span>' : ''}
                         </button>
                     </div>
                 </div>
