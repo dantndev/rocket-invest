@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
-    // Referencias
     investModal = document.getElementById('invest-modal');
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
@@ -16,7 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
 
-    // Calculadora
     const investInput = document.getElementById('invest-amount');
     let calcMsg = document.getElementById('invest-calculation');
     if (!calcMsg && investInput) {
@@ -51,8 +49,8 @@ async function loadAllPortfolios() {
             const target = p.targetInvestors || 5000;
             const spotsLeft = Math.max(0, target - investors);
             const progress = Math.min(100, (investors / target) * 100);
-            const numFormat = new Intl.NumberFormat('es-MX');
-            const moneyFormat = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+            const fmt = new Intl.NumberFormat('es-MX');
+            const moneyFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
             let color = p.risk === 'Alto' ? 'bg-red-100 text-red-600' : (p.risk === 'Bajo' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600');
             const icons = ['🚀', '💻', '🌍', '🌱', '💎', '🏗️', '🇺🇸', '🎮', '🏆'];
             const icon = icons[(p.id - 1) % icons.length];
@@ -70,12 +68,12 @@ async function loadAllPortfolios() {
                 <p class="text-xs text-slate-500 mb-4 line-clamp-2 h-8">${p.description}</p>
                 <div class="flex items-center gap-2 mb-4">
                     <span class="flex h-2 w-2 rounded-full ${spotsLeft>0?'bg-green-500':'bg-red-500'} animate-pulse"></span>
-                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${numFormat.format(spotsLeft)} cupos disp.</span>
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">${fmt.format(spotsLeft)} cupos disp.</span>
                 </div>
                 <div class="mt-auto">
                     <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-500">Progreso</span><span class="text-primary">${progress.toFixed(0)}%</span></div>
                     <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1"><div class="bg-primary h-2 rounded-full" style="width: ${progress}%"></div></div>
-                    <div class="flex justify-between text-[10px] text-slate-400 mb-4"><span>${numFormat.format(investors)} socios</span><span>Meta: ${numFormat.format(target)}</span></div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-4"><span>${fmt.format(investors)} socios</span><span>Meta: ${fmt.format(target)}</span></div>
                     <button onclick="setupInvest(${p.id}, '${p.name}')" class="w-full py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity" ${spotsLeft===0?'disabled':''}>${spotsLeft===0?'Lleno':'Unirme'}</button>
                 </div>
             </div>`;
@@ -83,15 +81,10 @@ async function loadAllPortfolios() {
     } catch(e) { console.error(e); }
 }
 
-async function updateUserData(token) {
-    try {
-        const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
-        if(res.ok) {
-            const d = await res.json();
-            const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-            const b = document.getElementById('modal-balance-display'); if(b) b.innerText = fmt.format(d.availableBalance);
-        }
-    } catch(e) {}
+async function updateUserData(token) { try { const r=await fetch('/api/auth/me',{headers:{'Authorization':`Bearer ${token}`}}); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
+function updateBalanceUI(d) {
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+    const b = document.getElementById('modal-balance-display'); if(b) b.innerText = fmt.format(d.availableBalance);
 }
 
 function setupFormListeners(token) {
@@ -131,7 +124,7 @@ window.setupInvest = function(id, name) {
     backToStep1();
     investModal.classList.remove('hidden'); setTimeout(() => investModal.classList.remove('opacity-0'), 10);
     const inp = document.getElementById('invest-amount'); if(inp) inp.value = '';
-    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = "Ingresa un monto (Mín. $1,000)"; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
+    const msg = document.getElementById('invest-calculation'); if(msg) { msg.innerText = "Ingresa monto (Mín $1,000)"; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
 }
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
