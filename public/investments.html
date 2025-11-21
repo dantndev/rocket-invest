@@ -12,94 +12,42 @@
             darkMode: "class",
             theme: {
                 extend: {
-                    colors: {
-                        primary: "#307de8",
-                        "background-light": "#f3f4f6",
-                        "background-dark": "#0f172a",
-                        "card-light": "#ffffff",
-                        "card-dark": "#1e293b",
-                    },
+                    colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } },
                     fontFamily: { display: ["Manrope", "sans-serif"] },
-                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
-                },
-            },
+                    borderRadius: { DEFAULT: "1rem" }
+                }
+            }
         }
     </script>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Efecto clic */
-        button:active, a:active { transform: scale(0.95); opacity: 0.8; transition: transform 0.05s ease; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 overflow-x-hidden">
-    
     <div class="flex min-h-screen relative">
-        
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity opacity-0 md:hidden" onclick="toggleSidebar()"></div>
-
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full overflow-y-auto no-scrollbar">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out h-full overflow-y-auto no-scrollbar">
             <div class="flex flex-col gap-8">
                 <div class="flex items-center justify-between px-2">
-                    <a href="dashboard.html" class="flex items-center gap-3 px-1 py-2">
-                        <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
-                        <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-normal tracking-tight">RocketInvest</h1>
-                    </a>
-                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
+                    <a href="dashboard.html" class="flex items-center gap-3 px-1 py-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1></a>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500"><span class="material-symbols-outlined">close</span></button>
                 </div>
-                
                 <nav class="flex flex-col gap-2">
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="index.html">
-                        <span class="material-symbols-outlined">home</span>
-                        <p class="text-sm font-semibold leading-normal">Inicio</p>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html">
-                        <span class="material-symbols-outlined">dashboard</span>
-                        <p class="text-sm font-semibold leading-normal">Dashboard</p>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="portfolios.html">
-                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
-                        <p class="text-sm font-bold leading-normal">Explorar Portafolios</p>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="#">
-                        <span class="material-symbols-outlined">account_balance_wallet</span>
-                        <p class="text-sm font-bold leading-normal">Mis Inversiones</p>
-                    </a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="history.html">
-                        <span class="material-symbols-outlined">history</span>
-                        <p class="text-sm font-semibold leading-normal">Historial</p>
-                    </a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="index.html"><span class="material-symbols-outlined">home</span><span class="text-sm font-semibold">Inicio</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span class="text-sm font-semibold">Dashboard</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="portfolios.html"><span class="material-symbols-outlined">explore</span><span class="text-sm font-semibold">Explorar</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="investments.html"><span class="material-symbols-outlined">account_balance_wallet</span><p class="text-sm font-bold">Mis Inversiones</p></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all" href="history.html"><span class="material-symbols-outlined">history</span><span class="text-sm font-semibold">Historial</span></a>
                 </nav>
             </div>
-            <div class="px-3">
-                <button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all">
-                    <span class="material-symbols-outlined">logout</span>
-                    <p class="text-sm font-semibold">Cerrar Sesión</p>
-                </button>
-            </div>
+            <div class="px-3"><button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"><span class="material-symbols-outlined">logout</span><span class="text-sm font-semibold">Salir</span></button></div>
         </aside>
-
-        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 transition-all duration-300 flex flex-col relative z-0">
+        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 flex flex-col relative z-0 overflow-y-auto transition-all duration-300">
             <div class="mx-auto max-w-7xl w-full">
-                
-                <header class="flex items-center justify-between whitespace-nowrap mb-8">
-                    <div class="flex items-center gap-3">
-                        <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
-                            <span class="material-symbols-outlined">menu</span>
-                        </button>
-                        <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight">Tu Portafolio</h2>
-                    </div>
-
-                    <div class="flex items-center gap-2 md:gap-4">
-                        <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all">
-                            <span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span>
-                        </button>
-                        <div class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold">I</div>
-                    </div>
+                <header class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-3"><button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm"><span class="material-symbols-outlined">menu</span></button><div><h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold">Mis Inversiones</h2></div></div>
+                    <div class="flex items-center gap-2"><button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all"><span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span></button><div class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold">I</div></div>
                 </header>
 
                 <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
@@ -107,9 +55,9 @@
                         <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
                                 <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fondo de Inversión</th>
+                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fondo</th>
                                     <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fecha</th>
-                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Monto Invertido</th>
+                                    <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Invertido</th>
                                     <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Valor Actual</th>
                                     <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-right">Ganancia</th>
                                     <th class="p-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide text-center">Estado</th>
@@ -117,92 +65,51 @@
                                 </tr>
                             </thead>
                             <tbody id="investments-table-body">
-                                <tr class="border-b border-slate-100 dark:border-slate-700">
-                                    <td colspan="7" class="p-8 text-center text-slate-400">Cargando tus inversiones...</td>
-                                </tr>
+                                <tr class="border-b border-slate-100 dark:border-slate-700"><td colspan="7" class="p-8 text-center text-slate-400">Cargando...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
 
-    <div id="sell-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0 p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-transform duration-300 p-6 border border-slate-200 dark:border-slate-700 text-center">
-            
-            <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4 mx-auto text-primary">
+    <div id="sell-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-sm p-6 border border-slate-200 dark:border-slate-700 text-center transform scale-95 transition-all duration-200">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
                 <span class="material-symbols-outlined text-3xl">currency_exchange</span>
             </div>
-            
             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">¿Vender Posición?</h3>
             <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">
-                Al vender, recuperarás <span id="sell-amount-display" class="font-bold text-slate-800 dark:text-white">$0.00</span> en tu Saldo Disponible.
+                Los fondos se liberarán a tu cuenta.<br>
+                <span class="text-xs opacity-70">Esta acción es irreversible.</span>
             </p>
-
-            <div class="flex gap-3 w-full">
-                <button onclick="closeSellModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all">
-                    Cancelar
-                </button>
-                <button id="btn-confirm-sell" class="flex-1 py-3 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-xl shadow-lg transition-all">
-                    Confirmar
-                </button>
+            <input type="hidden" id="sell-investment-id">
+            <div class="flex gap-3">
+                <button onclick="closeSellModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold rounded-xl hover:bg-slate-200 transition-all">Cancelar</button>
+                <button id="btn-confirm-sell" class="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:opacity-90 transition-all shadow-lg">Confirmar Venta</button>
             </div>
+        </div>
+    </div>
 
+    <div id="success-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 transition-opacity opacity-0">
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-8 max-w-sm w-full text-center transform scale-95 transition-transform shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                <span class="material-symbols-outlined text-4xl text-green-500">check_circle</span>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">¡Venta Exitosa!</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">El capital ha regresado a tu saldo disponible.</p>
+            <button onclick="window.location.reload()" class="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:opacity-90">Entendido</button>
         </div>
     </div>
 
     <script>
-        // Sidebar & Theme
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = themeToggleBtn.querySelector('span');
-        const html = document.documentElement;
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-        function toggleSidebar() {
-            sidebar.classList.toggle('-translate-x-full');
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebarOverlay.classList.add('hidden');
-                sidebarOverlay.classList.remove('block');
-                setTimeout(() => sidebarOverlay.classList.remove('opacity-100'), 10);
-            } else {
-                sidebarOverlay.classList.remove('hidden');
-                sidebarOverlay.classList.add('block');
-                setTimeout(() => sidebarOverlay.classList.add('opacity-100'), 10);
-            }
-        }
-
-        function updateIcon() {
-            if (html.classList.contains('dark')) {
-                themeIcon.textContent = 'dark_mode'; 
-                themeIcon.classList.replace('text-slate-600', 'text-yellow-400');
-            } else {
-                themeIcon.textContent = 'light_mode'; 
-                themeIcon.classList.replace('text-yellow-400', 'text-slate-600');
-            }
-        }
-
-        themeToggleBtn.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-            updateIcon();
-        });
-
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
-        updateIcon();
-
-        document.getElementById('logout-sidebar-btn').addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = '/login.html';
-        });
+        const html=document.documentElement, sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebar-overlay');
+        function toggleSidebar(){ sidebar.classList.toggle('-translate-x-full'); overlay.classList.toggle('hidden'); }
+        document.getElementById('theme-toggle').addEventListener('click',()=>{ html.classList.toggle('dark'); localStorage.setItem('theme',html.classList.contains('dark')?'dark':'light'); });
+        if(localStorage.getItem('theme')==='dark') html.classList.add('dark');
+        document.getElementById('logout-sidebar-btn').addEventListener('click',()=>{ localStorage.removeItem('token'); window.location.href='/login.html'; });
     </script>
-
     <script src="js/investments.js"></script>
 </body>
 </html>
