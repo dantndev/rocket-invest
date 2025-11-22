@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // LOGIN
+    // --- LÓGICA DE LOGIN ---
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
             const btn = document.getElementById('btn-login');
             
-            btn.innerText = "Entrando...";
+            btn.innerText = "Verificando...";
             btn.disabled = true;
 
             try {
@@ -22,27 +22,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.ok) {
                     localStorage.setItem('token', data.token);
-                    window.location.href = 'dashboard.html';
+                    // Pequeño delay para feedback visual
+                    btn.innerText = "¡Éxito!";
+                    btn.classList.replace('bg-primary', 'bg-green-500');
+                    setTimeout(() => window.location.href = 'dashboard.html', 500);
                 } else {
-                    alert(data.message);
+                    alert(data.message || "Credenciales incorrectas");
                     btn.innerText = "Iniciar Sesión";
                     btn.disabled = false;
                 }
             } catch (error) {
-                alert("Error de conexión");
+                console.error(error);
+                alert("Error de conexión con el servidor");
                 btn.innerText = "Iniciar Sesión";
                 btn.disabled = false;
             }
         });
     }
 
-    // SIGNUP (NUEVO CON NOMBRES)
+    // --- LÓGICA DE REGISTRO ---
     const signupForm = document.getElementById('signup-form');
     if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-signup');
-            btn.innerText = "Creando cuenta...";
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Creando cuenta...';
             btn.disabled = true;
 
             const data = {
@@ -60,17 +66,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (res.ok) {
-                    alert("¡Cuenta creada! Inicia sesión.");
-                    window.location.href = 'login.html';
+                    // Éxito: Mostrar Modal
+                    const modal = document.getElementById('success-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    } else {
+                        // Fallback
+                        alert("¡Cuenta creada! Inicia sesión.");
+                        window.location.href = 'login.html';
+                    }
                 } else {
                     const err = await res.json();
-                    alert(err.message);
-                    btn.innerText = "Registrarme";
+                    alert(err.message || "Error al registrar");
+                    btn.innerHTML = originalText;
                     btn.disabled = false;
                 }
             } catch (error) {
-                alert("Error de conexión");
-                btn.innerText = "Registrarme";
+                console.error(error);
+                alert("Error de conexión con el servidor");
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         });
