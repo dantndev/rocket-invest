@@ -22,31 +22,41 @@
                     <button onclick="toggleSidebar()" class="md:hidden text-slate-500"><span class="material-symbols-outlined">close</span></button>
                 </div>
                 <nav class="flex flex-col gap-2">
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="index.html"><span class="material-symbols-outlined">home</span>Inicio</a>
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="portfolios.html"><span class="material-symbols-outlined">explore</span>Explorar</a>
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="investments.html"><span class="material-symbols-outlined">account_balance_wallet</span>Mis Inversiones</a>
                     <a class="flex items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg" href="history.html"><span class="material-symbols-outlined">history</span>Historial</a>
                 </nav>
             </div>
+            <div class="px-3"><button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"><span class="material-symbols-outlined">logout</span>Cerrar Sesión</button></div>
         </aside>
 
         <main class="w-full md:ml-64 min-h-screen p-4 md:p-10">
             <div class="mx-auto max-w-7xl">
-                <h2 class="text-2xl font-bold mb-6 dark:text-white">Historial de Movimientos</h2>
+                <header class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 shadow-sm"><span class="material-symbols-outlined">menu</span></button>
+                        <h2 class="text-2xl font-bold dark:text-white">Historial de Movimientos</h2>
+                    </div>
+                    <button id="theme-toggle" class="h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-yellow-400 shadow-sm"><span class="material-symbols-outlined">light_mode</span></button>
+                </header>
                 
                 <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase">Fecha</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase">Tipo</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase">Concepto</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase text-right">Monto</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase text-center">Comp.</th> </tr>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-32">Folio</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Concepto</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Monto</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Comp.</th>
+                                </tr>
                             </thead>
                             <tbody id="history-table-body">
-                                <tr><td colspan="5" class="p-8 text-center text-slate-500">Cargando...</td></tr>
+                                <tr><td colspan="6" class="p-8 text-center text-slate-500">Cargando historial...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -56,10 +66,11 @@
     </div>
 
     <script>
-        /* Scripts UI Básicos (Toggle Sidebar, Theme) */
         const html=document.documentElement, sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebar-overlay');
         function toggleSidebar(){ sidebar.classList.toggle('-translate-x-full'); overlay.classList.toggle('hidden'); }
+        document.getElementById('theme-toggle').addEventListener('click',()=>{ html.classList.toggle('dark'); localStorage.setItem('theme',html.classList.contains('dark')?'dark':'light'); });
         if(localStorage.getItem('theme')==='dark') html.classList.add('dark');
+        document.getElementById('logout-sidebar-btn').addEventListener('click',()=>{ localStorage.removeItem('token'); window.location.href='/login.html'; });
     </script>
     <script src="js/history.js"></script>
 </body>
