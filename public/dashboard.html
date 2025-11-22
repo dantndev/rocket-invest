@@ -17,13 +17,9 @@
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300">
     <div class="flex min-h-screen relative">
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
-        
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full overflow-y-auto no-scrollbar">
             <div class="flex flex-col gap-8">
-                <div class="flex items-center justify-between px-2">
-                    <a href="dashboard.html" class="flex items-center gap-3 px-1 py-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1></a>
-                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500"><span class="material-symbols-outlined">close</span></button>
-                </div>
+                <div class="flex items-center justify-between px-2"><a href="dashboard.html" class="flex items-center gap-3 px-1 py-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1></a><button onclick="toggleSidebar()" class="md:hidden text-slate-500"><span class="material-symbols-outlined">close</span></button></div>
                 <nav class="flex flex-col gap-2">
                     <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="index.html"><span class="material-symbols-outlined">home</span><p class="text-sm font-semibold">Inicio</p></a>
                     <a class="flex items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><p class="text-sm font-bold">Dashboard</p></a>
@@ -37,62 +33,26 @@
                 <button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 rounded-xl"><span class="material-symbols-outlined">logout</span><p class="text-sm font-semibold">Cerrar Sesión</p></button>
             </div>
         </aside>
-
         <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 flex flex-col relative z-0 overflow-y-auto transition-all duration-300">
             <div class="mx-auto max-w-7xl w-full">
                 <header class="flex items-center justify-between mb-8">
-                    <div class="flex items-center gap-3">
-                        <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm"><span class="material-symbols-outlined">menu</span></button>
-                        <div><h2 id="user-greeting" class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold">Hola, Inversor</h2><p class="text-slate-500 dark:text-slate-400 text-xs md:text-sm hidden sm:block">Resumen del mercado hoy.</p></div>
-                    </div>
+                    <div class="flex items-center gap-3"><button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm"><span class="material-symbols-outlined">menu</span></button><div><h2 id="user-greeting" class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold">Hola, Inversor</h2><p class="text-slate-500 dark:text-slate-400 text-xs md:text-sm hidden sm:block">Resumen del mercado hoy.</p></div></div>
                     <div class="flex items-center gap-2"><button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all"><span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span></button><a href="profile.html" class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm">I</a></div>
                 </header>
-
                 <div class="bg-white dark:bg-gradient-to-br dark:from-card-dark dark:to-background-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-8 shadow-lg p-6 md:p-8 relative overflow-hidden">
-                    <div class="flex flex-col md:flex-row justify-between gap-4 mb-8 border-b border-slate-100 dark:border-white/5 pb-6">
-                        <div><p class="text-slate-500 text-xs font-bold tracking-wide uppercase">Patrimonio Total</p><h2 id="display-net-worth" class="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white">$0.00</h2></div>
-                        <div class="flex gap-3 w-full md:w-auto"><button onclick="openWithdrawModal()" class="flex-1 md:flex-none h-12 px-6 rounded-xl border-2 border-slate-200 dark:border-slate-600 font-bold text-slate-600 dark:text-white text-sm hover:bg-slate-50 dark:hover:bg-slate-700">Retirar</button><button onclick="openDepositModal()" class="flex-1 md:flex-none h-12 px-6 rounded-xl bg-primary text-white font-bold text-sm hover:bg-blue-600 flex items-center justify-center gap-2 shadow-lg">Depositar</button></div>
-                    </div>
+                    <div class="flex flex-col md:flex-row justify-between gap-4 mb-8 border-b border-slate-100 dark:border-white/5 pb-6"><div><p class="text-slate-500 text-xs font-bold tracking-wide uppercase">Patrimonio Total</p><h2 id="display-net-worth" class="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white">$0.00</h2></div><div class="flex gap-3 w-full md:w-auto"><button onclick="openWithdrawModal()" class="flex-1 md:flex-none h-12 px-6 rounded-xl border-2 border-slate-200 dark:border-slate-600 font-bold text-slate-600 dark:text-white text-sm hover:bg-slate-50 dark:hover:bg-slate-700">Retirar</button><button onclick="openDepositModal()" class="flex-1 md:flex-none h-12 px-6 rounded-xl bg-primary text-white font-bold text-sm hover:bg-blue-600 flex items-center justify-center gap-2 shadow-lg">Depositar</button></div></div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6"><div><p class="text-xs text-slate-400 uppercase">Disponible</p><p id="display-available" class="font-bold text-lg">$0.00</p></div><div><p class="text-xs text-slate-400 uppercase">Invertido</p><p id="display-invested" class="font-bold text-lg">$0.00</p></div><div><p class="text-xs text-slate-400 uppercase">Ganancia</p><p id="display-profit" class="font-bold text-lg text-emerald-500">+$0.00</p></div></div>
                 </div>
-                
-                <div class="p-6 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-8 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 id="chart-title" class="text-lg font-bold text-slate-900 dark:text-white">Mi Patrimonio</h3>
-                        <div class="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 gap-1"><button onclick="switchChart('netWorth')" id="btn-networth" class="px-3 py-1 text-xs font-bold rounded-md bg-white dark:bg-card-dark shadow-sm text-primary">Capital</button><button onclick="switchChart('profit')" id="btn-profit" class="px-3 py-1 text-xs font-bold rounded-md text-slate-500">Rendimiento</button></div>
-                    </div>
-                    <div class="relative w-full h-72"><canvas id="marketChart"></canvas></div>
-                </div>
-
+                <div class="p-6 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl mb-8 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 id="chart-title" class="text-lg font-bold text-slate-900 dark:text-white">Mi Patrimonio</h3><div class="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 gap-1"><button onclick="switchChart('netWorth')" id="btn-networth" class="px-3 py-1 text-xs font-bold rounded-md bg-white dark:bg-card-dark shadow-sm text-primary">Capital</button><button onclick="switchChart('profit')" id="btn-profit" class="px-3 py-1 text-xs font-bold rounded-md text-slate-500">Rendimiento</button></div></div><div class="relative w-full h-72"><canvas id="marketChart"></canvas></div></div>
                 <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold">Portafolios</h2><button id="btn-ver-todos" class="text-primary font-bold text-sm hover:underline">Ver Todos</button></div>
                 <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24"><div class="col-span-full text-center py-10 text-slate-500">Cargando...</div></div>
             </div>
         </main>
     </div>
-
-    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300"><div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-700 relative"><div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold">Invertir</h3><button onclick="closeModal()"><span class="material-symbols-outlined">close</span></button></div><div id="invest-step-1"><form id="investment-form-step1" class="flex flex-col gap-4"><input type="hidden" id="modal-portfolio-id"><div><label class="text-sm font-bold text-slate-500 block mb-1">Monto</label><input type="number" id="invest-amount" class="w-full p-3 border rounded-xl dark:bg-slate-900" required><p id="invest-calculation" class="text-xs text-right mt-1 text-primary font-bold"></p></div><button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Continuar</button></form></div><div id="invest-step-2" class="hidden text-center"><h3 class="font-bold mb-4">Confirmar</h3><div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-left mb-4"><p class="text-xs text-slate-500">Fondo</p><p id="confirm-portfolio-name" class="font-bold mb-2">...</p><p class="text-xs text-slate-500">Total</p><p id="confirm-amount-display" class="text-xl font-bold text-primary">...</p></div><div class="flex gap-2"><button onclick="backToStep1()" class="flex-1 py-2 bg-slate-200 rounded-xl">Volver</button><button id="btn-final-confirm" class="flex-1 py-2 bg-primary text-white rounded-xl">Confirmar</button></div></div></div></div>
-    
+    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"><div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-700 relative"><div class="flex justify-between mb-6"><h3 class="text-xl font-bold">Invertir</h3><button onclick="closeModal()"><span class="material-symbols-outlined">close</span></button></div><div id="invest-step-1"><form id="investment-form-step1" class="flex flex-col gap-4"><input type="hidden" id="modal-portfolio-id"><div><label class="text-sm font-bold text-slate-500 mb-1 block">Monto</label><input type="number" id="invest-amount" class="w-full p-3 border rounded-xl dark:bg-slate-900" required><p id="invest-calculation" class="text-xs text-right mt-1 text-primary font-bold"></p></div><button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Continuar</button></form></div><div id="invest-step-2" class="hidden text-center"><h3 class="font-bold mb-4">Confirmar</h3><div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-left mb-4"><p class="text-xs text-slate-500">Fondo</p><p id="confirm-portfolio-name" class="font-bold mb-2">...</p><p class="text-xs text-slate-500">Total</p><p id="confirm-amount-display" class="text-xl font-bold text-primary">...</p></div><div class="flex gap-2"><button onclick="backToStep1()" class="flex-1 py-2 bg-slate-200 rounded-xl">Volver</button><button id="btn-final-confirm" class="flex-1 py-2 bg-primary text-white rounded-xl">Confirmar</button></div></div></div></div>
     <div id="success-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-4"><div class="bg-white dark:bg-card-dark rounded-2xl p-8 w-full max-w-sm text-center"><span class="material-symbols-outlined text-4xl text-green-500 mb-4">check_circle</span><h3 class="text-xl font-bold mb-2">¡Éxito!</h3><button onclick="closeSuccessModal()" class="w-full py-2 bg-slate-900 text-white rounded-xl">OK</button></div></div>
-    
-    <div id="deposit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-        <div class="bg-white dark:bg-card-dark p-6 rounded-2xl w-full max-w-md overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold">Depositar</h3><button onclick="closeDepositModal()"><span class="material-symbols-outlined">close</span></button></div>
-            <form id="deposit-form">
-                <div id="deposit-step-1">
-                    <input type="number" id="deposit-amount" class="w-full p-3 border rounded-xl mb-4 dark:bg-slate-900" placeholder="Monto">
-                    <button type="button" onclick="initStripePayment()" id="btn-init-stripe" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Iniciar Pago Seguro</button>
-                </div>
-                <div id="stripe-container" class="hidden">
-                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl mb-4 flex justify-between"><span class="text-xs font-bold text-blue-600">TOTAL</span><span id="stripe-summary-amount" class="font-bold text-blue-600">$0.00</span></div>
-                    <div id="payment-element" class="mb-4"></div>
-                    <button id="btn-confirm-stripe" class="w-full py-3 bg-green-500 text-white font-bold rounded-xl">Pagar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    <div id="deposit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"><div class="bg-white dark:bg-card-dark p-6 rounded-2xl w-full max-w-md"><h3 class="text-xl font-bold mb-4">Depositar</h3><form id="deposit-form"><input type="number" id="deposit-amount" class="w-full p-3 border rounded-xl mb-4 dark:bg-slate-900" placeholder="Monto"><button type="button" onclick="initStripePayment()" id="btn-init-stripe" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Iniciar Pago Seguro</button><div id="stripe-container" class="hidden w-full"><div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl mb-4 flex justify-between"><span class="text-xs font-bold text-blue-600">TOTAL</span><span id="stripe-summary-amount" class="font-bold text-blue-600">$0.00</span></div><div id="payment-element" class="mb-4"></div><button id="btn-confirm-stripe" class="w-full py-3 bg-green-500 text-white font-bold rounded-xl">Pagar</button></div><button type="button" onclick="closeDepositModal()" class="w-full mt-2 text-slate-500">Cancelar</button></form></div></div>
     <div id="withdraw-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"><div class="bg-white dark:bg-card-dark p-6 rounded-2xl w-full max-w-md"><h3 class="text-xl font-bold mb-4">Retirar</h3><form id="withdraw-form"><input type="number" id="withdraw-amount" class="w-full p-3 border rounded-xl mb-4 dark:bg-slate-900" placeholder="Monto"><button id="btn-confirm-withdraw" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl">Retirar</button><button type="button" onclick="closeWithdrawModal()" class="w-full mt-2 text-slate-500">Cancelar</button></form></div></div>
-
     <script>
         const html=document.documentElement, sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebar-overlay');
         function toggleSidebar(){ sidebar.classList.toggle('-translate-x-full'); overlay.classList.toggle('hidden'); }
