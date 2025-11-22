@@ -1,138 +1,60 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html class="light" lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>RocketInvest - Sign Up</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-<script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#307de8",
-            "background-light": "#f6f7f8",
-            "background-dark": "#111821",
-            "text-light": "#475569",
-            "text-dark": "#0f172a"
-          },
-          fontFamily: {
-            display: "Manrope"
-          },
-          borderRadius: {
-            DEFAULT: "1rem",
-            lg: "2rem",
-            xl: "3rem",
-            full: "9999px"
-          }
-        }
-      }
-    }
-</script>
-<style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
-    }
-</style>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Crear Cuenta | RocketInvest</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", dark: "#0f172a" }, fontFamily: { display: ["Manrope", "sans-serif"] } } } }
+    </script>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark">
-<div class="relative flex min-h-screen w-full flex-col group/design-root">
-    
-    <div class="flex flex-1 justify-center items-center p-6 sm:p-12 lg:p-16">
-        
-        <div class="flex flex-col items-center justify-center w-full max-w-sm">
-            
-            <div class="flex w-full flex-col items-start gap-8">
-                
-                <a class="flex items-center gap-4 text-text-dark dark:text-background-light" href="index.html">
-                    <span class="material-symbols-outlined text-primary" style="font-size: 24px;">rocket_launch</span>
-                    <h2 class="text-text-dark dark:text-background-light text-lg font-bold leading-tight tracking-[-0.015em]">RocketInvest</h2>
-                </a>
-                
-                <div class="flex w-full flex-col items-start gap-8">
-                    <div class="flex flex-col gap-3">
-                        <h1 class="text-text-dark dark:text-background-light text-3xl font-bold tracking-[-0.02em]">Create Your Investment Account</h1>
-                        <p class="text-text-light dark:text-text-light/70 text-base">Start building your financial future today.</p>
-                    </div>
-                    
-                    <form class="flex w-full flex-col gap-6">
-                        
-                        <div class="flex w-full flex-col gap-2">
-                            <label class="text-text-dark dark:text-background-light text-sm font-medium" for="email">Email Address</label>
-                            <input class="h-12 w-full rounded-full border border-slate-300 dark:border-white/20 bg-transparent px-4 text-sm text-text-dark dark:text-background-light placeholder:text-text-light dark:placeholder:text-text-light/50 focus:border-primary focus:ring-primary" id="email" placeholder="you@example.com" type="email"/>
-                        </div>
-                        
-                        <div class="flex w-full flex-col gap-2">
-                            <label class="text-text-dark dark:text-background-light text-sm font-medium" for="password">Password</label>
-                            <input class="h-12 w-full rounded-full border border-slate-300 dark:border-white/20 bg-transparent px-4 text-sm text-text-dark dark:text-background-light placeholder:text-text-light dark:placeholder:text-text-light/50 focus:border-primary focus:ring-primary" id="password" placeholder="••••••••" type="password"/>
-                        </div>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex items-center justify-center p-4">
 
-                        <div id="auth-error" class="hidden mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-red-500 text-lg">error</span>
-                            <p class="text-red-600 text-sm font-bold" id="auth-error-text">Error aquí</p>
-                        </div>
-                        
-                        <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary hover:bg-primary/90 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors w-full mb-3" type="submit">
-                            <span class="truncate">Sign Up</span>
-                        </button>
-                        
-                    </form>
-                    
-                    <!-- Separator with centered "or" -->
-                    <div class="w-full flex items-center my-3">
-                        <div class="flex-grow border-t border-slate-300/50 dark:border-white/20"></div>
-                        <span class="mx-3 text-text-light dark:text-text-light/70 text-base font-medium">or</span>
-                        <div class="flex-grow border-t border-slate-300/50 dark:border-white/20"></div>
-                    </div>
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-100">
+        <div class="text-center mb-8">
+            <div class="flex justify-center items-center gap-2 mb-4 text-primary">
+                <span class="material-symbols-outlined text-4xl">rocket_launch</span>
+                <span class="font-extrabold text-2xl text-slate-900">RocketInvest</span>
+            </div>
+            <h2 class="text-xl font-bold">Crea tu cuenta</h2>
+            <p class="text-slate-400 text-sm">Únete a la revolución financiera.</p>
+        </div>
 
-                    <button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-transparent dark:bg-background-dark hover:bg-gray-100 dark:hover:bg-white/5 text-text-dark dark:text-background-light border border-slate-400 dark:border-white/30 text-base font-bold leading-normal tracking-[0.015em] transition-colors w-full" type="button">
-                        <svg class="mr-3" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M22.5 12.44C22.5 11.66 22.43 10.92 22.31 10.2H12V14.28H17.47C17.23 15.64 16.48 16.78 15.42 17.58L15.4 17.65L18.73 20.24L18.9 20.37C21.05 18.42 22.5 15.65 22.5 12.44Z" fill="#4285F4"/>
-                            <path d="M12 24C15.24 24 17.95 22.9 20 21.08L16.67 18.49C15.77 19.14 14.47 19.64 12 19.64C9.8 19.64 7.91 18.91 6.55 17.63L6.45 17.71L3.08 20.27L3.03 20.37C5.11 22.42 8.35 24 12 24Z" fill="#34A853"/>
-                            <path d="M6.55 17.63C6.18 16.59 5.95 15.35 5.95 12.92C5.95 10.49 6.18 9.25 6.55 8.21L6.5 8.16L3.08 5.6L3.03 5.7C0.91 7.74 0 10.22 0 12.92C0 15.62 0.91 18.1 3.03 20.14L6.55 17.63Z" fill="#FBBC05"/>
-                            <path d="M12 4.36C13.92 4.36 15.54 4.88 16.79 6.08L19.5 3.36C17.95 1.81 15.24 0 12 0C8.35 0 5.11 1.58 3.03 3.63L6.55 6.14C7.91 4.86 9.8 4.36 12 4.36Z" fill="#EA4335"/>
-                        </svg>
-                        <span class="truncate">Continue with Google</span>
-                    </button>
-                    
-                    <div class="text-center w-full mt-4">
-                        <p class="text-text-light dark:text-text-light/70 text-sm">Already have an account? <a class="font-medium text-primary hover:underline" href="login.html">Log In</a></p>
-                    </div>
+        <form id="signup-form" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre(s)</label>
+                    <input type="text" id="first_name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all" placeholder="Juan Pablo" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Apellidos</label>
+                    <input type="text" id="last_name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all" placeholder="Pérez Ruiz" required>
                 </div>
             </div>
-            
-        </div>
-        
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Correo Electrónico</label>
+                <input type="email" id="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all" placeholder="tu@email.com" required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contraseña</label>
+                <input type="password" id="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <button type="submit" id="btn-signup" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-primary/30 flex justify-center items-center gap-2">
+                Registrarme <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-slate-400 mt-6">
+            ¿Ya tienes cuenta? <a href="login.html" class="text-primary font-bold hover:underline">Inicia Sesión</a>
+        </p>
     </div>
-</div>
 
-<div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
-        
-        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
-            <span class="material-symbols-outlined text-6xl text-green-500">check_circle</span>
-        </div>
-        
-        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">¡Registro Exitoso!</h3>
-        <p class="text-slate-500 dark:text-slate-400 text-sm">Tu cuenta ha sido creada correctamente.</p>
-        <p class="text-primary text-xs mt-4 font-bold animate-pulse">Redirigiendo al inicio de sesión...</p>
-    </div>
-</div>
-
-<script src="js/auth.js"></script>
-
+    <script src="js/auth.js"></script>
 </body>
 </html>
-<script src="js/auth.js"></script>
-</body>
-</html>
-
-
-
-
-
