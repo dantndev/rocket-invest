@@ -11,14 +11,26 @@
     <script id="tailwind-config">
         tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", dark: "#0f172a", card: "#1e293b" }, fontFamily: { display: ["Manrope", "sans-serif"] }, animation: { 'marquee': 'marquee 50s linear infinite' }, keyframes: { marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-100%)' } } } } } }
     </script>
-    <style> body { font-family: 'Manrope', sans-serif; scroll-behavior: smooth; } .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); } .gradient-text { background: linear-gradient(135deg, #307de8 0%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } .no-scrollbar::-webkit-scrollbar { display: none; } </style>
+    <style>
+        body { font-family: 'Manrope', sans-serif; scroll-behavior: smooth; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .gradient-text { background: linear-gradient(135deg, #307de8 0%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
 </head>
 <body class="bg-dark text-white overflow-x-hidden transition-colors duration-300">
 
     <nav class="fixed w-full z-50 bg-dark/80 backdrop-blur-md border-b border-white/5 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><span class="font-bold text-xl tracking-tight">RocketInvest</span></div>
-            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400"><a href="#model" class="hover:text-white">Modelo</a><a href="#market" class="hover:text-white">Mercado</a><a href="partners.html" class="hover:text-primary">Para Fondos</a></div>
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span>
+                <span class="font-bold text-xl tracking-tight">RocketInvest</span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
+                <a href="#model" class="hover:text-white transition-colors">Modelo</a>
+                <a href="#market" class="hover:text-white transition-colors">Mercado</a>
+                <a href="partners.html" class="hover:text-primary transition-colors">Para Fondos</a>
+            </div>
             <div class="flex items-center gap-4">
                 <button id="theme-toggle" class="text-slate-400 hover:text-yellow-400 transition-colors p-2 rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-xl">light_mode</span></button>
                 <div class="h-6 w-px bg-white/10"></div>
@@ -30,7 +42,11 @@
         </div>
     </nav>
 
-    <div id="market" class="pt-24 pb-3 border-b border-white/5 bg-slate-900/50 overflow-hidden flex relative z-10"><div id="market-ticker" class="whitespace-nowrap flex gap-10 animate-marquee items-center px-4"><span class="text-slate-500 text-xs uppercase tracking-widest">Cargando...</span></div></div>
+    <div id="market" class="pt-24 pb-3 border-b border-white/5 bg-slate-900/50 overflow-hidden flex relative z-10">
+        <div id="market-ticker" class="whitespace-nowrap flex gap-10 animate-marquee items-center px-4">
+            <span class="text-slate-500 text-xs uppercase tracking-widest">Cargando mercado...</span>
+        </div>
+    </div>
 
     <section class="relative pt-20 pb-32 px-6 overflow-hidden">
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10"></div>
@@ -38,7 +54,7 @@
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-blue-300 mb-6"><span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> Inversión Colectiva v2.0</div>
             <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">Inversión Institucional,<br><span class="gradient-text">Al Alcance de Todos.</span></h1>
             <p class="text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">Accede a fondos exclusivos de BlackRock y Vanguard uniendo capital con miles de inversores. Tickets desde <strong>$1,000 MXN</strong>.</p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4"><a href="signup.html" class="px-8 py-4 bg-white text-dark font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-xl shadow-white/10">Crear Cuenta Gratis <span class="material-symbols-outlined">arrow_forward</span></a><a href="portfolios.html" class="px-8 py-4 glass text-white font-bold rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined">explore</span> Ver Fondos</a></div>
+            <div class="flex flex-col sm:flex-row justify-center gap-4"><a href="signup.html" class="px-8 py-4 bg-white text-dark font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-xl">Crear Cuenta Gratis <span class="material-symbols-outlined">arrow_forward</span></a><a href="portfolios.html" class="px-8 py-4 glass text-white font-bold rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined">explore</span> Ver Fondos</a></div>
         </div>
     </section>
 
@@ -50,19 +66,25 @@
         </div>
     </section>
 
-    <section class="py-24 bg-white dark:bg-gradient-to-b dark:from-dark dark:to-slate-900 border-t border-white/5 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Aliados Estratégicos</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60">
-                <div class="text-xl font-bold text-slate-400">BlackRock</div>
-                <div class="text-xl font-bold text-slate-400">Vanguard</div>
-                <div class="text-xl font-bold text-slate-400">Santander</div>
-                <div class="text-xl font-bold text-slate-400">ProShares</div>
+    <section id="model" class="py-24 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16"><h2 class="text-3xl md:text-4xl font-bold mb-4">El Poder del Grupo</h2><p class="text-slate-400">La tecnología que democratiza las altas finanzas.</p></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass p-8 rounded-3xl hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2"><div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl">groups</span></div><h3 class="text-xl font-bold mb-3">1. Agrupación</h3><p class="text-slate-400 text-sm leading-relaxed">Unimos capital de miles de personas.</p></div>
+                <div class="glass p-8 rounded-3xl hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2"><div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl">lock_open</span></div><h3 class="text-xl font-bold mb-3">2. Acceso</h3><p class="text-slate-400 text-sm leading-relaxed">Inversión institucional sin mínimos altos.</p></div>
+                <div class="glass p-8 rounded-3xl hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2"><div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl">trending_up</span></div><h3 class="text-xl font-bold mb-3">3. Rendimiento</h3><p class="text-slate-400 text-sm leading-relaxed">Gana proporcional a tu ticket.</p></div>
             </div>
         </div>
     </section>
 
-    <footer class="bg-dark border-t border-white/10 py-12 px-6 text-center"><p class="text-slate-500 text-sm mb-4">© 2025 RocketInvest S.A.P.I. de C.V.</p></footer>
+    <section class="py-24 bg-white dark:bg-gradient-to-b dark:from-dark dark:to-slate-900 border-t border-white/5 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12">
+            <div class="md:w-1/2"><h2 class="text-3xl font-bold mb-4 text-slate-900 dark:text-white">Aliados</h2><p class="text-slate-600 dark:text-slate-400 mb-8">Conectamos con los mejores.</p><a href="partners.html" class="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all">Portal Partners <span class="material-symbols-outlined text-sm">arrow_forward</span></a></div>
+            <div class="md:w-1/2 grid grid-cols-2 gap-8 opacity-70"><div class="text-xl font-bold text-slate-400">BlackRock</div><div class="text-xl font-bold text-slate-400">Vanguard</div><div class="text-xl font-bold text-slate-400">Santander</div><div class="text-xl font-bold text-slate-400">ProShares</div></div>
+        </div>
+    </section>
+
+    <footer class="bg-dark border-t border-white/10 py-12 px-6 text-center"><p class="text-slate-500 text-sm mb-4">© 2025 RocketInvest</p></footer>
 
     <script src="js/main.js"></script>
 </body>

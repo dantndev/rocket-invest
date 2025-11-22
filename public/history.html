@@ -10,34 +10,53 @@
     <script id="tailwind-config">
         tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } }, fontFamily: { display: ["Manrope", "sans-serif"] }, borderRadius: { DEFAULT: "1rem" } } } }
     </script>
+    <style> .no-scrollbar::-webkit-scrollbar { display: none; } </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300">
     
     <div class="flex min-h-screen relative">
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
 
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 h-full">
-             <div class="flex flex-col gap-8">
-                <div class="flex items-center justify-between px-2"><a href="dashboard.html" class="flex items-center gap-3 px-1 py-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1></a><button onclick="toggleSidebar()" class="md:hidden text-slate-500"><span class="material-symbols-outlined">close</span></button></div>
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full overflow-y-auto no-scrollbar">
+            <div class="flex flex-col gap-8">
+                <div class="flex items-center justify-between px-2">
+                    <a href="dashboard.html" class="flex items-center gap-3 px-1 py-2">
+                        <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
+                        <h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1>
+                    </a>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary"><span class="material-symbols-outlined">close</span></button>
+                </div>
+                
                 <nav class="flex flex-col gap-2">
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="index.html"><span class="material-symbols-outlined">home</span><span class="text-sm font-semibold">Inicio</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span class="text-sm font-semibold">Dashboard</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="portfolios.html"><span class="material-symbols-outlined">explore</span><span class="text-sm font-semibold">Explorar</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="investments.html"><span class="material-symbols-outlined">account_balance_wallet</span><span class="text-sm font-semibold">Mis Inversiones</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg" href="history.html"><span class="material-symbols-outlined">history</span><span class="text-sm font-bold">Historial</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="index.html"><span class="material-symbols-outlined">home</span><p class="text-sm font-semibold">Inicio</p></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><p class="text-sm font-semibold">Dashboard</p></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="portfolios.html"><span class="material-symbols-outlined">explore</span><p class="text-sm font-semibold">Explorar</p></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="investments.html"><span class="material-symbols-outlined">account_balance_wallet</span><p class="text-sm font-semibold">Mis Inversiones</p></a>
+                    
+                    <a class="flex items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg" href="history.html">
+                        <span class="material-symbols-outlined">history</span><p class="text-sm font-bold">Historial</p>
+                    </a>
                 </nav>
             </div>
+            
             <div class="px-3">
-                <a href="profile.html" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl mb-2"><span class="material-symbols-outlined">person</span><span class="text-sm font-semibold">Mi Perfil</span></a>
-                <button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 rounded-xl"><span class="material-symbols-outlined">logout</span><span class="text-sm font-semibold">Cerrar Sesión</span></button>
+                <a href="profile.html" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl mb-2"><span class="material-symbols-outlined">person</span><p class="text-sm font-semibold">Mi Perfil</p></a>
+                <button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 rounded-xl"><span class="material-symbols-outlined">logout</span><p class="text-sm font-semibold">Cerrar Sesión</p></button>
             </div>
         </aside>
 
-        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10">
-            <div class="mx-auto max-w-7xl">
+        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 flex flex-col relative z-0 overflow-y-auto transition-all duration-300">
+            <div class="mx-auto max-w-7xl w-full">
+                
                 <header class="flex items-center justify-between mb-8">
-                    <div class="flex items-center gap-3"><button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 shadow-sm"><span class="material-symbols-outlined">menu</span></button><h2 class="text-2xl font-bold dark:text-white">Historial</h2></div>
-                    <div class="flex items-center gap-2"><button id="theme-toggle" class="h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-yellow-400 shadow-sm"><span class="material-symbols-outlined">light_mode</span></button><a href="profile.html" class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold">I</a></div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm"><span class="material-symbols-outlined">menu</span></button>
+                        <h2 class="text-2xl font-bold dark:text-white">Historial de Movimientos</h2>
+                    </div>
+                    <div class="flex items-center gap-2 md:gap-4">
+                        <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all"><span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span></button>
+                        <a href="profile.html" class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm">I</a>
+                    </div>
                 </header>
 
                 <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
@@ -45,22 +64,31 @@
                         <table class="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase w-32">Folio</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase">Fecha</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase">Tipo</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase">Concepto</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase text-right">Monto</th>
-                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase text-center">Comp.</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-32">Folio</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Concepto</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Monto</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Comp.</th>
                                 </tr>
                             </thead>
                             <tbody id="history-table-body">
-                                <tr><td colspan="6" class="p-8 text-center text-slate-500">Cargando...</td></tr>
+                                <tr><td colspan="6" class="p-8 text-center text-slate-500">Cargando historial...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+
             </div>
         </main>
+    </div>
+
+    <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-700 shadow-xl flex-col p-4 gap-4 md:hidden z-50">
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="dashboard.html">Dashboard</a>
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="profile.html">Mi Perfil</a>
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="portfolios.html">Explorar</a>
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="investments.html">Mis Inversiones</a>
+        <a class="text-text-dark dark:text-background-light text-base font-medium py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="history.html">Historial</a>
     </div>
 
     <script>
