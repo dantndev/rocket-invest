@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>RocketInvest | Perfil</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } }, fontFamily: { display: ["Manrope", "sans-serif"] }, borderRadius: { DEFAULT: "1rem" } } } }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display">
+
+    <div class="flex min-h-screen relative">
+        <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 hidden md:flex flex-col justify-between">
+            <div class="flex flex-col gap-8">
+                <div class="flex items-center justify-between px-2"><a href="dashboard.html" class="flex items-center gap-3 px-1 py-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1></a></div>
+                <nav class="flex flex-col gap-2">
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
+                    <a class="flex items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg" href="profile.html"><span class="material-symbols-outlined">person</span>Mi Perfil</a>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="w-full md:ml-64 min-h-screen p-6 md:p-10 flex flex-col items-center justify-center">
+            <div class="max-w-2xl w-full">
+                <h2 class="text-3xl font-bold mb-2 dark:text-white">Verificación de Identidad</h2>
+                <p class="text-slate-500 dark:text-slate-400 mb-8">Cumplimiento normativo (KYC) para proteger tu cuenta.</p>
+
+                <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-lg">
+                    
+                    <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-100 dark:border-slate-700">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase">Estado de Cuenta</p>
+                            <p id="kyc-status-text" class="font-bold text-lg capitalize">Cargando...</p>
+                        </div>
+                        <div id="kyc-badge" class="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center"><span class="material-symbols-outlined text-slate-400">pending</span></div>
+                    </div>
+
+                    <form id="kyc-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 mb-1">RFC con Homoclave</label>
+                                <input type="text" id="rfc" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold uppercase placeholder:normal-case" placeholder="XAXX010101000" required minlength="12" maxlength="13">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 mb-1">CURP</label>
+                                <input type="text" id="curp" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold uppercase placeholder:normal-case" placeholder="ABCD..." required minlength="18" maxlength="18">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-500 mb-1">Teléfono Móvil</label>
+                            <input type="tel" id="phone" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold" placeholder="55 1234 5678" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-500 mb-2">Identificación Oficial (INE/Pasaporte)</label>
+                            <div class="relative border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
+                                <input type="file" id="document" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*,.pdf" required>
+                                <span class="material-symbols-outlined text-4xl text-slate-300 group-hover:text-primary mb-2">cloud_upload</span>
+                                <p class="text-sm font-bold text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200">Arrastra o selecciona tu archivo</p>
+                                <p id="file-name" class="text-xs text-primary mt-2 hidden"></p>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-submit-kyc" class="w-full py-4 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2">
+                            Enviar Documentación <span class="material-symbols-outlined text-sm">send</span>
+                        </button>
+                    </form>
+
+                    <div id="kyc-success" class="hidden text-center py-10">
+                        <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                            <span class="material-symbols-outlined text-4xl text-green-500">check_circle</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">¡Documentos Enviados!</h3>
+                        <p class="text-slate-500 mb-6">Tu cuenta está en proceso de verificación (aprox. 24hrs).</p>
+                        <button onclick="window.location.href='dashboard.html'" class="text-primary font-bold hover:underline">Volver al Dashboard</button>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/profile.js"></script>
+</body>
+</html>
