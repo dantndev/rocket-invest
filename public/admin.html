@@ -3,160 +3,89 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>RocketInvest | Administración</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <title>RocketInvest | Admin Console</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    
     <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#307de8",
-                        "background-light": "#f3f4f6",
-                        "background-dark": "#0f172a",
-                        "card-light": "#ffffff",
-                        "card-dark": "#1e293b",
-                    },
-                    fontFamily: { display: ["Manrope", "sans-serif"] },
-                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
-                },
-            },
-        }
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } }, fontFamily: { display: ["Manrope", "sans-serif"] }, borderRadius: { DEFAULT: "1rem" } } } }
     </script>
-    <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        button:active { transform: scale(0.98); transition: 0.1s; }
-    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 min-h-screen">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-display">
 
-    <nav class="bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center gap-2">
-                    <div class="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white">
-                        <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
-                    </div>
-                    <span class="font-bold text-lg tracking-tight">RocketInvest <span class="text-slate-400 font-normal text-sm ml-1">| Admin</span></span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button id="theme-toggle" class="text-slate-500 hover:text-primary transition-colors">
-                        <span class="material-symbols-outlined">light_mode</span>
-                    </button>
-                    <div class="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
-                    <button onclick="window.location.href='dashboard.html'" class="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
-                        Volver a la App
-                    </button>
-                </div>
+    <nav class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-red-600 text-white p-1.5 rounded"><span class="material-symbols-outlined text-lg">admin_panel_settings</span></div>
+                <span class="font-bold text-lg tracking-widest uppercase">Admin Console</span>
             </div>
+            <button onclick="window.location.href='dashboard.html'" class="text-xs font-bold text-slate-400 hover:text-white uppercase tracking-wide">Salir a App</button>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <main class="max-w-5xl mx-auto px-6 py-10">
         
-        <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Vista General</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Monitoreo de rendimiento y usuarios en tiempo real.</p>
-            </div>
-            <span id="status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 w-fit">
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                Sistema Operativo
-            </span>
-        </div>
-
-        <div id="error-msg" class="hidden mb-6 p-4 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-3">
-            <span class="material-symbols-outlined animate-spin">sync</span>
-            <span class="font-bold text-sm">Conectando con base de datos...</span>
-        </div>
-
-        <div id="admin-content" class="hidden space-y-8">
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
-                            <span class="material-symbols-outlined text-2xl">account_balance</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Capital Gestionado (AUM)</p>
-                            <h3 id="total-aum" class="text-2xl font-bold text-slate-900 dark:text-white">$0.00</h3>
-                        </div>
-                    </div>
+        <div id="admin-menu" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div onclick="showSection('users')" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-blue-500 cursor-pointer transition-all group">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl"><span class="material-symbols-outlined text-3xl">group</span></div>
+                    <span class="bg-slate-700 text-xs font-bold px-2 py-1 rounded text-slate-300" id="count-users">-</span>
                 </div>
-                
-                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600">
-                            <span class="material-symbols-outlined text-2xl">group</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Usuarios Totales</p>
-                            <h3 id="total-users" class="text-2xl font-bold text-slate-900 dark:text-white">0</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600">
-                            <span class="material-symbols-outlined text-2xl">database</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Estado BD</p>
-                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Conectado</h3>
-                        </div>
-                    </div>
-                </div>
+                <h3 class="text-xl font-bold mb-1 group-hover:text-blue-400 transition-colors">Usuarios</h3>
+                <p class="text-sm text-slate-400">Gestionar cuentas, bloqueos y KYC.</p>
             </div>
 
-            <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                    <h3 class="font-bold text-lg text-slate-800 dark:text-white">Usuarios Recientes</h3>
-                    <button class="text-xs font-bold text-primary hover:underline">Descargar CSV</button>
+            <div onclick="showSection('finance')" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-emerald-500 cursor-pointer transition-all group">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><span class="material-symbols-outlined text-3xl">account_balance</span></div>
+                    <span class="bg-slate-700 text-xs font-bold px-2 py-1 rounded text-slate-300">AUM</span>
+                </div>
+                <h3 class="text-xl font-bold mb-1 group-hover:text-emerald-400 transition-colors">Finanzas</h3>
+                <p class="text-sm text-slate-400">Total gestionado y flujo de caja.</p>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-purple-500 cursor-pointer transition-all group">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-purple-500/10 text-purple-400 rounded-xl"><span class="material-symbols-outlined text-3xl">dns</span></div>
+                    <span class="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">ONLINE</span>
+                </div>
+                <h3 class="text-xl font-bold mb-1 group-hover:text-purple-400 transition-colors">Sistema</h3>
+                <p class="text-sm text-slate-400">Logs de servidor y estado de API.</p>
+            </div>
+        </div>
+
+        <div id="section-users" class="hidden mt-8 animate-fade-in">
+            <button onclick="showMenu()" class="mb-6 text-sm font-bold text-slate-400 hover:text-white flex items-center gap-2"><span class="material-symbols-outlined text-sm">arrow_back</span> Volver al Menú</button>
+            <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+                <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                    <h2 class="text-xl font-bold">Base de Usuarios</h2>
+                    <button class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold">Exportar CSV</button>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Saldo Actual</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Estado</th>
-                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
-                            </tr>
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/50 text-slate-400 uppercase text-xs font-bold">
+                            <tr><th class="p-4">ID</th><th class="p-4">Usuario</th><th class="p-4 text-right">Saldo</th><th class="p-4 text-center">Estado</th></tr>
                         </thead>
-                        <tbody id="users-table" class="divide-y divide-slate-100 dark:divide-slate-700">
-                            </tbody>
+                        <tbody id="users-table" class="divide-y divide-slate-700"></tbody>
                     </table>
                 </div>
             </div>
-
         </div>
+
+        <div id="section-finance" class="hidden mt-8 animate-fade-in">
+            <button onclick="showMenu()" class="mb-6 text-sm font-bold text-slate-400 hover:text-white flex items-center gap-2"><span class="material-symbols-outlined text-sm">arrow_back</span> Volver al Menú</button>
+            <div class="bg-slate-800 p-10 rounded-2xl border border-slate-700 text-center">
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Capital Total Bajo Gestión</p>
+                <h2 id="total-aum-display" class="text-5xl font-black text-white mb-4">$0.00</h2>
+                <p class="text-xs text-emerald-400 bg-emerald-500/10 inline-block px-3 py-1 rounded-full">+0.0% hoy (Simulado)</p>
+            </div>
+        </div>
+
+        <div id="error-msg" class="hidden mt-6 p-4 bg-red-500/10 border border-red-500/50 text-red-400 rounded-xl text-center font-bold"></div>
+
     </main>
 
-    <script>
-        // Lógica de Tema Oscuro
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-        
-        themeToggleBtn.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-        });
-
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
-    </script>
     <script src="js/admin.js"></script>
+    <style> .animate-fade-in { animation: fadeIn 0.3s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } </style>
 </body>
 </html>

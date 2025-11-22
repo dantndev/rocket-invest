@@ -5,158 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>RocketInvest | Partners</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } },
-                    fontFamily: { display: ["Manrope", "sans-serif"] },
-                    borderRadius: { "DEFAULT": "1rem" },
-                },
-            },
-        }
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } }, fontFamily: { display: ["Manrope", "sans-serif"] }, borderRadius: { DEFAULT: "1rem" } } } }
     </script>
-    <style>
-        body { font-family: 'Manrope', sans-serif; }
-        button:active { transform: scale(0.98); transition: 0.1s; }
-    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen transition-colors duration-300">
+<body class="bg-slate-50 text-slate-800 min-h-screen font-display">
 
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center">
+        <div class="max-w-5xl mx-auto px-6 h-20 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="bg-indigo-600 text-white p-2 rounded-lg"><span class="material-symbols-outlined">business_center</span></div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight">RocketInvest <span class="text-indigo-600">Partners</span></h1>
-                    <p class="text-xs text-slate-400">Portal Institucional</p>
-                </div>
+                <span class="font-bold text-lg text-slate-900">Partners Portal</span>
             </div>
-            <button onclick="window.location.href='index.html'" class="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors">Salir</button>
+            <button onclick="window.location.href='index.html'" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Salir</button>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-6 py-10">
+    <main class="max-w-5xl mx-auto px-6 py-10">
         
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-                <h2 class="font-bold text-xl mb-1 text-slate-900">Panel de Control</h2>
-                <p class="text-sm text-slate-500">Selecciona la entidad financiera para visualizar métricas.</p>
-            </div>
-            <select id="partner-selector" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 w-full sm:w-auto cursor-pointer hover:bg-slate-100 transition-colors">
-                <option value="BlackRock">BlackRock México</option>
-                <option value="Santander">Santander Asset Mgmt</option>
-                <option value="iShares">iShares Global</option>
-                <option value="ProShares">ProShares</option>
-                <option value="Fibra Uno">Fibra Uno</option>
-                <option value="HSBC Global">HSBC Global</option>
-                <option value="Vanguard">Vanguard</option>
-                <option value="VanEck">VanEck</option>
-                <option value="SPDR">SPDR</option>
+        <div class="mb-8 flex justify-end">
+            <select id="partner-selector" class="bg-white border-none shadow-sm rounded-lg text-sm font-bold text-slate-600 py-2 px-4 cursor-pointer focus:ring-0">
+                <option value="BlackRock">BlackRock</option>
+                <option value="Santander">Santander</option>
+                <option value="iShares">iShares</option>
             </select>
         </div>
 
-        <div id="partner-dashboard" class="transition-opacity duration-300 opacity-100">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><span class="material-symbols-outlined">payments</span></div>
-                        <span class="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">+ Hoy</span>
-                    </div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Capital Recaudado</p>
-                    <h3 id="total-raised" class="text-3xl font-bold text-slate-900 mt-1">$0.00</h3>
+        <div id="partner-menu" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div onclick="showSection('funds')" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:border-indigo-500 cursor-pointer transition-all group">
+                <div class="h-14 w-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl">folder_open</span>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><span class="material-symbols-outlined">group</span></div>
-                    </div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total Inversionistas</p>
-                    <h3 id="total-investors" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
-                </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><span class="material-symbols-outlined">folder_open</span></div>
-                    </div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Fondos Activos</p>
-                    <h3 id="active-funds" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
-                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Mis Fondos</h2>
+                <p class="text-slate-500">Ver rendimiento, recaudación y métricas de tus portafolios activos.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="font-bold text-lg text-slate-800">Mis Fondos</h3>
-                        <button onclick="openRequestModal()" class="text-indigo-600 text-sm font-bold hover:underline hover:text-indigo-800 transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-sm">add</span> Solicitar Nuevo</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-xs border-b border-slate-100">
-                                <tr>
-                                    <th class="px-6 py-3">Fondo</th>
-                                    <th class="px-6 py-3 text-right">Recaudado</th>
-                                    <th class="px-6 py-3 text-center">Progreso</th>
-                                    <th class="px-6 py-3 text-right">Socios</th>
-                                </tr>
-                            </thead>
-                            <tbody id="funds-table-body" class="divide-y divide-slate-100 text-slate-700">
-                                <tr><td colspan="4" class="p-6 text-center text-slate-400">Cargando datos...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div onclick="showSection('request')" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:border-indigo-500 cursor-pointer transition-all group">
+                <div class="h-14 w-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl">add_circle</span>
                 </div>
-
-                <div class="bg-indigo-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group h-fit">
-                    <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-10 -mt-10 blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
-                    <h3 class="font-bold text-lg mb-2 relative z-10">Soporte Partners</h3>
-                    <p class="text-indigo-200 text-sm mb-6 relative z-10">¿Necesitas reportes fiscales o ajustes de liquidación? Contacta a tu KAM asignado.</p>
-                    <div class="flex items-center gap-3 mb-6 relative z-10 p-3 bg-white/10 rounded-xl border border-white/10">
-                        <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center border-2 border-indigo-300 font-bold text-xs shadow-md">AS</div>
-                        <div>
-                            <p class="font-bold text-sm">Mesa de Ayuda</p>
-                            <p class="text-xs text-green-300 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> En línea</p>
-                        </div>
-                    </div>
-                    <a href="mailto:admin@rocket.com" class="block w-full py-3 bg-white text-indigo-900 font-bold text-center rounded-xl hover:bg-indigo-50 transition-colors relative z-10 shadow-md">
-                        Contactar Soporte
-                    </a>
-                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Solicitar Apertura</h2>
+                <p class="text-slate-500">Envía una propuesta para listar un nuevo fondo en la plataforma.</p>
             </div>
         </div>
+
+        <div id="section-funds" class="hidden mt-4 animate-fade-in">
+            <button onclick="showMenu()" class="mb-6 text-sm font-bold text-slate-400 hover:text-slate-600 flex items-center gap-2"><span class="material-symbols-outlined text-sm">arrow_back</span> Volver</button>
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100"><h3 class="font-bold text-lg">Portafolios Activos</h3></div>
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
+                        <tr><th class="px-6 py-3">Nombre</th><th class="px-6 py-3 text-right">Recaudado</th><th class="px-6 py-3 text-center">Avance</th></tr>
+                    </thead>
+                    <tbody id="funds-table-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-request" class="hidden mt-4 animate-fade-in">
+            <button onclick="showMenu()" class="mb-6 text-sm font-bold text-slate-400 hover:text-slate-600 flex items-center gap-2"><span class="material-symbols-outlined text-sm">arrow_back</span> Volver</button>
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-lg mx-auto">
+                <h3 class="text-2xl font-bold mb-6">Nuevo Fondo</h3>
+                <form id="request-form" class="space-y-4">
+                    <div><label class="text-xs font-bold uppercase text-slate-500">Nombre</label><input type="text" id="req-name" class="w-full p-3 bg-slate-50 border-slate-200 rounded-xl font-bold" required></div>
+                    <div><label class="text-xs font-bold uppercase text-slate-500">Ticker</label><input type="text" id="req-ticker" class="w-full p-3 bg-slate-50 border-slate-200 rounded-xl font-bold" required></div>
+                    <div><label class="text-xs font-bold uppercase text-slate-500">Meta (MXN)</label><input type="number" id="req-target" class="w-full p-3 bg-slate-50 border-slate-200 rounded-xl font-bold" required></div>
+                    <div><label class="text-xs font-bold uppercase text-slate-500">Descripción</label><textarea id="req-desc" class="w-full p-3 bg-slate-50 border-slate-200 rounded-xl" rows="3"></textarea></div>
+                    <button class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">Enviar Solicitud</button>
+                </form>
+            </div>
+        </div>
+
     </main>
 
-    <div id="request-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-200 opacity-0">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-all duration-200 relative">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-900">Solicitar Apertura</h3>
-                <button onclick="closeRequestModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            <form id="request-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre del Fondo</label>
-                    <input type="text" id="req-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="Ej. Global Tech II" required>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ticker</label>
-                        <input type="text" id="req-ticker" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all focus:ring-2 focus:ring-indigo-500" placeholder="XYZ" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Meta (MXN)</label>
-                        <input type="number" id="req-target" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all focus:ring-2 focus:ring-indigo-500" placeholder="1000000" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
-                    <textarea id="req-desc" rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none resize-none transition-all focus:ring-2 focus:ring-indigo-500" placeholder="Estrategia de inversión..."></textarea>
-                </div>
-                <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">Enviar Solicitud <span class="material-symbols-outlined text-sm">send</span></button>
-            </form>
-        </div>
-    </div>
-
     <script src="js/partners.js"></script>
+    <style> .animate-fade-in { animation: fadeIn 0.3s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } </style>
 </body>
 </html>
