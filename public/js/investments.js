@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
+    // REFS
     sellModal = document.getElementById('sell-modal');
     successModal = document.getElementById('success-modal');
     confirmSellBtn = document.getElementById('btn-confirm-sell');
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const response = await fetch('/api/my-investments', { headers: { 'Authorization': `Bearer ${token}` } });
+        if(!response.ok) throw new Error("Error API");
         const investments = await response.json();
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
@@ -23,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         investments.forEach(inv => {
-            const color = inv.profit >= 0 ? 'text-emerald-500' : 'text-red-500';
+            const profitClass = inv.profit >= 0 ? 'text-emerald-500' : 'text-red-500';
             const sign = inv.profit >= 0 ? '+' : '';
             
             const row = `
@@ -31,8 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td class="p-4 font-bold text-slate-900 dark:text-white">${inv.portfolioName}</td>
                     <td class="p-4 text-sm text-slate-500">${new Date(inv.date).toLocaleDateString()}</td>
                     <td class="p-4 text-right font-mono text-slate-600 dark:text-slate-300">${fmt.format(inv.investedAmount)}</td>
-                    <td class="p-4 text-right font-mono font-bold">${fmt.format(inv.currentValue)}</td>
-                    <td class="p-4 text-right font-mono font-bold ${color}">${sign}${fmt.format(inv.profit)}</td>
+                    <td class="p-4 text-right font-mono font-bold text-slate-900 dark:text-white">${fmt.format(inv.currentValue)}</td>
+                    <td class="p-4 text-right font-mono font-bold ${profitClass}">${sign}${fmt.format(inv.profit)}</td>
                     <td class="p-4 text-center"><span class="px-2 py-1 rounded-md text-xs bg-emerald-100 text-emerald-700 font-bold">Activo</span></td>
                     <td class="p-4 text-right">
                         <button onclick="openSellModal(${inv.id})" class="text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">Vender</button>
@@ -41,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             tableBody.innerHTML += row;
         });
-    } catch (error) { console.error(error); }
+    } catch (error) { console.error(error); tableBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-500">Error cargando datos.</td></tr>'; }
 
     if(confirmSellBtn) {
         confirmSellBtn.addEventListener('click', async () => {
@@ -54,7 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ investmentId: id, token })
                 });
-                if(res.ok) { closeSellModal(); showSuccess(); } else { alert("Error al vender"); }
+                if(res.ok) { closeSellModal(); showSuccess(); } 
+                else { alert("Error al vender"); }
             } catch(e) { alert("Error de conexión"); }
             confirmSellBtn.innerText = "Vender"; confirmSellBtn.disabled = false;
         });
