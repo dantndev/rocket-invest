@@ -2,23 +2,23 @@
 
 // STRIPE KEY
 const stripe = Stripe("pk_test_51SVnUE4AqCfV55nwMITPJEyhmY5Kb1dXKothHnOOFJw52Z7rRZTWudxYwmkiAdu1uVqGCm2Vu61QSxmT7GeWcbMW00u7G1cvrp");
-let elements;
+let elements, myChart, chartDataCache;
 
-// VARIABLES
-let investModal, depositModal, withdrawModal, successModal;
+// Variables UI Globales
+let investModal, investModalTitle, investModalIdInput;
+let depositModal, withdrawModal, successModal;
 let step1Div, step2Div, btnFinalConfirm;
-let investModalTitle, investModalIdInput, confirmPortfolioName, confirmAmountDisplay;
-let myChart, chartDataCache;
+let confirmPortfolioName, confirmAmountDisplay;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login.html'; return; }
 
-    // REFS DOM
+    // 1. CAPTURAR REFERENCIAS DOM
     investModal = document.getElementById('invest-modal');
-    successModal = document.getElementById('success-modal');
     depositModal = document.getElementById('deposit-modal');
     withdrawModal = document.getElementById('withdraw-modal');
+    successModal = document.getElementById('success-modal');
     step1Div = document.getElementById('invest-step-1');
     step2Div = document.getElementById('invest-step-2');
     btnFinalConfirm = document.getElementById('btn-final-confirm');
@@ -27,64 +27,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmPortfolioName = document.getElementById('confirm-portfolio-name');
     confirmAmountDisplay = document.getElementById('confirm-amount-display');
 
-    // CALCULADORA
-    const investInput = document.getElementById('invest-amount');
-    if (investInput) {
-        let calcMsg = document.getElementById('invest-calculation');
-        if (!calcMsg) { 
-            calcMsg = document.createElement('p'); 
-            calcMsg.id = 'invest-calculation'; 
-            calcMsg.className = 'text-xs font-bold text-primary text-right mt-1'; 
-            investInput.parentNode.appendChild(calcMsg); 
-        }
-        const btnContinue = document.getElementById('btn-continue-invest');
-        
-        investInput.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            const min = parseInt(investModal.dataset.ticket || 1000);
-            
-            if (!val || val < min) {
-                calcMsg.innerText = `Mínimo $${min.toLocaleString()}`;
-                calcMsg.className = "text-xs font-bold text-red-400 text-right mt-1";
-                if(btnContinue) btnContinue.disabled = true;
-            } else if (val % min !== 0) {
-                calcMsg.innerText = `Múltiplos de $${min.toLocaleString()}`;
-                calcMsg.className = "text-xs font-bold text-orange-400 text-right mt-1";
-                if(btnContinue) btnContinue.disabled = true;
-            } else {
-                const parts = val / min;
-                calcMsg.innerText = `Adquiriendo ${parts} Cupo${parts > 1 ? 's' : ''}`;
-                calcMsg.className = "text-xs font-bold text-emerald-500 text-right mt-1";
-                if(btnContinue) btnContinue.disabled = false;
-            }
-        });
-    }
+    // 2. CALCULADORA INVERSIÓN
+    initCalculator();
 
-    // CARGA INICIAL
+    // 3. CARGA DE DATOS
     await updateUserData(token);
     await loadPortfolios();
     fetchPersonalChart(token, 'netWorth');
 
+    // 4. LISTENERS
     document.getElementById('btn-ver-todos')?.addEventListener('click', () => window.location.href = 'portfolios.html');
     setupFormListeners(token);
     setupExtraInputs();
 });
 
-// --- FUNCIONES GLOBALES (Para que el HTML las encuentre) ---
+// --- FUNCIONES EXPORTADAS A WINDOW (PARA QUE EL HTML LAS VEA) ---
 
 window.setupInvest = function(id, name, ticket) {
     if(!investModal) return;
     investModalTitle.innerText = name;
     investModalIdInput.value = id;
-    investModal.dataset.ticket = ticket; // Guardar precio ticket
-    
+    investModal.dataset.ticket = ticket;
+
+    // Resetear estado
     window.backToStep1();
     investModal.classList.remove('hidden'); 
     setTimeout(() => { 
         investModal.classList.remove('opacity-0'); 
         investModal.querySelector('div').classList.add('scale-100'); 
     }, 10);
-    
+
+    // Limpiar input
     const inp = document.getElementById('invest-amount'); 
     if(inp) { 
         inp.value = ''; 
@@ -93,18 +66,21 @@ window.setupInvest = function(id, name, ticket) {
         inp.min = ticket; 
     }
     const msg = document.getElementById('invest-calculation'); 
-    if(msg) { msg.innerText = `Mínimo $${ticket.toLocaleString()}`; msg.className = "text-xs font-bold text-primary text-right mt-1"; }
+    if(msg) { 
+        msg.innerText = `Mínimo $${ticket.toLocaleString('es-MX')}`; 
+        msg.className = "text-xs font-bold text-primary text-right mt-1"; 
+    }
 }
 
 window.initStripePayment = async function() {
     const amount = document.getElementById('deposit-amount').value;
     const btn = document.getElementById('btn-init-stripe');
     
-    if(!amount || amount <= 0) { alert("Ingresa un monto válido"); return; }
+    if(!amount || amount <= 0) { alert("Monto inválido"); return; }
     
     btn.disabled = true; 
     btn.innerText = "Conectando...";
-    
+
     try {
         const res = await fetch('/api/create-payment-intent', {
             method: 'POST',
@@ -112,13 +88,10 @@ window.initStripePayment = async function() {
             body: JSON.stringify({amount, token:localStorage.getItem('token')})
         });
         const d = await res.json();
-        
         if(d.error) throw new Error(d.error);
 
-        // Mostrar Stripe
-        const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
-        document.getElementById('stripe-summary-amount').innerText = fmt.format(amount);
-
+        // Mostrar resumen
+        document.getElementById('stripe-summary-amount').innerText = new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(amount);
         document.getElementById('deposit-step-1').classList.add('hidden');
         document.getElementById('stripe-container').classList.remove('hidden');
 
@@ -131,116 +104,41 @@ window.initStripePayment = async function() {
             e.preventDefault(); 
             e.target.disabled = true; 
             e.target.innerText = "Procesando...";
-
+            
             const { error } = await stripe.confirmPayment({ elements, redirect: 'if_required' });
 
-            if (error) {
-                alert(error.message);
-                e.target.disabled = false;
-                e.target.innerText = "Pagar Ahora";
+            if (error) { 
+                alert(error.message); 
+                e.target.disabled = false; 
+                e.target.innerText = "Pagar Ahora"; 
             } else {
                 await fetch('/api/deposit', {
-                    method:'POST',
+                    method:'POST', 
                     headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},
                     body:JSON.stringify({amount, token:localStorage.getItem('token')})
                 });
-                
                 window.closeDepositModal();
                 updateUserData(localStorage.getItem('token'));
                 window.showSuccess();
-                
                 // Reset
                 document.getElementById('deposit-amount').value = '';
                 document.getElementById('deposit-step-1').classList.remove('hidden');
                 document.getElementById('stripe-container').classList.add('hidden');
-                btn.disabled = false; 
-                btn.innerText = "Iniciar Pago Seguro";
-                
+                btn.disabled = false; btn.innerText = "Iniciar Pago";
                 fetchPersonalChart(localStorage.getItem('token'), 'netWorth');
             }
         };
 
     } catch(e) { 
         console.error(e); 
-        alert("Error conectando con Stripe"); 
+        alert("Error de conexión con pasarela"); 
         btn.disabled = false; 
         btn.innerText = "Iniciar Pago Seguro"; 
     }
 }
 
-// --- GRÁFICA (CORREGIDA EJES Y TOOLTIP) ---
-function renderChart(data, type) {
-    const ctx = document.getElementById('marketChart');
-    if (!ctx) return;
-    if (window.myChart instanceof Chart) window.myChart.destroy();
+// --- FUNCIONES INTERNAS ---
 
-    const dataset = type === 'netWorth' ? data.netWorth : data.profit;
-    const color = type === 'netWorth' ? '#307de8' : '#10b981';
-    const isDark = document.documentElement.classList.contains('dark');
-    const textColor = isDark ? '#94a3b8' : '#64748b';
-    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-
-    window.myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.dates.map(ts => new Date(ts*1000).toLocaleDateString('es-MX', {day:'numeric', month:'short'})),
-            datasets: [{
-                data: dataset,
-                borderColor: color,
-                backgroundColor: (c) => {
-                    const g = c.chart.ctx.createLinearGradient(0,0,0,300);
-                    g.addColorStop(0, color + '33'); // Opacidad hex
-                    g.addColorStop(1, color + '00');
-                    return g;
-                },
-                borderWidth: 2,
-                pointRadius: 4,         // Puntos visibles
-                pointHoverRadius: 7,    // Hover grande
-                pointBackgroundColor: color,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    enabled: true,
-                    mode: 'index',
-                    intersect: false,
-                    callbacks: {
-                        label: function(context) {
-                            return '$ ' + new Intl.NumberFormat('es-MX').format(context.parsed.y);
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    display: true, // EJES VISIBLES
-                    grid: { display: false },
-                    ticks: { color: textColor, maxTicksLimit: 6 }
-                },
-                y: {
-                    display: true, // EJES VISIBLES
-                    grid: { color: gridColor },
-                    ticks: { 
-                        color: textColor, 
-                        callback: function(value) { return '$' + value / 1000 + 'k'; } // Formato corto
-                    }
-                }
-            }
-        }
-    });
-}
-
-// --- PORTAFOLIOS ---
 async function loadPortfolios() {
     const grid = document.getElementById('portfolio-grid');
     if(!grid) return;
@@ -262,17 +160,17 @@ async function loadPortfolios() {
             let badgeColor = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
             let dotColor = "bg-emerald-500";
             let statusText = `${numFmt.format(remaining)} cupos disp.`;
-            let disabled = "";
+            let disabled = ""; 
             let btnText = "Unirme al Grupo";
 
             if (remaining === 0) {
                 badgeColor = "bg-slate-200 text-slate-500"; dotColor = "hidden"; statusText = "AGOTADO"; disabled = "disabled"; btnText = "Cerrado";
             } else if (progress >= 90) {
-                badgeColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"; dotColor = "bg-red-500"; statusText = `¡Últimos ${remaining} lugares!`;
+                badgeColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"; dotColor = "bg-red-500"; statusText = `¡Últimos ${remaining}!`;
             }
 
             const icons = ['🚀','💻','🌍','🌱','💎','🏗️','🇺🇸','🎮','🏆'];
-            const icon = icons[(p.id-1)%icons.length] || '📈';
+            const icon = icons[(p.id - 1) % icons.length] || '📈';
             let riskColor = p.risk === 'Alto' ? 'text-red-600 bg-red-50' : (p.risk === 'Bajo' ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50');
 
             grid.innerHTML += `
@@ -305,74 +203,78 @@ async function loadPortfolios() {
     } catch(e) { console.error(e); }
 }
 
-// --- HELPERS ---
-function fetchPersonalChart(token, type) {
-    fetch('/api/chart-data', { headers: { 'Authorization': `Bearer ${token}` } })
-    .then(r=>r.json()).then(d=>{ chartDataCache=d; renderChart(d,type); })
-    .catch(e=>console.error("Error chart",e));
+function initCalculator() {
+    const inp = document.getElementById('invest-amount');
+    if(!inp) return;
+    let msg = document.getElementById('invest-calculation');
+    if(!msg) { msg=document.createElement('p'); msg.id='invest-calculation'; msg.className='text-xs font-bold text-primary text-right mt-1'; inp.parentNode.appendChild(msg); }
+    const btn = document.getElementById('btn-continue-invest');
+
+    inp.addEventListener('input', (e)=>{
+        const v = parseInt(e.target.value);
+        const min = parseInt(investModal.dataset.ticket || 1000);
+        if(!v || v<min) { msg.innerText=`Mínimo $${min}`; msg.className="text-xs font-bold text-red-400 text-right mt-1"; if(btn) btn.disabled=true; }
+        else if(v%min!==0) { msg.innerText=`Múltiplos de $${min}`; msg.className="text-xs font-bold text-orange-400 text-right mt-1"; if(btn) btn.disabled=true; }
+        else { msg.innerText=`Adquiriendo ${v/min} Ticket${(v/min)>1?'s':''}`; msg.className="text-xs font-bold text-emerald-500 text-right mt-1"; if(btn) btn.disabled=false; }
+    });
 }
-window.switchChart = function(type) {
-    if (!chartDataCache) return;
-    const b1 = document.getElementById('btn-networth');
-    const b2 = document.getElementById('btn-profit');
-    const t = document.getElementById('chart-title');
-    if(type === 'netWorth') {
-        b1.className = "px-3 py-1 text-xs font-bold rounded-md bg-white dark:bg-card-dark shadow-sm text-primary";
-        b2.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-500 dark:text-slate-400";
-        if(t) t.innerText = "Mi Patrimonio";
-    } else {
-        b1.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-500 dark:text-slate-400";
-        b2.className = "px-3 py-1 text-xs font-bold rounded-md bg-white dark:bg-card-dark shadow-sm text-emerald-500";
-        if(t) t.innerText = "Mi Rendimiento";
-    }
-    renderChart(chartDataCache, type);
-}
-async function updateUserData(token) { try { const r=await fetch('/api/auth/me',{headers:{'Authorization':`Bearer ${token}`}}); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
-function updateBalanceUI(d) {
-    const f = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
-    const s = (i, v) => { const el = document.getElementById(i); if(el) el.innerHTML = v; };
-    s('display-net-worth', `${f.format(d.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`);
-    s('display-available', f.format(d.availableBalance));
-    s('display-invested', f.format(d.investedAmount));
-    s('modal-balance-display', f.format(d.availableBalance));
-    s('withdraw-max-balance', f.format(d.availableBalance));
-    const n = d.first_name ? d.first_name.split(' ')[0] : 'Inversor';
-    const greeting = document.getElementById('user-greeting');
-    if(greeting) greeting.innerText = `Hola, ${n}`;
-}
+
 function setupFormListeners(token) {
     const f1 = document.getElementById('investment-form-step1');
-    if(f1) f1.addEventListener('submit', e => {
+    if(f1) f1.addEventListener('submit', (e) => {
         e.preventDefault();
         const amount = parseInt(document.getElementById('invest-amount').value);
         const min = parseInt(investModal.dataset.ticket || 1000);
         if(!amount || amount < min || amount % min !== 0) return;
+        
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
         document.getElementById('confirm-amount-display').innerText = fmt.format(amount);
         document.getElementById('confirm-portfolio-name').innerText = investModalTitle.innerText;
-        step1Div.classList.add('hidden'); step2Div.classList.remove('hidden');
+        
+        step1Div.classList.add('hidden'); 
+        step2Div.classList.remove('hidden');
     });
-    const btn = document.getElementById('btn-final-confirm');
-    if(btn) btn.addEventListener('click', async () => {
-        btn.innerText = "Procesando...";
+
+    if(btnFinalConfirm) btnFinalConfirm.addEventListener('click', async () => {
+        btnFinalConfirm.innerText = "Procesando...";
+        const pid = investModalIdInput.value;
+        const amount = document.getElementById('invest-amount').value;
         try {
-            const res = await fetch('/api/invest', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ portfolioId: investModalIdInput.value, amount: document.getElementById('invest-amount').value, token }) });
-            if(res.ok) { window.closeModal(); updateUserData(token); loadPortfolios(); window.showSuccess(); fetchPersonalChart(token,'netWorth'); } 
-            else { const d = await res.json(); alert(d.message); window.backToStep1(); }
-        } catch(e) { alert("Error"); window.backToStep1(); }
-        btn.innerText = "Confirmar";
+            const res = await fetch('/api/invest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ portfolioId: pid, amount, token })
+            });
+            if(res.ok) { 
+                window.closeModal(); 
+                updateUserData(token); 
+                loadPortfolios(); 
+                window.showSuccess(); 
+                fetchPersonalChart(token,'netWorth');
+            } else { 
+                const d = await res.json(); alert(d.message); window.backToStep1(); 
+            }
+        } catch(e) { alert("Error de red"); window.backToStep1(); }
+        btnFinalConfirm.innerText = "Confirmar";
     });
 }
-function setupExtraInputs() {
-    const c = document.getElementById('card-number'); if(c) c.addEventListener('input', e=>e.target.value=e.target.value.replace(/\D/g,'').substring(0,16).match(/.{1,4}/g)?.join(' ')||e.target.value);
-    const ex = document.getElementById('card-expiry'); if(ex) ex.addEventListener('input', e=>{let v=e.target.value.replace(/\D/g,''); if(v.length>2) v=v.substring(0,2)+'/'+v.substring(2,4); e.target.value=v;});
-    const w = document.getElementById('withdraw-form'); if(w) w.addEventListener('submit', async(e)=>{ e.preventDefault(); const a=document.getElementById('withdraw-amount').value; try{ await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},body:JSON.stringify({amount:a,token:localStorage.getItem('token')})}); window.closeWithdrawModal(); updateUserData(localStorage.getItem('token')); fetchPersonalChart(localStorage.getItem('token'),'netWorth'); alert("Retiro OK"); }catch{} });
-}
+
+function renderMarketChart() { /* (Mismo código que antes) */ const ctx=document.getElementById('marketChart'); if(!ctx)return; try{ const isDark=document.documentElement.classList.contains('dark'); const textColor=isDark?'#94a3b8':'#64748b'; const gridColor=isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)'; fetch('/api/market').then(r=>r.json()).then(d=>{ new Chart(ctx,{type:'line',data:{labels:d.dates.map(t=>new Date(t*1000).toLocaleDateString('es-MX')),datasets:[{data:d.prices,borderColor:'#307de8',borderWidth:2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{grid:{color:gridColor},ticks:{color:textColor}},x:{display:false}}}}); }); }catch(e){} }
+function fetchPersonalChart(token, type) { const ctx=document.getElementById('marketChart'); if(!ctx)return; fetch('/api/chart-data',{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json()).then(d=>{ chartDataCache=d; renderChart(d,type); }).catch(e=>{}); }
+function renderChart(d, t) { const ctx=document.getElementById('marketChart'); if(window.myChart) window.myChart.destroy(); const ds = t === 'netWorth' ? d.netWorth : d.profit; const cl = t === 'netWorth' ? '#307de8' : '#10b981'; window.myChart = new Chart(ctx, { type: 'line', data: { labels: d.dates.map(ts=>new Date(ts*1000).toLocaleDateString('es-MX')), datasets:[{data:ds, borderColor:cl, borderWidth:2, pointRadius:0, fill:true, backgroundColor:cl+'22'}] }, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{display:false},y:{display:true}} } }); }
+window.switchChart = function(t) { if(!chartDataCache) return; renderChart(chartDataCache, t); }
+
+// HELPERS
+async function updateUserData(token) { try { const r=await fetch('/api/auth/me',{headers:{'Authorization':`Bearer ${token}`}}); if(r.ok) updateBalanceUI(await r.json()); } catch(e){} }
+function updateBalanceUI(d) { const f=new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}); const s=(i,v)=>{const e=document.getElementById(i);if(e)e.innerHTML=v;}; s('display-net-worth',`${f.format(d.netWorth)} <span class="text-2xl text-slate-400 font-normal">MXN</span>`); s('display-available',f.format(d.availableBalance)); s('display-invested',f.format(d.investedAmount)); s('modal-balance-display',f.format(d.availableBalance)); s('withdraw-max-balance',f.format(d.availableBalance)); const n=d.first_name?d.first_name.split(' ')[0]:'Inversor'; const g=document.getElementById('user-greeting'); if(g) g.innerText=`Hola, ${n}`; }
+function setupExtraInputs() { const w=document.getElementById('withdraw-form'); if(w) w.addEventListener('submit', async(e)=>{ e.preventDefault(); const a=document.getElementById('withdraw-amount').value; try{ await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},body:JSON.stringify({amount:a,token:localStorage.getItem('token')})}); window.closeWithdrawModal(); updateUserData(localStorage.getItem('token')); alert("Retiro OK"); }catch{} }); }
+
+// MODALES
 window.backToStep1 = function() { step1Div.classList.remove('hidden'); step2Div.classList.add('hidden'); }
 window.closeModal = function() { investModal.classList.add('opacity-0'); setTimeout(() => investModal.classList.add('hidden'), 300); }
-window.showSuccess = function() { successModal.classList.remove('hidden'); setTimeout(() => { successModal.classList.remove('opacity-0'); successModal.querySelector('div').classList.add('scale-100'); }, 10); }
-window.closeSuccessModal = function() { successModal.classList.add('opacity-0'); setTimeout(() => successModal.classList.add('hidden'), 300); }
-window.openDepositModal = function() { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); };
-window.closeDepositModal = function() { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); };
-window.openWithdrawModal = function() { const b = document.getElementById('modal-balance-display')?.innerText || "0"; document.getElementById('withdraw-max-balance').innerText = b; withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); };
-window.closeWithdrawModal = function() { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); };
+window.showSuccess = function() { if(successModal) { successModal.classList.remove('hidden'); setTimeout(() => successModal.classList.remove('opacity-0'), 10); } }
+window.closeSuccessModal = function() { if(successModal) { successModal.classList.add('opacity-0'); setTimeout(() => successModal.classList.add('hidden'), 300); } }
+window.openDepositModal = function() { if(depositModal) { depositModal.classList.remove('hidden'); setTimeout(() => depositModal.classList.remove('opacity-0'),10); }};
+window.closeDepositModal = function() { if(depositModal) { depositModal.classList.add('opacity-0'); setTimeout(() => depositModal.classList.add('hidden'),300); }};
+window.openWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.remove('hidden'); setTimeout(() => withdrawModal.classList.remove('opacity-0'),10); }};
+window.closeWithdrawModal = function() { if(withdrawModal) { withdrawModal.classList.add('opacity-0'); setTimeout(() => withdrawModal.classList.add('hidden'),300); }};

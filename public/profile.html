@@ -10,29 +10,31 @@
     <script id="tailwind-config">
         tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } }, fontFamily: { display: ["Manrope", "sans-serif"] }, borderRadius: { DEFAULT: "1rem" } } } }
     </script>
+    <style> .no-scrollbar::-webkit-scrollbar { display: none; } </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300">
-
     <div class="flex min-h-screen relative">
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 h-full z-50">
+
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out h-full overflow-y-auto no-scrollbar">
             <div class="flex flex-col gap-8">
                 <div class="flex items-center justify-between px-2"><a href="dashboard.html" class="flex items-center gap-3 px-1 py-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1></a><button onclick="toggleSidebar()" class="md:hidden text-slate-500"><span class="material-symbols-outlined">close</span></button></div>
                 <nav class="flex flex-col gap-2">
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="portfolios.html"><span class="material-symbols-outlined">explore</span>Explorar</a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="investments.html"><span class="material-symbols-outlined">account_balance_wallet</span>Mis Inversiones</a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="history.html"><span class="material-symbols-outlined">history</span>Historial</a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="index.html"><span class="material-symbols-outlined">home</span><span class="text-sm font-semibold">Inicio</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span class="text-sm font-semibold">Dashboard</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="portfolios.html"><span class="material-symbols-outlined">explore</span><span class="text-sm font-semibold">Explorar</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="investments.html"><span class="material-symbols-outlined">account_balance_wallet</span><span class="text-sm font-semibold">Mis Inversiones</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="history.html"><span class="material-symbols-outlined">history</span><span class="text-sm font-semibold">Historial</span></a>
                 </nav>
             </div>
             <div class="px-3">
-                <a href="profile.html" class="flex w-full items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg mb-2"><span class="material-symbols-outlined">person</span><span class="text-sm font-bold">Mi Perfil</span></a>
+                <a href="profile.html" class="flex w-full items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg mb-2 transition-all"><span class="material-symbols-outlined">person</span><span class="text-sm font-bold">Mi Perfil</span></a>
                 <button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 rounded-xl"><span class="material-symbols-outlined">logout</span><span class="text-sm font-semibold">Cerrar Sesión</span></button>
             </div>
         </aside>
 
-        <main class="w-full md:ml-64 min-h-screen p-6 md:p-10 flex flex-col items-center justify-center">
-            <div class="max-w-2xl w-full">
+        <main class="w-full md:ml-64 min-h-screen p-6 md:p-10 flex flex-col items-center justify-center relative z-0">
+            <div class="w-full max-w-2xl">
                 <header class="flex items-center justify-between mb-8 w-full">
                     <div class="flex items-center gap-3">
                         <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm"><span class="material-symbols-outlined">menu</span></button>
@@ -41,56 +43,25 @@
                     <button id="theme-toggle" class="h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-yellow-400 shadow-sm"><span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span></button>
                 </header>
 
-                <div id="profile-menu" class="grid gap-4">
-                    <div onclick="showKycForm()" class="bg-white dark:bg-card-dark p-5 border border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-primary transition-all flex justify-between items-center group shadow-sm">
-                        <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-blue-50 text-primary rounded-xl flex items-center justify-center"><span class="material-symbols-outlined text-2xl">badge</span></div>
-                            <div><h3 class="font-bold text-slate-900 dark:text-white">Identidad (KYC)</h3><p class="text-xs text-slate-500">Estado: <span id="menu-kyc-status" class="font-bold">Cargando...</span></p></div>
+                <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-lg">
+                    <div id="profile-menu" class="grid gap-4">
+                        <div onclick="showKycForm()" class="p-4 border border-slate-200 dark:border-slate-600 rounded-xl cursor-pointer hover:border-primary transition-all flex justify-between items-center group">
+                            <div class="flex items-center gap-3"><div class="p-2 bg-blue-50 text-primary rounded-lg"><span class="material-symbols-outlined">verified_user</span></div><div><h3 class="font-bold text-sm">Identidad (KYC)</h3><p class="text-xs text-slate-400">Estado: <span id="menu-kyc-status" class="font-bold">Cargando...</span></p></div></div>
+                            <span class="material-symbols-outlined text-slate-300 group-hover:text-primary">chevron_right</span>
                         </div>
-                        <span class="material-symbols-outlined text-slate-300 group-hover:text-primary">chevron_right</span>
+                        <div class="p-4 border border-slate-200 dark:border-slate-600 rounded-xl flex justify-between items-center opacity-50 cursor-not-allowed"><div class="flex items-center gap-3"><div class="p-2 bg-slate-100 text-slate-500 rounded-lg"><span class="material-symbols-outlined">lock</span></div><div><h3 class="font-bold text-sm">Seguridad</h3><p class="text-xs text-slate-400">Contraseña y 2FA</p></div></div></div>
                     </div>
-                    
-                    <div class="bg-white dark:bg-card-dark p-5 border border-slate-200 dark:border-slate-700 rounded-2xl flex justify-between items-center opacity-50 cursor-not-allowed shadow-sm">
-                        <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl flex items-center justify-center"><span class="material-symbols-outlined text-2xl">lock</span></div>
-                            <div><h3 class="font-bold text-slate-900 dark:text-white">Seguridad</h3><p class="text-xs text-slate-500">Cambiar contraseña y 2FA</p></div>
-                        </div>
-                    </div>
-                </div>
 
-                <div id="kyc-section" class="hidden bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-lg">
-                    <button onclick="showProfileMenu()" class="text-sm text-slate-400 hover:text-primary mb-6 flex items-center gap-2 font-bold"><span class="material-symbols-outlined text-sm">arrow_back</span> Volver</button>
-                    <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-100 dark:border-slate-700">
-                        <div><p class="text-xs font-bold text-slate-400 uppercase">Estado</p><p id="kyc-status-text" class="font-bold text-xl capitalize text-slate-800 dark:text-white">Cargando...</p></div>
-                        <div id="kyc-badge" class="h-14 w-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-600"><span class="material-symbols-outlined text-slate-400 text-2xl">pending</span></div>
-                    </div>
-                    <form id="kyc-form" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">RFC</label><input type="text" id="rfc" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold uppercase" required></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">CURP</label><input type="text" id="curp" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold uppercase" required></div>
-                        </div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1">Teléfono</label><input type="tel" id="phone" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold" required></div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-2">Documento (INE/Pasaporte)</label>
-                            <div class="relative border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
-                                <input type="file" id="document" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*,.pdf" required>
-                                <span class="material-symbols-outlined text-4xl text-slate-300 group-hover:text-primary mb-2">cloud_upload</span>
-                                <p class="text-sm font-bold text-slate-500 group-hover:text-slate-700 dark:text-slate-400">Sube tu documento</p>
-                                <p id="file-name" class="text-xs text-primary mt-2 hidden font-bold truncate"></p>
-                            </div>
-                        </div>
-                        <button type="submit" id="btn-submit-kyc" class="w-full py-4 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg flex justify-center items-center gap-2">Enviar Verificación</button>
-                    </form>
-                    <div id="kyc-success" class="hidden text-center py-6">
-                        <span class="material-symbols-outlined text-4xl text-green-500 mb-2">check_circle</span>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">¡Recibido!</h3>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm">Tus datos están siendo procesados.</p>
+                    <div id="kyc-section" class="hidden mt-4">
+                        <button onclick="showProfileMenu()" class="text-sm text-slate-400 hover:text-primary mb-6 flex items-center gap-2 font-bold"><span class="material-symbols-outlined text-sm">arrow_back</span> Volver</button>
+                        <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-100 dark:border-slate-700"><div><p class="text-xs font-bold text-slate-400 uppercase">Estado</p><p id="kyc-status-text" class="font-bold text-xl capitalize text-slate-800 dark:text-white">Cargando...</p></div><div id="kyc-badge" class="h-14 w-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-600"><span class="material-symbols-outlined text-slate-400 text-2xl">pending</span></div></div>
+                        <form id="kyc-form" class="space-y-6"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="block text-xs font-bold text-slate-500 mb-1">RFC</label><input type="text" id="rfc" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold uppercase" required></div><div><label class="block text-xs font-bold text-slate-500 mb-1">CURP</label><input type="text" id="curp" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold uppercase" required></div></div><div><label class="block text-xs font-bold text-slate-500 mb-1">Teléfono</label><input type="tel" id="phone" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold" required></div><div><label class="block text-xs font-bold text-slate-500 mb-2">Documento</label><input type="file" id="document" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" accept="image/*,.pdf" required></div><button type="submit" id="btn-submit-kyc" class="w-full py-4 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg flex justify-center items-center gap-2">Enviar</button></form>
+                        <div id="kyc-success" class="hidden text-center py-6"><span class="material-symbols-outlined text-4xl text-green-500 mb-2">check_circle</span><h3 class="text-xl font-bold">¡Enviado!</h3></div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
     <script>
         const html=document.documentElement, sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebar-overlay');
         function toggleSidebar(){ sidebar.classList.toggle('-translate-x-full'); overlay.classList.toggle('hidden'); }
