@@ -1,57 +1,162 @@
 <!DOCTYPE html>
-<html class="dark" lang="es">
+<html class="light" lang="es">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>RocketInvest | GOD MODE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <title>RocketInvest | Administración</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <style>body { font-family: 'JetBrains Mono', monospace; background-color: #050505; color: #00ff41; }</style>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#307de8",
+                        "background-light": "#f3f4f6",
+                        "background-dark": "#0f172a",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1e293b",
+                    },
+                    fontFamily: { display: ["Manrope", "sans-serif"] },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        button:active { transform: scale(0.98); transition: 0.1s; }
+    </style>
 </head>
-<body class="min-h-screen p-6">
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-10 border-b border-green-900 pb-4">
-            <h1 class="text-2xl font-bold tracking-widest">ADMIN_TERMINAL_V1</h1>
-            <button onclick="window.location.href='dashboard.html'" class="text-sm hover:underline text-gray-500">SALIR</button>
-        </header>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300 min-h-screen">
 
-        <div id="error-msg" class="hidden bg-red-900/20 border border-red-500 text-red-500 p-4 mb-6 rounded">ACCESO DENEGADO. SOLO PERSONAL AUTORIZADO.</div>
-
-        <div id="admin-content" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="border border-green-900/50 bg-black p-6 rounded">
-                    <p class="text-xs text-gray-500 mb-2">AUM (ACTIVOS BAJO GESTIÓN)</p>
-                    <p id="total-aum" class="text-3xl font-bold">$0.00</p>
+    <nav class="bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <div class="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+                    </div>
+                    <span class="font-bold text-lg tracking-tight">RocketInvest <span class="text-slate-400 font-normal text-sm ml-1">| Admin</span></span>
                 </div>
-                <div class="border border-green-900/50 bg-black p-6 rounded">
-                    <p class="text-xs text-gray-500 mb-2">USUARIOS TOTALES</p>
-                    <p id="total-users" class="text-3xl font-bold">0</p>
+                <div class="flex items-center gap-4">
+                    <button id="theme-toggle" class="text-slate-500 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">light_mode</span>
+                    </button>
+                    <div class="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
+                    <button onclick="window.location.href='dashboard.html'" class="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+                        Volver a la App
+                    </button>
                 </div>
-                <div class="border border-green-900/50 bg-black p-6 rounded">
-                    <p class="text-xs text-gray-500 mb-2">ESTADO DEL SISTEMA</p>
-                    <p class="text-3xl font-bold text-blue-400">ONLINE</p>
-                </div>
-            </div>
-
-            <h2 class="text-xl mb-4 border-l-4 border-green-500 pl-3">REGISTRO DE USUARIOS</h2>
-            <div class="overflow-x-auto border border-green-900 rounded">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-green-900/20 text-green-400 uppercase">
-                        <tr>
-                            <th class="p-4">ID</th>
-                            <th class="p-4">EMAIL</th>
-                            <th class="p-4 text-right">SALDO</th>
-                            <th class="p-4 text-center">ESTADO</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table" class="divide-y divide-green-900/30">
-                        </tbody>
-                </table>
             </div>
         </div>
-    </div>
+    </nav>
 
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Vista General</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Monitoreo de rendimiento y usuarios en tiempo real.</p>
+            </div>
+            <span id="status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 w-fit">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                Sistema Operativo
+            </span>
+        </div>
+
+        <div id="error-msg" class="hidden mb-6 p-4 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-3">
+            <span class="material-symbols-outlined animate-spin">sync</span>
+            <span class="font-bold text-sm">Conectando con base de datos...</span>
+        </div>
+
+        <div id="admin-content" class="hidden space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-2xl">account_balance</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Capital Gestionado (AUM)</p>
+                            <h3 id="total-aum" class="text-2xl font-bold text-slate-900 dark:text-white">$0.00</h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600">
+                            <span class="material-symbols-outlined text-2xl">group</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Usuarios Totales</p>
+                            <h3 id="total-users" class="text-2xl font-bold text-slate-900 dark:text-white">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600">
+                            <span class="material-symbols-outlined text-2xl">database</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Estado BD</p>
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Conectado</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-slate-800 dark:text-white">Usuarios Recientes</h3>
+                    <button class="text-xs font-bold text-primary hover:underline">Descargar CSV</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Saldo Actual</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Estado</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Lógica de Tema Oscuro
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        themeToggleBtn.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    </script>
     <script src="js/admin.js"></script>
 </body>
 </html>
