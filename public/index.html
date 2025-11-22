@@ -9,47 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: { primary: "#307de8", dark: "#0f172a", card: "#1e293b" },
-                    fontFamily: { display: ["Manrope", "sans-serif"] },
-                    animation: { 'marquee': 'marquee 50s linear infinite' },
-                    keyframes: { marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-100%)' } } }
-                }
-            }
-        }
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", dark: "#0f172a", card: "#1e293b" }, fontFamily: { display: ["Manrope", "sans-serif"] }, animation: { 'marquee': 'marquee 50s linear infinite' }, keyframes: { marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-100%)' } } } } } }
     </script>
-    <style>
-        body { font-family: 'Manrope', sans-serif; scroll-behavior: smooth; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .gradient-text { background: linear-gradient(135deg, #307de8 0%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-    </style>
+    <style> body { font-family: 'Manrope', sans-serif; scroll-behavior: smooth; } .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); } .gradient-text { background: linear-gradient(135deg, #307de8 0%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } .no-scrollbar::-webkit-scrollbar { display: none; } </style>
 </head>
 <body class="bg-dark text-white overflow-x-hidden transition-colors duration-300">
 
     <nav class="fixed w-full z-50 bg-dark/80 backdrop-blur-md border-b border-white/5 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span>
-                <span class="font-bold text-xl tracking-tight">RocketInvest</span>
-            </div>
-            
-            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
-                <a href="#model" class="hover:text-white transition-colors">Modelo</a>
-                <a href="#market" class="hover:text-white transition-colors">Mercado</a>
-                <a href="partners.html" class="hover:text-primary transition-colors">Para Fondos</a>
-            </div>
-            
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><span class="font-bold text-xl tracking-tight">RocketInvest</span></div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400"><a href="#model" class="hover:text-white">Modelo</a><a href="#market" class="hover:text-white">Mercado</a><a href="partners.html" class="hover:text-primary">Para Fondos</a></div>
             <div class="flex items-center gap-4">
-                <button id="theme-toggle" class="text-slate-400 hover:text-yellow-400 transition-colors p-2 rounded-full hover:bg-white/5">
-                    <span class="material-symbols-outlined text-xl">light_mode</span>
-                </button>
-
+                <button id="theme-toggle" class="text-slate-400 hover:text-yellow-400 transition-colors p-2 rounded-full hover:bg-white/5"><span class="material-symbols-outlined text-xl">light_mode</span></button>
                 <div class="h-6 w-px bg-white/10"></div>
-
                 <div id="nav-auth-buttons" class="flex gap-4">
                     <a href="login.html" class="text-sm font-bold text-slate-300 hover:text-white transition-colors py-2">Entrar</a>
                     <a href="signup.html" class="px-5 py-2 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-full transition-all shadow-lg shadow-primary/25 hover:scale-105">Comenzar</a>
@@ -58,59 +30,40 @@
         </div>
     </nav>
 
-    <div id="market" class="pt-24 pb-3 border-b border-white/5 bg-slate-900/50 overflow-hidden flex relative z-10">
-        <div id="market-ticker" class="whitespace-nowrap flex gap-10 animate-marquee items-center px-4">
-            <span class="text-slate-500 text-xs uppercase tracking-widest">Cargando mercado...</span>
-        </div>
-    </div>
+    <div id="market" class="pt-24 pb-3 border-b border-white/5 bg-slate-900/50 overflow-hidden flex relative z-10"><div id="market-ticker" class="whitespace-nowrap flex gap-10 animate-marquee items-center px-4"><span class="text-slate-500 text-xs uppercase tracking-widest">Cargando...</span></div></div>
 
     <section class="relative pt-20 pb-32 px-6 overflow-hidden">
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10"></div>
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10"></div>
         <div class="max-w-5xl mx-auto text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-blue-300 mb-6">
-                <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> Inversión Colectiva v2.0
-            </div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-blue-300 mb-6"><span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> Inversión Colectiva v2.0</div>
             <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">Inversión Institucional,<br><span class="gradient-text">Al Alcance de Todos.</span></h1>
             <p class="text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">Accede a fondos exclusivos de BlackRock y Vanguard uniendo capital con miles de inversores. Tickets desde <strong>$1,000 MXN</strong>.</p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="signup.html" class="px-8 py-4 bg-white text-dark font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2">Crear Cuenta Gratis <span class="material-symbols-outlined">arrow_forward</span></a>
-                <a href="portfolios.html" class="px-8 py-4 glass text-white font-bold rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined">explore</span> Ver Fondos Activos</a>
-            </div>
+            <div class="flex flex-col sm:flex-row justify-center gap-4"><a href="signup.html" class="px-8 py-4 bg-white text-dark font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-xl shadow-white/10">Crear Cuenta Gratis <span class="material-symbols-outlined">arrow_forward</span></a><a href="portfolios.html" class="px-8 py-4 glass text-white font-bold rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined">explore</span> Ver Fondos</a></div>
         </div>
     </section>
 
     <section class="py-20 border-y border-white/5 bg-slate-900/30">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
-            <div><p class="text-4xl font-bold text-white mb-1" id="stat-users">-</p><p class="text-sm text-slate-500 uppercase tracking-widest">Inversionistas Activos</p></div>
+            <div><p class="text-4xl font-bold text-white mb-1" id="stat-users">-</p><p class="text-sm text-slate-500 uppercase tracking-widest">Inversionistas</p></div>
             <div><p class="text-4xl font-bold text-white mb-1" id="stat-aum">-</p><p class="text-sm text-slate-500 uppercase tracking-widest">Capital Gestionado</p></div>
-            <div><p class="text-4xl font-bold text-white mb-1">9</p><p class="text-sm text-slate-500 uppercase tracking-widest">Fondos Institucionales</p></div>
+            <div><p class="text-4xl font-bold text-white mb-1">9</p><p class="text-sm text-slate-500 uppercase tracking-widest">Fondos Activos</p></div>
         </div>
     </section>
 
-    <footer class="bg-dark border-t border-white/10 py-12 px-6 text-center">
-        <p class="text-slate-500 text-sm mb-4">© 2025 RocketInvest S.A.P.I. de C.V.</p>
-        <div class="flex justify-center gap-6 text-sm font-bold text-slate-400"><a href="admin.html" class="hover:text-white">Admin</a><a href="#" class="hover:text-white">Términos</a></div>
-    </footer>
+    <section class="py-24 bg-white dark:bg-gradient-to-b dark:from-dark dark:to-slate-900 border-t border-white/5 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Aliados Estratégicos</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60">
+                <div class="text-xl font-bold text-slate-400">BlackRock</div>
+                <div class="text-xl font-bold text-slate-400">Vanguard</div>
+                <div class="text-xl font-bold text-slate-400">Santander</div>
+                <div class="text-xl font-bold text-slate-400">ProShares</div>
+            </div>
+        </div>
+    </section>
 
-    <script>
-        // LÓGICA TEMA Y SESIÓN
-        const themeBtn=document.getElementById('theme-toggle'), html=document.documentElement, icon=themeBtn.querySelector('span');
-        const token = localStorage.getItem('token');
-        
-        // Checar Sesión
-        if (token) {
-            const nav = document.getElementById('nav-auth-buttons');
-            if (nav) nav.innerHTML = `<a href="dashboard.html" class="px-5 py-2 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-full transition-all shadow-lg shadow-primary/25 flex items-center gap-2"><span class="material-symbols-outlined text-lg">dashboard</span>Ir al Dashboard</a>`;
-        }
+    <footer class="bg-dark border-t border-white/10 py-12 px-6 text-center"><p class="text-slate-500 text-sm mb-4">© 2025 RocketInvest S.A.P.I. de C.V.</p></footer>
 
-        // Tema
-        if(localStorage.getItem('theme')==='light'){html.classList.remove('dark');html.classList.add('light');icon.textContent='dark_mode';}
-        else{html.classList.add('dark');icon.textContent='light_mode';}
-        themeBtn.addEventListener('click',()=>{
-            if(html.classList.contains('dark')){html.classList.remove('dark');html.classList.add('light');localStorage.setItem('theme','light');icon.textContent='dark_mode';}
-            else{html.classList.add('dark');html.classList.remove('light');localStorage.setItem('theme','dark');icon.textContent='light_mode';}
-        });
-    </script>
     <script src="js/main.js"></script>
 </body>
 </html>
