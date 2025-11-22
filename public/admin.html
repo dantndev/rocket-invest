@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>RocketInvest | GOD MODE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <style>body { font-family: 'JetBrains Mono', monospace; background-color: #050505; color: #00ff41; }</style>
+</head>
+<body class="min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10 border-b border-green-900 pb-4">
+            <h1 class="text-2xl font-bold tracking-widest">ADMIN_TERMINAL_V1</h1>
+            <button onclick="window.location.href='dashboard.html'" class="text-sm hover:underline text-gray-500">SALIR</button>
+        </header>
+
+        <div id="error-msg" class="hidden bg-red-900/20 border border-red-500 text-red-500 p-4 mb-6 rounded">ACCESO DENEGADO. SOLO PERSONAL AUTORIZADO.</div>
+
+        <div id="admin-content" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="border border-green-900/50 bg-black p-6 rounded">
+                    <p class="text-xs text-gray-500 mb-2">AUM (ACTIVOS BAJO GESTIÓN)</p>
+                    <p id="total-aum" class="text-3xl font-bold">$0.00</p>
+                </div>
+                <div class="border border-green-900/50 bg-black p-6 rounded">
+                    <p class="text-xs text-gray-500 mb-2">USUARIOS TOTALES</p>
+                    <p id="total-users" class="text-3xl font-bold">0</p>
+                </div>
+                <div class="border border-green-900/50 bg-black p-6 rounded">
+                    <p class="text-xs text-gray-500 mb-2">ESTADO DEL SISTEMA</p>
+                    <p class="text-3xl font-bold text-blue-400">ONLINE</p>
+                </div>
+            </div>
+
+            <h2 class="text-xl mb-4 border-l-4 border-green-500 pl-3">REGISTRO DE USUARIOS</h2>
+            <div class="overflow-x-auto border border-green-900 rounded">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-green-900/20 text-green-400 uppercase">
+                        <tr>
+                            <th class="p-4">ID</th>
+                            <th class="p-4">EMAIL</th>
+                            <th class="p-4 text-right">SALDO</th>
+                            <th class="p-4 text-center">ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table" class="divide-y divide-green-900/30">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
