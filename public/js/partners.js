@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Listener de cambio de partner
     selector.addEventListener('change', (e) => {
+        // Limpiar tabla visualmente para dar feedback inmediato
+        document.getElementById('funds-table-body').innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400 animate-pulse">Cargando datos...</td></tr>';
         loadPartnerData(e.target.value);
     });
 
@@ -15,9 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = form.querySelector('button');
-            const originalText = btn.innerText;
+            const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerText = "Enviando...";
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Enviando...';
 
             const data = {
                 providerName: selector.value,
@@ -35,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (res.ok) {
-                    alert("Solicitud enviada correctamente. El equipo de administración la revisará.");
+                    alert("Solicitud enviada correctamente.");
                     closeRequestModal();
                     form.reset();
                 } else {
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Error de conexión.");
             } finally {
                 btn.disabled = false;
-                btn.innerText = originalText;
+                btn.innerHTML = originalText;
             }
         });
     }
@@ -54,9 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadPartnerData(providerName) {
     const dashboard = document.getElementById('partner-dashboard');
-    
-    // EFECTO DE CARGA SUAVE (SIN PARPADEO MOLESTO)
-    dashboard.classList.add('opacity-50', 'pointer-events-none'); 
+    dashboard.classList.add('opacity-60', 'pointer-events-none'); // Efecto carga suave
 
     try {
         const res = await fetch('/api/partner/stats', {
@@ -72,10 +72,10 @@ async function loadPartnerData(providerName) {
 
     } catch (error) {
         console.error(error);
-        // alert("No se pudieron cargar los datos del partner."); // Opcional: quitar alert si molesta
+        const tbody = document.getElementById('funds-table-body');
+        tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-red-400">Error al cargar datos. Intente de nuevo.</td></tr>';
     } finally {
-        // QUITAR EFECTO DE CARGA
-        dashboard.classList.remove('opacity-50', 'pointer-events-none');
+        dashboard.classList.remove('opacity-60', 'pointer-events-none');
     }
 }
 
@@ -91,7 +91,7 @@ function renderDashboard(data) {
     tbody.innerHTML = '';
 
     if (data.funds.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">No hay fondos activos para este partner.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400 italic">No se encontraron fondos activos para este partner.</td></tr>';
         return;
     }
 
@@ -99,10 +99,10 @@ function renderDashboard(data) {
         const row = `
             <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-none">
                 <td class="px-6 py-4">
-                    <p class="font-bold text-slate-900">${f.name}</p>
+                    <p class="font-bold text-slate-900 text-sm">${f.name}</p>
                     <p class="text-xs text-slate-400">Meta: ${fmt.format(f.target)}</p>
                 </td>
-                <td class="px-6 py-4 text-right font-mono text-slate-600 text-sm">${fmt.format(f.raised)}</td>
+                <td class="px-6 py-4 text-right font-mono text-slate-600 text-xs sm:text-sm">${fmt.format(f.raised)}</td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
                         <div class="w-full bg-slate-100 rounded-full h-1.5">
