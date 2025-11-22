@@ -20,74 +20,41 @@
 
     <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-100 dark:border-slate-700 relative z-10">
         <div class="text-center mb-8">
-            <div class="flex justify-center items-center gap-2 mb-4 text-primary">
+            <a href="index.html" class="flex justify-center items-center gap-2 mb-4 text-primary hover:opacity-80 transition-opacity">
                 <span class="material-symbols-outlined text-4xl">rocket_launch</span>
-                <span class="font-extrabold text-2xl text-slate-900 dark:text-white">RocketInvest</span>
-            </div>
+                <span class="font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">RocketInvest</span>
+            </a>
             <h2 class="text-xl font-bold">Crea tu cuenta</h2>
             <p class="text-slate-400 text-sm">Únete a la revolución financiera.</p>
         </div>
 
         <form id="signup-form" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre(s)</label>
-                    <input type="text" id="first_name" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="Juan Pablo" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Apellidos</label>
-                    <input type="text" id="last_name" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="Pérez Ruiz" required>
-                </div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre(s)</label><input type="text" id="first_name" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="Juan Pablo" required></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Apellidos</label><input type="text" id="last_name" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="Pérez Ruiz" required></div>
             </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Correo Electrónico</label>
-                <input type="email" id="email" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="tu@email.com" required>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contraseña</label>
-                <input type="password" id="password" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="••••••••" required minlength="6">
-            </div>
-
-            <button type="submit" id="btn-signup" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-primary/30 flex justify-center items-center gap-2 active:scale-95">
-                Registrarme <span class="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Correo Electrónico</label><input type="email" id="email" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="tu@email.com" required></div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contraseña</label><input type="password" id="password" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all dark:text-white" placeholder="••••••••" required minlength="6"></div>
+            <button type="submit" id="btn-signup" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-primary/30 flex justify-center items-center gap-2 active:scale-95">Registrarme <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
         </form>
 
-        <p class="text-center text-sm text-slate-400 mt-6">
-            ¿Ya tienes cuenta? <a href="login.html" class="text-primary font-bold hover:underline">Inicia Sesión</a>
-        </p>
+        <p class="text-center text-sm text-slate-400 mt-6">¿Ya tienes cuenta? <a href="login.html" class="text-primary font-bold hover:underline">Inicia Sesión</a></p>
     </div>
 
     <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 dark:border-slate-700 modal-enter">
-            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-                <span class="material-symbols-outlined text-4xl text-green-500">check_circle</span>
-            </div>
+            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce"><span class="material-symbols-outlined text-4xl text-green-500">check_circle</span></div>
             <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">¡Bienvenido a Bordo!</h3>
             <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Tu cuenta ha sido creada y tu bono de $50,000 MXN está listo.</p>
-            <button onclick="window.location.href='login.html'" class="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:opacity-90 shadow-lg">
-                Iniciar Sesión Ahora
-            </button>
+            <button onclick="window.location.href='login.html'" class="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:opacity-90 shadow-lg">Iniciar Sesión Ahora</button>
         </div>
     </div>
 
     <script>
-        const themeBtn = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-        const icon = themeBtn.querySelector('span');
-        function initTheme() {
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                html.classList.add('dark'); icon.textContent = 'light_mode';
-            } else { html.classList.remove('dark'); icon.textContent = 'dark_mode'; }
-        }
+        const themeBtn = document.getElementById('theme-toggle'); const html = document.documentElement; const icon = themeBtn.querySelector('span');
+        function initTheme() { if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { html.classList.add('dark'); icon.textContent = 'light_mode'; } else { html.classList.remove('dark'); icon.textContent = 'dark_mode'; } }
         initTheme();
-        themeBtn.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-            icon.textContent = html.classList.contains('dark') ? 'light_mode' : 'dark_mode';
-        });
+        themeBtn.addEventListener('click', () => { html.classList.toggle('dark'); localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light'); icon.textContent = html.classList.contains('dark') ? 'light_mode' : 'dark_mode'; });
     </script>
     <script src="js/auth.js"></script>
 </body>
