@@ -5,45 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>RocketInvest - Explorar</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <script id="tailwind-config">
-        tailwind.config = { darkMode: "class", theme: { extend: { colors: { primary: "#307de8", background: { light: "#f3f4f6", dark: "#0f172a" }, card: { light: "#ffffff", dark: "#1e293b" } }, fontFamily: { display: ["Manrope", "sans-serif"] }, borderRadius: { DEFAULT: "1rem" } } } }
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#307de8",
+                        "background-light": "#f3f4f6",
+                        "background-dark": "#0f172a",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1e293b",
+                    },
+                    fontFamily: { display: ["Manrope", "sans-serif"] },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
     </script>
-    <style> .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; } .no-scrollbar::-webkit-scrollbar { display: none; } button:active { transform: scale(0.96); transition: 0.1s; } </style>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        button:active { transform: scale(0.96); transition: 0.1s; }
+    </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display antialiased transition-colors duration-300">
+    
     <div class="flex min-h-screen relative">
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full overflow-y-auto no-scrollbar">
             <div class="flex flex-col gap-8">
-                <div class="flex items-center justify-between px-2"><a href="dashboard.html" class="flex items-center gap-3 px-1 py-2"><span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span><h1 class="text-slate-900 dark:text-white text-xl font-bold">RocketInvest</h1></a><button onclick="toggleSidebar()" class="md:hidden text-slate-500"><span class="material-symbols-outlined">close</span></button></div>
+                <div class="flex items-center justify-between px-2">
+                    <a href="dashboard.html" class="flex items-center gap-3 px-1 py-2">
+                        <span class="material-symbols-outlined text-primary" style="font-size: 32px;">rocket_launch</span>
+                        <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-normal tracking-tight">RocketInvest</h1>
+                    </a>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-primary">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                
                 <nav class="flex flex-col gap-2">
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="index.html"><span class="material-symbols-outlined">home</span><span class="text-sm font-semibold">Inicio</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span class="text-sm font-semibold">Dashboard</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg" href="portfolios.html"><span class="material-symbols-outlined">explore</span><span class="text-sm font-bold">Explorar</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="investments.html"><span class="material-symbols-outlined">account_balance_wallet</span><span class="text-sm font-semibold">Mis Inversiones</span></a>
-                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="history.html"><span class="material-symbols-outlined">history</span><span class="text-sm font-semibold">Historial</span></a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="index.html">
+                        <span class="material-symbols-outlined">home</span><p class="text-sm font-semibold">Inicio</p>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="dashboard.html">
+                        <span class="material-symbols-outlined">dashboard</span><p class="text-sm font-semibold">Dashboard</p>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-3 bg-primary text-white rounded-xl shadow-lg" href="portfolios.html">
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+                        <p class="text-sm font-bold">Explorar Portafolios</p>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="investments.html">
+                        <span class="material-symbols-outlined">account_balance_wallet</span><p class="text-sm font-semibold">Mis Inversiones</p>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl" href="history.html">
+                        <span class="material-symbols-outlined">history</span><p class="text-sm font-semibold">Historial</p>
+                    </a>
                 </nav>
             </div>
             <div class="px-3">
-                <a href="profile.html" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl mb-2"><span class="material-symbols-outlined">person</span><span class="text-sm font-semibold">Mi Perfil</span></a>
-                <button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 rounded-xl"><span class="material-symbols-outlined">logout</span><span class="text-sm font-semibold">Cerrar Sesión</span></button>
+                <a href="profile.html" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-primary rounded-xl mb-2">
+                    <span class="material-symbols-outlined">person</span><p class="text-sm font-semibold">Mi Perfil</p>
+                </a>
+                <button id="logout-sidebar-btn" class="flex w-full items-center gap-3 px-3 py-3 text-slate-500 dark:text-slate-400 hover:text-red-500 rounded-xl">
+                    <span class="material-symbols-outlined">logout</span><p class="text-sm font-semibold">Cerrar Sesión</p>
+                </button>
             </div>
         </aside>
-        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 flex flex-col relative z-0 overflow-y-auto transition-all duration-300">
+
+        <main class="w-full md:ml-64 min-h-screen p-4 md:p-10 transition-all duration-300 flex flex-col relative z-0">
             <div class="mx-auto max-w-7xl w-full">
-                <header class="flex items-center justify-between mb-8">
-                    <div class="flex items-center gap-3"><button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm"><span class="material-symbols-outlined">menu</span></button><div><h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold">Mercado Completo</h2></div></div>
-                    <div class="flex items-center gap-2"><button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all"><span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span></button><a href="profile.html" class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold hover:bg-primary hover:text-white transition-all">I</a></div>
+                
+                <header class="flex items-center justify-between whitespace-nowrap mb-8">
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleSidebar()" class="md:hidden flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
+                            <span class="material-symbols-outlined">menu</span>
+                        </button>
+                        <h2 class="text-slate-900 dark:text-white text-xl md:text-2xl font-bold">Mercado Completo</h2>
+                    </div>
+                    <div class="flex items-center gap-2 md:gap-4">
+                        <button id="theme-toggle" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:shadow-md transition-all">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">light_mode</span>
+                        </button>
+                        <a href="profile.html" class="h-10 w-10 rounded-full bg-primary/10 border border-primary flex items-center justify-center text-primary font-bold hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm">I</a>
+                    </div>
                 </header>
-                <div class="mb-8"><div class="relative max-w-md"><span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><span class="material-symbols-outlined">search</span></span><input type="text" class="w-full py-3 pl-10 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-primary" placeholder="Buscar..."></div></div>
-                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 w-full"><div class="col-span-full text-center py-10 text-slate-500">Cargando...</div></div>
+
+                <div class="mb-8">
+                    <div class="relative max-w-md">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                            <span class="material-symbols-outlined">search</span>
+                        </span>
+                        <input type="text" class="w-full py-3 pl-10 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary placeholder:text-slate-400" placeholder="Buscar fondo...">
+                    </div>
+                </div>
+
+                <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 w-full">
+                    <div class="col-span-full text-center py-10 text-slate-500">Cargando mercado...</div>
+                </div>
             </div>
         </main>
     </div>
-    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300"><div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-700 overflow-hidden relative"><div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold">Invertir</h3><button onclick="closeModal()"><span class="material-symbols-outlined">close</span></button></div><div id="invest-step-1"><form id="investment-form-step1" class="flex flex-col gap-4"><input type="hidden" id="modal-portfolio-id"><div><label class="text-sm font-bold text-slate-500 mb-1 block">Monto</label><input type="number" id="invest-amount" class="w-full p-3 border rounded-xl dark:bg-slate-900" required><p id="invest-calculation" class="text-xs text-right mt-1 text-primary font-bold"></p></div><button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Continuar</button></form></div><div id="invest-step-2" class="hidden text-center"><h3 class="font-bold mb-4">Confirmar</h3><div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-left mb-4"><p class="text-xs text-slate-500">Fondo</p><p id="confirm-portfolio-name" class="font-bold mb-2">...</p><p class="text-xs text-slate-500">Total</p><p id="confirm-amount-display" class="text-xl font-bold text-primary">...</p></div><div class="flex gap-2"><button onclick="backToStep1()" class="flex-1 py-2 bg-slate-200 rounded-xl">Volver</button><button id="btn-final-confirm" class="flex-1 py-2 bg-primary text-white rounded-xl">Confirmar</button></div></div></div></div>
-    <div id="success-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-4"><div class="bg-white dark:bg-card-dark rounded-2xl p-8 max-w-sm w-full text-center"><span class="material-symbols-outlined text-4xl text-green-500 mb-4">check_circle</span><h3 class="text-xl font-bold mb-2">¡Éxito!</h3><button onclick="closeSuccessModal()" class="w-full py-2 bg-slate-900 text-white rounded-xl">OK</button></div></div>
+
+    <div id="invest-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-700 overflow-hidden relative">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Realizar Inversión</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            
+            <div id="invest-step-1">
+                <div class="bg-primary/10 p-4 rounded-xl mb-4 flex items-center gap-4">
+                    <span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span>
+                    <div>
+                        <p class="text-xs uppercase font-bold text-primary">Fondo</p>
+                        <p id="modal-portfolio-name" class="font-bold text-lg text-slate-900 dark:text-white truncate max-w-[200px]">...</p>
+                    </div>
+                </div>
+                <form id="investment-form-step1" class="flex flex-col gap-4">
+                    <input type="hidden" id="modal-portfolio-id">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-500 mb-1">Monto</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                            <input type="number" id="invest-amount" placeholder="Ej. 5000" step="1000" min="1000" class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold outline-none focus:border-primary text-slate-900 dark:text-white" required>
+                        </div>
+                        <div class="flex justify-between mt-2">
+                            <p class="text-xs text-slate-400">Saldo: <span id="modal-balance-display">...</span></p>
+                            <p id="invest-calculation" class="text-xs font-bold text-primary text-right"></p>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-continue-invest" class="w-full py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-xl transition-all disabled:opacity-50">Continuar</button>
+                </form>
+            </div>
+
+            <div id="invest-step-2" class="hidden text-center">
+                <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-600">
+                    <span class="material-symbols-outlined text-3xl">priority_high</span>
+                </div>
+                <h3 class="text-lg font-bold mb-4 text-slate-900 dark:text-white">Confirmar Inversión</h3>
+                <div class="bg-slate-50 dark:bg-slate-900 w-full rounded-lg p-5 mb-6 border border-slate-200 dark:border-slate-700 text-left shadow-inner">
+                    <div class="mb-4 border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <span class="text-xs uppercase font-bold text-slate-500 block mb-1">Fondo Destino</span>
+                        <span class="font-bold text-base text-slate-900 dark:text-white break-words" id="confirm-portfolio-name">...</span>
+                    </div>
+                    <div>
+                        <span class="text-xs uppercase font-bold text-slate-500 block mb-1">Total a Invertir</span>
+                        <span class="text-3xl font-bold text-primary" id="confirm-amount-display">$0.00</span>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="backToStep1()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold rounded-xl hover:bg-slate-200">Cancelar</button>
+                    <button id="btn-final-confirm" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 shadow-lg">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 transition-opacity opacity-0">
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-8 max-w-sm w-full text-center transform scale-95 transition-transform shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                <span class="material-symbols-outlined text-4xl text-green-500">check_circle</span>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">¡Éxito!</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Operación realizada.</p>
+            <button onclick="closeSuccessModal()" class="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:opacity-90">Entendido</button>
+        </div>
+    </div>
 
     <script>
         const html=document.documentElement, sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebar-overlay');
@@ -52,6 +184,15 @@
         if(localStorage.getItem('theme')==='dark') html.classList.add('dark');
         document.getElementById('logout-sidebar-btn').addEventListener('click',()=>{ localStorage.removeItem('token'); window.location.href='/login.html'; });
     </script>
+    
+    <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-700 shadow-xl flex-col p-4 gap-4 md:hidden z-50">
+        <a class="text-slate-600 dark:text-slate-300 font-bold py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="dashboard.html">Dashboard</a>
+        <a class="text-slate-600 dark:text-slate-300 font-bold py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="profile.html">Mi Perfil</a>
+        <a class="text-slate-600 dark:text-slate-300 font-bold py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="portfolios.html">Explorar</a>
+        <a class="text-slate-600 dark:text-slate-300 font-bold py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="investments.html">Mis Inversiones</a>
+        <a class="text-slate-600 dark:text-slate-300 font-bold py-2 border-b border-slate-200 dark:border-white/5 hover:text-primary" href="history.html">Historial</a>
+    </div>
+
     <script src="js/portfolios.js"></script>
 </body>
 </html>
