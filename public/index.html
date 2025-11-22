@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html class="light" lang="es">
-<head>
+<html class="dark" lang="es"> <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>RocketInvest | Inversión Colectiva</title>
@@ -15,7 +14,6 @@
                 extend: {
                     colors: { primary: "#307de8", dark: "#0f172a", card: "#1e293b" },
                     fontFamily: { display: ["Manrope", "sans-serif"] },
-                    // VELOCIDAD AJUSTADA: 50s (Más lento y elegante)
                     animation: { 'marquee': 'marquee 50s linear infinite' },
                     keyframes: { marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-100%)' } } }
                 }
@@ -24,43 +22,46 @@
     </script>
     <style>
         body { font-family: 'Manrope', sans-serif; scroll-behavior: smooth; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        /* Estilos para modo oscuro (Glassmorphism) */
+        .dark .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        /* Estilos para modo claro (Sombra suave) */
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1); }
+        
         .gradient-text { background: linear-gradient(135deg, #307de8 0%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        /* Ocultar scrollbar en ticker */
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-dark text-white overflow-x-hidden transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-dark text-slate-900 dark:text-white overflow-x-hidden transition-colors duration-300">
 
-    <nav class="fixed w-full z-50 bg-dark/80 backdrop-blur-md border-b border-white/5 transition-all duration-300">
+    <nav class="fixed w-full z-50 bg-white/80 dark:bg-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-white/5 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span>
-                <span class="font-bold text-xl tracking-tight">RocketInvest</span>
+                <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">RocketInvest</span>
             </div>
             
-            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
-                <a href="#model" class="hover:text-white transition-colors">Modelo</a>
-                <a href="#market" class="hover:text-white transition-colors">Mercado</a>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <a href="#model" class="hover:text-primary dark:hover:text-white transition-colors">Modelo</a>
+                <a href="#market" class="hover:text-primary dark:hover:text-white transition-colors">Mercado</a>
                 <a href="partners.html" class="hover:text-primary transition-colors">Para Fondos</a>
             </div>
             
             <div class="flex items-center gap-4">
-                <button id="theme-toggle" class="text-slate-400 hover:text-yellow-400 transition-colors p-2 rounded-full hover:bg-white/5">
+                <button id="theme-toggle" class="text-slate-500 dark:text-slate-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5">
                     <span class="material-symbols-outlined text-xl">light_mode</span>
                 </button>
 
-                <div class="h-6 w-px bg-white/10"></div>
+                <div class="h-6 w-px bg-slate-200 dark:bg-white/10"></div>
 
-                <a href="login.html" class="text-sm font-bold text-slate-300 hover:text-white transition-colors">Entrar</a>
+                <a href="login.html" class="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white transition-colors">Entrar</a>
                 <a href="signup.html" class="px-5 py-2 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-full transition-all shadow-lg shadow-primary/25 hover:scale-105">Comenzar</a>
             </div>
         </div>
     </nav>
 
-    <div id="market" class="pt-24 pb-3 border-b border-white/5 bg-slate-900/50 overflow-hidden flex relative z-10">
+    <div id="market" class="pt-24 pb-3 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/50 overflow-hidden flex relative z-10 transition-colors duration-300">
         <div id="market-ticker" class="whitespace-nowrap flex gap-10 animate-marquee items-center px-4">
-            <span class="text-slate-500 text-xs uppercase tracking-widest">Cargando mercado global...</span>
+            <span class="text-slate-400 text-xs uppercase tracking-widest">Cargando mercado global...</span>
         </div>
     </div>
 
@@ -68,24 +69,24 @@
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10"></div>
         
         <div class="max-w-5xl mx-auto text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-blue-300 mb-6 hover:bg-white/10 transition-colors cursor-default">
-                <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-white/5 border border-blue-100 dark:border-white/10 text-xs font-bold text-blue-600 dark:text-blue-300 mb-6 hover:bg-blue-100 dark:hover:bg-white/10 transition-colors cursor-default">
+                <span class="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></span>
                 Inversión Colectiva v2.0
             </div>
-            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6 text-slate-900 dark:text-white">
                 Inversión Institucional,<br>
                 <span class="gradient-text">Al Alcance de Todos.</span>
             </h1>
-            <p class="text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p class="text-lg text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
                 Accede a fondos exclusivos de BlackRock y Vanguard uniendo capital con miles de inversores. Tickets desde <strong>$1,000 MXN</strong>.
             </p>
             
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="signup.html" class="px-8 py-4 bg-white text-dark font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-xl shadow-white/10">
+                <a href="signup.html" class="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-dark font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2 shadow-xl">
                     Crear Cuenta Gratis
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </a>
-                <a href="portfolios.html" class="px-8 py-4 glass text-white font-bold rounded-xl hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                <a href="portfolios.html" class="px-8 py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined">explore</span>
                     Ver Fondos Activos
                 </a>
@@ -93,84 +94,84 @@
         </div>
     </section>
 
-    <section class="py-16 border-y border-white/5 bg-slate-900/30 backdrop-blur-sm">
+    <section class="py-16 border-y border-slate-200 dark:border-white/5 bg-white/50 dark:bg-slate-900/30 backdrop-blur-sm transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
             <div class="group">
-                <p class="text-4xl font-bold text-white mb-1 group-hover:text-primary transition-colors" id="stat-users">-</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors" id="stat-users">-</p>
                 <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Inversionistas</p>
             </div>
             <div class="group">
-                <p class="text-4xl font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors" id="stat-aum">-</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors" id="stat-aum">-</p>
                 <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Capital Gestionado</p>
             </div>
             <div class="group">
-                <p class="text-4xl font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">9</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors">9</p>
                 <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Fondos Premium</p>
             </div>
         </div>
     </section>
 
-    <section id="model" class="py-24 px-6 relative">
+    <section id="model" class="py-24 px-6 relative bg-slate-50 dark:bg-dark transition-colors duration-300">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">El Poder del Grupo</h2>
-                <p class="text-slate-400">La tecnología que democratiza las altas finanzas.</p>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-white">El Poder del Grupo</h2>
+                <p class="text-slate-600 dark:text-slate-400">La tecnología que democratiza las altas finanzas.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="glass p-8 rounded-3xl hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2">
-                    <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-primary/10">
+                    <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform shadow-sm">
                         <span class="material-symbols-outlined text-3xl">groups</span>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-slate-100">1. Agrupación Inteligente</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Nuestro algoritmo reúne automáticamente el capital de miles de inversores minoristas en un solo vehículo SPV.</p>
+                    <h3 class="text-xl font-bold mb-3 text-slate-900 dark:text-slate-100">1. Agrupación Inteligente</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Nuestro algoritmo reúne automáticamente el capital de miles de inversores minoristas en un solo vehículo SPV.</p>
                 </div>
                 <div class="glass p-8 rounded-3xl hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2">
-                    <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-primary/10">
+                    <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform shadow-sm">
                         <span class="material-symbols-outlined text-3xl">lock_open</span>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-slate-100">2. Acceso Institucional</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Entramos como "Inversionista Institucional" a fondos de BlackRock y Vanguard, saltándonos los mínimos de $1M+.</p>
+                    <h3 class="text-xl font-bold mb-3 text-slate-900 dark:text-slate-100">2. Acceso Institucional</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Entramos como "Inversionista Institucional" a fondos de BlackRock y Vanguard, saltándonos los mínimos de $1M+.</p>
                 </div>
                 <div class="glass p-8 rounded-3xl hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2">
-                    <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-primary/10">
+                    <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform shadow-sm">
                         <span class="material-symbols-outlined text-3xl">trending_up</span>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-slate-100">3. Rendimiento Neto</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Distribución automática de rendimientos proporcionales a tu ticket. Sin comisiones ocultas de intermediarios.</p>
+                    <h3 class="text-xl font-bold mb-3 text-slate-900 dark:text-slate-100">3. Rendimiento Neto</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">Distribución automática de rendimientos proporcionales a tu ticket. Sin comisiones ocultas de intermediarios.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-24 bg-gradient-to-b from-dark to-slate-900 text-white border-t border-white/5">
+    <section class="py-24 bg-white dark:bg-gradient-to-b dark:from-dark dark:to-slate-900 border-t border-slate-200 dark:border-white/5 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-12">
                 <div class="md:w-1/2">
-                    <div class="inline-block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold mb-4">
+                    <div class="inline-block px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-4">
                         ECOSISTEMA B2B
                     </div>
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">Aliados Estratégicos</h2>
-                    <p class="text-slate-400 mb-8 text-lg leading-relaxed">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 leading-tight text-slate-900 dark:text-white">Aliados Estratégicos</h2>
+                    <p class="text-slate-600 dark:text-slate-400 mb-8 text-lg leading-relaxed">
                         Nuestra infraestructura se conecta directamente con las gestoras de activos más grandes del mundo, garantizando liquidez y transparencia.
                     </p>
-                    <a href="partners.html" class="text-white font-bold flex items-center gap-2 hover:gap-4 transition-all group">
+                    <a href="partners.html" class="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all group">
                         Acceso para Instituciones 
-                        <span class="material-symbols-outlined text-sm bg-white text-dark rounded-full p-1 group-hover:bg-primary group-hover:text-white transition-colors">arrow_forward</span>
+                        <span class="material-symbols-outlined text-sm bg-slate-100 dark:bg-white text-dark rounded-full p-1 group-hover:bg-primary group-hover:text-white transition-colors">arrow_forward</span>
                     </a>
                 </div>
                 
                 <div class="md:w-1/2 grid grid-cols-2 gap-8 opacity-70 hover:opacity-100 transition-opacity duration-500">
-                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-300 hover:text-white transition-colors">
+                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-400 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors">
                         <span class="material-symbols-outlined text-3xl">apartment</span> BlackRock
                     </div>
-                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-300 hover:text-white transition-colors">
+                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-400 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors">
                         <span class="material-symbols-outlined text-3xl">account_balance</span> Vanguard
                     </div>
-                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-300 hover:text-white transition-colors">
+                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-400 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors">
                         <span class="material-symbols-outlined text-3xl">savings</span> Santander
                     </div>
-                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-300 hover:text-white transition-colors">
+                    <div class="flex items-center gap-3 text-2xl font-bold text-slate-400 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors">
                         <span class="material-symbols-outlined text-3xl">token</span> ProShares
                     </div>
                 </div>
@@ -178,55 +179,53 @@
         </div>
     </section>
 
-    <footer class="bg-dark border-t border-white/5 py-12 px-6 text-center relative overflow-hidden">
-        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
-        
+    <footer class="bg-slate-50 dark:bg-dark border-t border-slate-200 dark:border-white/10 py-12 px-6 text-center relative overflow-hidden transition-colors duration-300">
         <div class="relative z-10">
-            <div class="flex items-center justify-center gap-2 mb-6 opacity-50 grayscale hover:grayscale-0 transition-all">
+            <div class="flex items-center justify-center gap-2 mb-6 opacity-50 hover:opacity-100 transition-all text-slate-900 dark:text-white">
                 <span class="material-symbols-outlined text-2xl">rocket_launch</span>
                 <span class="font-bold text-lg">RocketInvest</span>
             </div>
             <p class="text-slate-500 text-sm mb-6">© 2025 RocketInvest S.A.P.I. de C.V. | Tecnología Financiera.</p>
             <div class="flex justify-center gap-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <a href="admin.html" class="hover:text-white transition-colors">Admin</a>
-                <a href="#" class="hover:text-white transition-colors">Legal</a>
-                <a href="#" class="hover:text-white transition-colors">Privacidad</a>
-                <a href="mailto:hola@rocketinvest.mx" class="hover:text-white transition-colors">Contacto</a>
+                <a href="admin.html" class="hover:text-primary transition-colors">Admin</a>
+                <a href="#" class="hover:text-primary transition-colors">Legal</a>
+                <a href="#" class="hover:text-primary transition-colors">Privacidad</a>
+                <a href="mailto:hola@rocketinvest.mx" class="hover:text-primary transition-colors">Contacto</a>
             </div>
         </div>
     </footer>
 
     <script>
-        // LÓGICA THEME TOGGLE
+        // LÓGICA THEME TOGGLE (Corregida)
         const themeBtn = document.getElementById('theme-toggle');
         const html = document.documentElement;
+        const icon = themeBtn.querySelector('span');
         
-        // Al cargar, checar preferencia (Landing por defecto es Dark, pero respetamos user)
+        // 1. Checar preferencia guardada al cargar
         if (localStorage.getItem('theme') === 'light') {
             html.classList.remove('dark');
-            html.classList.add('light'); // Forzar light si el usuario lo pidió
+            html.classList.add('light');
+            icon.textContent = 'dark_mode';
         } else {
-            html.classList.add('dark'); // Default Dark para Landing
+            html.classList.add('dark'); // Default Dark
+            html.classList.remove('light');
+            icon.textContent = 'light_mode';
         }
 
+        // 2. Listener del botón
         themeBtn.addEventListener('click', () => {
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 html.classList.add('light');
                 localStorage.setItem('theme', 'light');
+                icon.textContent = 'dark_mode';
             } else {
                 html.classList.add('dark');
                 html.classList.remove('light');
                 localStorage.setItem('theme', 'dark');
+                icon.textContent = 'light_mode';
             }
-            updateIcon();
         });
-
-        function updateIcon() {
-            const icon = themeBtn.querySelector('span');
-            icon.textContent = html.classList.contains('dark') ? 'light_mode' : 'dark_mode';
-        }
-        updateIcon();
     </script>
     <script src="js/main.js"></script>
 </body>
